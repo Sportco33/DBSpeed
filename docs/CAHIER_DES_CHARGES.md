@@ -40,6 +40,13 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 - **Voir ses temps** sur sa manche : temps à chaque ligne, temps entre deux lignes, positions, écart avec le premier.
 - **Voir toutes les manches** et leurs classements.
 
+### Couleurs (site + appli)
+- Même palette partout, rangée dans **un seul fichier** : `public/couleurs.css`. Chaque page l'ajoute.
+- **Or** = couleur principale (boutons, titres, 1re place).
+- **Vert** = couleur secondaire (fonds et cartes, en sombre).
+- **Bordeaux** = accent (détails, badges, erreurs).
+- Les pages utilisent des noms de rôle (`--fond`, `--principal`, `--texte`…), jamais les codes couleur directement : pour changer une couleur partout, on la change dans ce fichier.
+
 ## 3. Format du fichier Excel (version actuelle)
 
 Onglet `Temps`, une ligne par pilote dans une manche :

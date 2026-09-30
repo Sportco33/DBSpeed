@@ -22,3 +22,10 @@
 17. Faire une **webapp** avec :
     - un **site qui présente le projet** et qui permet de **télécharger l'application** ;
     - une **application** où les utilisateurs peuvent **créer un compte**, **voir les temps de leur manche** et **voir toutes les manches**.
+
+## 01/10/2026
+18. **Palette de couleurs** pour l'application ET la webapp : **Or** (principale), **Vert** (secondaire), **Bordeaux** (accent), chacune en 6 teintes (50 à 900) :
+    - Or : `#FBF5E6` `#F2DFAE` `#E2C06E` `#D4A63A` `#9A7228` `#5E4518`
+    - Vert : `#EAF1EE` `#C8DBD3` `#6E9A89` `#2E5246` `#213B32` `#14241F`
+    - Bordeaux : `#F6ECEE` `#E6C9CE` `#B06B77` `#5C2A33` `#431E25` `#2A1217`
+    → Rangée dans `public/couleurs.css`.

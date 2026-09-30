@@ -9,6 +9,7 @@
 - [x] Page de test : Supabase ✅ et Resend ✅ (30/09/2026)
 - [x] Fichier Excel d'exemple (`exemples/temps-exemple.xlsx`)
 - [x] Cahier des charges, TODO et fichier des consignes
+- [x] Palette de couleurs Or / Vert / Bordeaux dans `public/couleurs.css`, appliquée à la page de test (01/10/2026)
 
 ## À faire, dans l'ordre
 1. [ ] **Site de présentation** : page d'accueil qui présente DBSpeed + bouton pour installer l'appli.

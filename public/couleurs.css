@@ -1,0 +1,50 @@
+/* =========================================================
+   DBSpeed — palette de couleurs officielle
+   Un seul fichier, utilisé par le site de présentation ET l'application.
+   Toutes les pages l'ajoutent avec :
+   <link rel="stylesheet" href="/couleurs.css">
+   ========================================================= */
+
+:root {
+  /* Or – couleur principale */
+  --or-50:  #FBF5E6;
+  --or-100: #F2DFAE;
+  --or-300: #E2C06E;
+  --or-500: #D4A63A;
+  --or-700: #9A7228;
+  --or-900: #5E4518;
+
+  /* Vert – couleur secondaire */
+  --vert-50:  #EAF1EE;
+  --vert-100: #C8DBD3;
+  --vert-300: #6E9A89;
+  --vert-500: #2E5246;
+  --vert-700: #213B32;
+  --vert-900: #14241F;
+
+  /* Bordeaux – accent */
+  --bordeaux-50:  #F6ECEE;
+  --bordeaux-100: #E6C9CE;
+  --bordeaux-300: #B06B77;
+  --bordeaux-500: #5C2A33;
+  --bordeaux-700: #431E25;
+  --bordeaux-900: #2A1217;
+
+  /* ---------------------------------------------------------
+     Rôles : les pages utilisent ces noms-là, pas les codes.
+     Pour changer une couleur partout, on change juste ici.
+     --------------------------------------------------------- */
+  --fond:          var(--vert-900);   /* fond de page */
+  --carte:         var(--vert-700);   /* blocs, cartes */
+  --carte-2:       var(--vert-500);   /* bloc dans un bloc, lignes de tableau */
+  --texte:         var(--or-50);      /* texte principal */
+  --texte-doux:    var(--vert-100);   /* texte secondaire */
+  --principal:     var(--or-500);     /* boutons, titres, 1re place */
+  --principal-fort:var(--or-300);     /* bouton au survol */
+  --sur-principal: var(--vert-900);   /* texte posé sur l'or */
+  --accent:        var(--bordeaux-300); /* détails, badges */
+  --accent-fond:   var(--bordeaux-500);
+  --succes:        var(--vert-100);   /* clair = lisible sur fond sombre */
+  --erreur:        var(--bordeaux-100);
+  --erreur-fond:   var(--bordeaux-700);
+}
