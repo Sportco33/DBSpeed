@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>DBSpeed</title>
+  <meta name="theme-color" content="#14241F">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icones/icone-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="DBSpeed">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="/couleurs.css">
+  <script src="/sensations.js" defer></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+           background: var(--fond); color: var(--texte); font-family: system-ui, -apple-system, sans-serif;
+           padding: 24px 16px; text-align: center; }
+    .bloc { max-width: 380px; }
+    img { width: 96px; height: 96px; border-radius: 22px; }
+    h1 { font-size: 30px; margin: 16px 0 8px; font-style: italic; }
+    h1 span { color: var(--principal); }
+    p { color: var(--texte-doux); line-height: 1.5; }
+    a { display: inline-block; margin-top: 16px; color: var(--principal); }
+  </style>
+</head>
+<body>
+  <div class="bloc">
+    <img src="/icones/icone-192.png" alt="">
+    <h1>DB<span>Speed</span></h1>
+    <p>L'appli est bien installée 👍<br>La connexion et tes temps arrivent très bientôt ici.</p>
+    <a href="/">Retour au site</a>
+  </div>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+  </script>
+</body>
+</html>

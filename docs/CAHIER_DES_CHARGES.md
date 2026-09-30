@@ -34,6 +34,8 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 ### Le site de présentation
 - Une page qui **présente DBSpeed** (à quoi ça sert, comment ça marche).
 - Un bouton pour **télécharger / installer l'application** sur son téléphone.
+- Sections : accueil (avec un écran d'exemple), comment ça marche (3 étapes), ce que tu obtiens, exemple de classement, **installation pas à pas iPhone (Safari) et Android (Chrome)**, questions fréquentes.
+- Sur Android/Chrome, un bouton « Installer en un clic » apparaît quand le téléphone le permet. Le bon onglet (iPhone ou Android) s'ouvre tout seul.
 
 ### L'application (pour les pilotes)
 - **Créer un compte** et se connecter.
@@ -92,7 +94,7 @@ Onglet `Temps`, une ligne par pilote dans une manche :
 À régler avec l'utilisateur au fur et à mesure :
 1. **Qui importe le fichier Excel ?** Un compte « organisateur » à part, ou n'importe qui ? (les pilotes, eux, ont un compte pour voir leurs temps)
 2. **Comment relier un compte à un pilote ?** Proposition : le pilote donne son **numéro de plaque** en créant son compte.
-3. **« Télécharger l'application »** : appli web installable sur l'écran d'accueil (gratuit, marche avec Netlify) ou vraie appli sur l'App Store / Google Play (payant, beaucoup plus long) ?
+3. **« Télécharger l'application »** : choix pris par défaut le 01/10/2026 → **appli web installable** sur l'écran d'accueil (gratuit, marche avec Netlify). À confirmer ; l'App Store / Google Play reste possible plus tard.
 4. **Mail en plus ?** Envoyer aussi les résultats par mail (Resend) à la fin de la manche ?
 5. **Faut-il garder l'historique** des courses (pour voir sa progression) ?
 6. **Combien d'intermédiaires** sur une vraie piste ? (l'exemple en a 3)

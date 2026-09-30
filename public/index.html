@@ -2,54 +2,425 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DBSpeed – Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>DBSpeed – Le chrono du BMX race</title>
+  <meta name="description" content="DBSpeed : à la fin de ta manche de BMX race, tu as tous tes temps, tes positions à chaque intermédiaire et ton écart avec le premier. Gratuit, sur ton téléphone.">
+  <meta name="theme-color" content="#14241F">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icones/icone-192.png">
+  <link rel="apple-touch-icon" href="/icones/icone-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="DBSpeed">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,600;1,800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/couleurs.css">
+  <script src="/sensations.js" defer></script>
   <style>
-    * { box-sizing:border-box; }
-    body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
-           background:var(--fond); color:var(--texte); font-family:system-ui,-apple-system,sans-serif; padding:16px; }
-    .card { background:var(--carte); border-radius:16px; padding:28px; width:100%; max-width:420px; }
-    h1 { margin:0 0 4px; font-size:28px; letter-spacing:1px; }
-    h1 span { color:var(--principal); }
-    p.sub { margin:0 0 24px; color:var(--texte-doux); }
-    button { width:100%; padding:14px; border:0; border-radius:10px; background:var(--principal);
-             color:var(--sur-principal); font-size:16px; font-weight:600; cursor:pointer; }
-    button:hover { background:var(--principal-fort); }
-    button:disabled { opacity:.6; cursor:wait; }
-    ul { list-style:none; padding:0; margin:20px 0 0; }
-    li { padding:12px; border-radius:10px; background:var(--carte-2); margin-bottom:8px; }
-    li b { display:block; margin-bottom:2px; }
-    .ok b { color:var(--succes); } .ko { background:var(--erreur-fond); } .ko b { color:var(--erreur); }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--fond); color: var(--texte);
+           font-family: 'Barlow', system-ui, -apple-system, sans-serif; font-size: 17px; line-height: 1.55;
+           -webkit-font-smoothing: antialiased; }
+    a { color: inherit; }
+    .conteneur { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+    .titre { font-family: 'Barlow Condensed', sans-serif; font-style: italic; font-weight: 800;
+             text-transform: uppercase; letter-spacing: .5px; line-height: .95; margin: 0; }
+    .petit-titre { font-family: 'Barlow Condensed', sans-serif; font-style: italic; font-weight: 600;
+                   text-transform: uppercase; letter-spacing: 2px; font-size: 15px; color: var(--principal); margin: 0 0 10px; }
+    .doux { color: var(--texte-doux); }
+    .chrono { font-variant-numeric: tabular-nums; }
+
+    /* Damier d'arrivée */
+    .damier { height: 14px; background:
+      conic-gradient(var(--principal) 25%, transparent 0 50%, var(--principal) 0 75%, transparent 0) 0 0 / 14px 14px;
+      opacity: .9; }
+
+    /* Boutons */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 15px 24px;
+           border-radius: 12px; font-weight: 600; font-size: 17px; text-decoration: none; border: 0; cursor: pointer;
+           font-family: inherit; }
+    .btn-or { background: var(--principal); color: var(--sur-principal); }
+    .btn-or:hover { background: var(--principal-fort); }
+    .btn-ligne { background: transparent; color: var(--texte); border: 1.5px solid var(--vert-300); }
+    .btn-ligne:hover { border-color: var(--texte); }
+
+    /* En-tête */
+    header { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--fond) 88%, transparent);
+             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--carte); }
+    header .conteneur { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .logo { font-family: 'Barlow Condensed', sans-serif; font-style: italic; font-weight: 800; font-size: 28px;
+            text-decoration: none; letter-spacing: .5px; }
+    .logo span { color: var(--principal); }
+    header .btn { padding: 9px 16px; font-size: 15px; }
+
+    /* Accueil */
+    .accueil { padding: 44px 0 56px; }
+    .accueil .conteneur { display: grid; gap: 40px; align-items: center; }
+    .accueil h1 { font-size: clamp(48px, 13vw, 88px); }
+    .accueil h1 em { font-style: inherit; color: var(--principal); display: block; }
+    .accueil p.intro { font-size: 19px; margin: 20px 0 28px; max-width: 520px; }
+    .boutons { display: flex; flex-wrap: wrap; gap: 12px; }
+    .boutons .btn { flex: 1 1 200px; }
+    .gratuit { margin-top: 14px; font-size: 14px; }
+
+    /* Téléphone de démo */
+    .telephone { width: 100%; max-width: 330px; margin: 0 auto; background: var(--vert-700);
+                 border-radius: 38px; padding: 12px; box-shadow: 0 30px 60px -20px #000c, 0 0 0 1.5px var(--vert-500); }
+    .ecran { background: var(--fond); border-radius: 28px; padding: 18px 16px 20px; }
+    .ecran-haut { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+    .ecran-haut b { font-family: 'Barlow Condensed', sans-serif; font-style: italic; font-size: 20px; text-transform: uppercase; }
+    .badge { background: var(--accent-fond); color: var(--bordeaux-100); font-size: 12px; font-weight: 600;
+             padding: 3px 9px; border-radius: 99px; }
+    .pilote { background: var(--carte); border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 12px; }
+    .place { font-family: 'Barlow Condensed', sans-serif; font-style: italic; font-weight: 800; font-size: 44px;
+             color: var(--principal); line-height: 1; }
+    .pilote small { display: block; font-size: 12px; white-space: nowrap; }
+    .pilote > div:nth-child(2) { min-width: 0; }
+    .pilote strong { font-size: 18px; }
+    .temps-final { margin-left: auto; text-align: right; font-weight: 600; font-size: 19px; }
+    .lignes { list-style: none; padding: 0; margin: 12px 0 0; }
+    .lignes li { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center;
+                 padding: 9px 4px; border-bottom: 1px solid var(--carte); font-size: 15px; }
+    .lignes li:last-child { border-bottom: 0; }
+    .pos { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px; background: var(--carte-2); min-width: 34px; text-align: center; }
+    .pos.p1 { background: var(--principal); color: var(--sur-principal); }
+    .ecart { font-size: 13px; }
+
+    /* Sections */
+    section { padding: 64px 0; scroll-margin-top: 60px; }
+    section h2 { font-size: clamp(36px, 9vw, 56px); margin-bottom: 18px; }
+    .sous-titre { max-width: 560px; margin: 0 0 36px; font-size: 18px; }
+    .fond-carte { background: var(--vert-700); }
+
+    /* Étapes « comment ça marche » */
+    .etapes { display: grid; gap: 16px; counter-reset: e; }
+    .etape { background: var(--carte); border-radius: 18px; padding: 22px; position: relative; }
+    .fond-carte .etape { background: var(--fond); }
+    .etape::before { counter-increment: e; content: counter(e); font-family: 'Barlow Condensed', sans-serif;
+                     font-style: italic; font-weight: 800; font-size: 54px; color: var(--principal); line-height: 1;
+                     display: block; margin-bottom: 8px; }
+    .etape h3 { margin: 0 0 6px; font-size: 20px; }
+    .etape p { margin: 0; }
+
+    /* Ce que tu obtiens */
+    .infos { display: grid; gap: 14px; }
+    .info { display: flex; gap: 14px; align-items: flex-start; padding: 18px; border-radius: 16px; background: var(--carte); }
+    .info .ico { flex: none; width: 44px; height: 44px; border-radius: 12px; background: var(--accent-fond);
+                 display: grid; place-items: center; }
+    .info .ico svg { width: 24px; height: 24px; stroke: var(--or-300); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .info h3 { margin: 0 0 2px; font-size: 18px; }
+    .info p { margin: 0; font-size: 16px; }
+
+    /* Classement de manche */
+    .classement { background: var(--fond); border-radius: 18px; overflow: hidden; max-width: 560px; }
+    .classement table { width: 100%; border-collapse: collapse; font-size: 16px; }
+    .classement th { text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+                     color: var(--texte-doux); padding: 12px 14px; background: var(--vert-500); }
+    .classement td { padding: 11px 10px; white-space: nowrap; border-top: 1px solid var(--carte); }
+    .classement td:first-child { font-family: 'Barlow Condensed', sans-serif; font-style: italic; font-weight: 800; font-size: 22px; width: 44px; }
+    .classement tr.premier td:first-child { color: var(--principal); }
+    .classement td.num { text-align: right; }
+    .classement tr.abandon td { color: var(--vert-300); }
+    .classement .abd { background: var(--accent-fond); color: var(--bordeaux-100); font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+    .note-exemple { font-size: 14px; margin-top: 12px; }
+
+    /* Installer */
+    .onglets { display: flex; gap: 6px; background: var(--carte); padding: 6px; border-radius: 14px; max-width: 420px; margin-bottom: 20px; }
+    .onglet { flex: 1; padding: 12px; border: 0; border-radius: 10px; background: transparent; color: var(--texte-doux);
+              font: 600 16px 'Barlow', sans-serif; cursor: pointer; }
+    .onglet[aria-selected="true"] { background: var(--principal); color: var(--sur-principal); }
+    .panneau[hidden] { display: none; }
+    .pas { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; max-width: 620px; }
+    .pas li { display: flex; gap: 14px; align-items: flex-start; background: var(--carte); border-radius: 16px; padding: 16px; }
+    .pas .n { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--principal); color: var(--sur-principal);
+              display: grid; place-items: center; font-weight: 700; }
+    .pas b { color: var(--or-300); }
+    .pas p { margin: 0; }
+    .touche { display: inline-flex; align-items: center; gap: 4px; background: var(--vert-500); padding: 1px 8px;
+              border-radius: 6px; font-weight: 600; white-space: nowrap; }
+    .touche svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .encadre { margin-top: 18px; max-width: 620px; border-left: 4px solid var(--accent); background: var(--accent-fond);
+               padding: 14px 16px; border-radius: 0 12px 12px 0; font-size: 16px; }
+    .encadre p { margin: 0; }
+    #installer-direct { margin-bottom: 20px; }
+    .deja { background: var(--carte); border-radius: 16px; padding: 18px; max-width: 620px; margin-bottom: 20px; }
+
+    /* Questions */
+    details { background: var(--carte); border-radius: 14px; margin-bottom: 10px; max-width: 720px; }
+    summary { padding: 16px 18px; font-weight: 600; cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: '+'; color: var(--principal); font-size: 22px; line-height: 1; }
+    details[open] summary::after { content: '–'; }
+    details p { margin: 0; padding: 0 18px 18px; color: var(--texte-doux); }
+
+    /* Dernier appel */
+    .final { text-align: center; }
+    .final h2 { margin-bottom: 18px; }
+    .final .btn { min-width: 260px; }
+
+    footer { padding: 28px 0 40px; font-size: 14px; }
+    footer .conteneur { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
+
+    @media (min-width: 860px) {
+      .accueil { padding: 80px 0; }
+      .accueil .conteneur { grid-template-columns: 1.15fr 1fr; }
+      .etapes { grid-template-columns: repeat(3, 1fr); }
+      .infos { grid-template-columns: 1fr 1fr; }
+      .deux-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>DB<span>Speed</span></h1>
-    <p class="sub">Test de connexion Supabase + Resend</p>
-    <button id="btn">Lancer le test</button>
-    <ul id="res"></ul>
+
+<header>
+  <div class="conteneur">
+    <a class="logo" href="#">DB<span>Speed</span></a>
+    <a class="btn btn-or" href="#installer">Installer</a>
   </div>
-  <script>
-    const btn = document.getElementById('btn');
-    const res = document.getElementById('res');
-    btn.addEventListener('click', async () => {
-      btn.disabled = true; btn.textContent = 'Test en cours…'; res.innerHTML = '';
-      try {
-        const r = await fetch('/api/test-connexion', { method: 'POST' });
-        const d = await r.json();
-        for (const [nom, v] of [['Supabase', d.supabase], ['Resend', d.resend]]) {
-          const li = document.createElement('li');
-          li.className = v.ok ? 'ok' : 'ko';
-          li.innerHTML = `<b>${v.ok ? '✅' : '❌'} ${nom}</b>`;
-          li.append(document.createTextNode(v.detail));
-          res.append(li);
-        }
-      } catch (e) {
-        res.innerHTML = '<li class="ko"><b>❌ Erreur</b>Le test n\'a pas pu se lancer.</li>';
-      }
-      btn.disabled = false; btn.textContent = 'Relancer le test';
+</header>
+
+<main>
+  <!-- ACCUEIL -->
+  <div class="accueil">
+    <div class="conteneur">
+      <div>
+        <p class="petit-titre">Chrono BMX race</p>
+        <h1 class="titre">Toute ta manche, <em>au millième.</em></h1>
+        <p class="intro doux">La grille tombe, tu roules, tu passes la ligne. Quelques secondes après, DBSpeed te donne <strong style="color:var(--texte)">tes temps, ta place à chaque intermédiaire et ton écart avec le premier</strong>. Directement sur ton téléphone.</p>
+        <div class="boutons">
+          <a class="btn btn-or" href="#installer">Installer l'appli</a>
+          <a class="btn btn-ligne" href="#comment">Comment ça marche</a>
+        </div>
+        <p class="gratuit doux">Gratuit · iPhone et Android · Pas besoin de l'App Store</p>
+      </div>
+
+      <!-- Démo : ce que voit le pilote -->
+      <div class="telephone" aria-label="Exemple d'écran de l'appli">
+        <div class="ecran">
+          <div class="ecran-haut"><b>Manche 1</b><span class="badge">8 pilotes</span></div>
+          <div class="pilote">
+            <span class="place">1<sup style="font-size:18px">er</sup></span>
+            <div><small class="doux">Plaque 21 · Couloir 4</small><strong>Enzo Robert</strong></div>
+            <div class="temps-final chrono">36.118</div>
+          </div>
+          <ul class="lignes chrono">
+            <li><span>Inter 1</span><span class="ecart doux">+0.079</span><span class="pos">2e</span></li>
+            <li><span>Inter 2</span><span class="ecart doux">+0.124</span><span class="pos">3e</span></li>
+            <li><span>Inter 3</span><span class="ecart doux">—</span><span class="pos p1">1er</span></li>
+            <li><span>Arrivée</span><span class="ecart doux">+0.136 d'avance</span><span class="pos p1">1er</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="damier" aria-hidden="true"></div>
+
+  <!-- COMMENT ÇA MARCHE -->
+  <section id="comment" class="fond-carte">
+    <div class="conteneur">
+      <p class="petit-titre">Comment ça marche</p>
+      <h2 class="titre">De la grille à ton écran</h2>
+      <p class="sous-titre doux">Tu n'as rien à faire pendant la course. Tu roules, DBSpeed s'occupe du reste.</p>
+      <div class="etapes" data-apparait>
+        <div class="etape">
+          <h3>Tu roules</h3>
+          <p class="doux">Jusqu'à 8 pilotes par manche. Le chrono part à la chute de la grille.</p>
+        </div>
+        <div class="etape">
+          <h3>Chaque ligne compte</h3>
+          <p class="doux">Ton passage est enregistré à chaque ligne intermédiaire, puis sur la ligne d'arrivée.</p>
+        </div>
+        <div class="etape">
+          <h3>Tu as tes résultats</h3>
+          <p class="doux">À la fin du tour, tu ouvres l'appli : tout est là, pour toi et pour toute la manche.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CE QUE TU OBTIENS -->
+  <section id="infos">
+    <div class="conteneur">
+      <p class="petit-titre">Ce que tu obtiens</p>
+      <h2 class="titre">Tout pour progresser</h2>
+      <p class="sous-titre doux">Plus besoin d'attendre l'affichage ou de deviner où tu as perdu du temps.</p>
+      <div class="infos" data-apparait>
+        <div class="info">
+          <div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M10 2h4"/></svg></div>
+          <div><h3>Ton temps à chaque ligne</h3><p class="doux">Inter 1, Inter 2, Inter 3, arrivée : au millième près.</p></div>
+        </div>
+        <div class="info">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 12h16M4 12l4-4M4 12l4 4M20 12l-4-4M20 12l-4 4"/></svg></div>
+          <div><h3>Ton temps entre deux lignes</h3><p class="doux">Tu vois tout de suite si c'est le départ, la ligne droite ou le dernier virage qui coûte.</p></div>
+        </div>
+        <div class="info">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></div>
+          <div><h3>Ta place, ligne par ligne</h3><p class="doux">Ta position à chaque intermédiaire et à l'arrivée. Tu revis la course.</p></div>
+        </div>
+        <div class="info">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg></div>
+          <div><h3>Ton écart avec le premier</h3><p class="doux">À chaque ligne, combien il te manque… ou combien tu as d'avance.</p></div>
+        </div>
+        <div class="info">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h12"/></svg></div>
+          <div><h3>Toutes les manches</h3><p class="doux">Les classements de toutes les manches, pour suivre les copains et les adversaires.</p></div>
+        </div>
+        <div class="info">
+          <div class="ico"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></div>
+          <div><h3>Pensé pour le téléphone</h3><p class="doux">Gros chiffres, lisible en plein soleil, même avec les gants.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXEMPLE DE CLASSEMENT -->
+  <section class="fond-carte">
+    <div class="conteneur deux-col">
+      <div>
+        <p class="petit-titre">Exemple</p>
+        <h2 class="titre">Le classement de la manche</h2>
+        <p class="sous-titre doux">Voilà ce que tout le monde voit à la fin d'une manche. Même une chute est prise en compte : le pilote apparaît avec la mention « Abandon ».</p>
+      </div>
+      <div>
+        <div class="classement">
+          <table class="chrono">
+            <thead><tr><th>Pl.</th><th>Pilote</th><th style="text-align:right">Temps</th><th style="text-align:right">Écart</th></tr></thead>
+            <tbody>
+              <tr class="premier"><td>1</td><td>Enzo Robert</td><td class="num">36.118</td><td class="num doux">—</td></tr>
+              <tr><td>2</td><td>Lucas Martin</td><td class="num">36.254</td><td class="num doux">+0.136</td></tr>
+              <tr><td>3</td><td>Hugo Bernard</td><td class="num">36.512</td><td class="num doux">+0.394</td></tr>
+              <tr><td>4</td><td>Nathan Petit</td><td class="num">36.890</td><td class="num doux">+0.772</td></tr>
+              <tr><td>5</td><td>Maël Laurent</td><td class="num">37.102</td><td class="num doux">+0.984</td></tr>
+              <tr><td>6</td><td>Théo Richard</td><td class="num">37.431</td><td class="num doux">+1.313</td></tr>
+              <tr><td>7</td><td>Jules Moreau</td><td class="num">37.905</td><td class="num doux">+1.787</td></tr>
+              <tr class="abandon"><td>–</td><td>Louis Durand</td><td class="num" colspan="2"><span class="abd">Abandon</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note-exemple doux">Pilotes et temps inventés, pour l'exemple.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALLER -->
+  <section id="installer">
+    <div class="conteneur">
+      <p class="petit-titre">Installer l'appli</p>
+      <h2 class="titre">Sur ton téléphone en 30 secondes</h2>
+      <p class="sous-titre doux">Pas d'App Store, pas de Play Store, rien à payer. Tu l'ajoutes depuis ce site et elle apparaît sur ton écran d'accueil, comme une vraie appli.</p>
+
+      <div class="deja" id="deja-installee" hidden>
+        <p style="margin:0 0 12px"><strong>✅ C'est bon, l'appli est déjà installée.</strong></p>
+        <a class="btn btn-or" href="/app/">Ouvrir DBSpeed</a>
+      </div>
+
+      <!-- Bouton direct : n'apparaît que si le téléphone sait installer en un clic (Android / Chrome) -->
+      <button class="btn btn-or" id="installer-direct" hidden>Installer DBSpeed maintenant</button>
+
+      <div class="onglets" role="tablist">
+        <button class="onglet" role="tab" id="t-iphone" aria-controls="p-iphone" aria-selected="true">iPhone</button>
+        <button class="onglet" role="tab" id="t-android" aria-controls="p-android" aria-selected="false">Android</button>
+      </div>
+
+      <!-- iPhone -->
+      <div class="panneau" id="p-iphone" role="tabpanel" aria-labelledby="t-iphone">
+        <ol class="pas" data-apparait>
+          <li><span class="n">1</span><p>Ouvre ce site avec <b>Safari</b> (l'appli avec la boussole bleue).</p></li>
+          <li><span class="n">2</span><p>En bas de l'écran, appuie sur le bouton <span class="touche"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Partager</span> (le carré avec une flèche vers le haut).</p></li>
+          <li><span class="n">3</span><p>Descends un peu dans la liste et appuie sur <b>« Sur l'écran d'accueil »</b>.</p></li>
+          <li><span class="n">4</span><p>En haut à droite, appuie sur <b>« Ajouter »</b>.</p></li>
+          <li><span class="n">5</span><p>C'est fini ! L'icône <b>DBSpeed</b> est sur ton écran d'accueil. Appuie dessus pour l'ouvrir.</p></li>
+        </ol>
+        <div class="encadre"><p><strong>Tu ne vois pas « Sur l'écran d'accueil » ?</strong> Vérifie que tu es bien dans Safari (pas dans Instagram, WhatsApp ou Messenger). Si le lien s'est ouvert dans une autre appli, appuie sur ⋯ puis « Ouvrir dans Safari ».</p></div>
+      </div>
+
+      <!-- Android -->
+      <div class="panneau" id="p-android" role="tabpanel" aria-labelledby="t-android" hidden>
+        <ol class="pas" data-apparait>
+          <li><span class="n">1</span><p>Ouvre ce site avec <b>Chrome</b>.</p></li>
+          <li><span class="n">2</span><p>En haut à droite, appuie sur les <span class="touche">⋮ trois points</span>.</p></li>
+          <li><span class="n">3</span><p>Appuie sur <b>« Installer l'application »</b> (ou <b>« Ajouter à l'écran d'accueil »</b> selon ton téléphone).</p></li>
+          <li><span class="n">4</span><p>Confirme en appuyant sur <b>« Installer »</b>.</p></li>
+          <li><span class="n">5</span><p>C'est fini ! L'icône <b>DBSpeed</b> est sur ton écran d'accueil. Appuie dessus pour l'ouvrir.</p></li>
+        </ol>
+        <div class="encadre"><p><strong>Plus simple :</strong> si un bouton doré « Installer DBSpeed maintenant » apparaît au-dessus, appuie dessus, c'est fait en un seul geste.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUESTIONS -->
+  <section id="questions" class="fond-carte">
+    <div class="conteneur">
+      <p class="petit-titre">Questions</p>
+      <h2 class="titre">Tu te demandes…</h2>
+      <div data-apparait>
+      <details><summary>C'est vraiment gratuit ?</summary><p>Oui. L'appli est gratuite pour les pilotes. Pas d'abonnement, pas de pub.</p></details>
+      <details><summary>Pourquoi elle n'est pas sur l'App Store ?</summary><p>DBSpeed est une appli web : elle s'installe directement depuis ce site. Résultat : rien à télécharger de lourd, pas de mise à jour à faire, tu as toujours la dernière version.</p></details>
+      <details><summary>Comment je retrouve mes temps ?</summary><p>Tu crées ton compte une fois avec ton numéro de plaque. Ensuite, à chaque manche, tes temps s'affichent tout seuls dans l'appli.</p></details>
+      <details><summary>Et si je tombe pendant la manche ?</summary><p>Pas de souci : l'appli garde tes temps jusqu'à la dernière ligne que tu as passée, et t'affiche en « Abandon » au classement.</p></details>
+      <details><summary>Ça prend de la place sur mon téléphone ?</summary><p>Presque rien : c'est beaucoup plus léger qu'une appli classique.</p></details>
+      <details><summary>Je peux voir les temps des autres pilotes ?</summary><p>Oui, tu vois le classement de toutes les manches. Le détail complet (temps entre les lignes, positions) est dans ta fiche à toi.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- DERNIER APPEL -->
+  <section class="final">
+    <div class="conteneur">
+      <h2 class="titre">Prêt pour la <span style="color:var(--principal)">grille</span> ?</h2>
+      <p class="sous-titre doux" style="margin:0 auto 26px">Installe DBSpeed maintenant, et ta prochaine manche, tu la revis au millième.</p>
+      <a class="btn btn-or" href="#installer">Installer l'appli</a>
+    </div>
+  </section>
+  <div class="damier" aria-hidden="true"></div>
+</main>
+
+<footer>
+  <div class="conteneur doux">
+    <span><strong style="color:var(--texte)">DB<span style="color:var(--principal)">Speed</span></strong> · Le chrono du BMX race</span>
+    <span>© 2026 DBSpeed</span>
+  </div>
+</footer>
+
+<script>
+  // Onglets iPhone / Android
+  const onglets = document.querySelectorAll('.onglet');
+  function choisir(id) {
+    onglets.forEach(o => {
+      const actif = o.id === id;
+      o.setAttribute('aria-selected', actif);
+      document.getElementById(o.getAttribute('aria-controls')).hidden = !actif;
     });
-  </script>
+  }
+  onglets.forEach(o => o.addEventListener('click', () => choisir(o.id)));
+
+  // On ouvre directement le bon onglet selon le téléphone
+  if (/android/i.test(navigator.userAgent)) choisir('t-android');
+
+  // Appli déjà installée (ouverte depuis l'icône) → on propose de l'ouvrir
+  const installee = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (installee) document.getElementById('deja-installee').hidden = false;
+
+  // Android / Chrome : bouton « installer en un clic »
+  let demande = null;
+  const direct = document.getElementById('installer-direct');
+  addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); demande = e; direct.hidden = false;
+  });
+  direct.addEventListener('click', async () => {
+    if (!demande) return;
+    demande.prompt();
+    await demande.userChoice;
+    demande = null; direct.hidden = true;
+  });
+  addEventListener('appinstalled', () => {
+    if (window.vibrer) vibrer('fort');
+    direct.hidden = true;
+    document.getElementById('deja-installee').hidden = false;
+  });
+
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+</script>
 </body>
 </html>

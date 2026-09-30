@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DBSpeed – Test</title>
+  <link rel="stylesheet" href="/couleurs.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+           background:var(--fond); color:var(--texte); font-family:system-ui,-apple-system,sans-serif; padding:16px; }
+    .card { background:var(--carte); border-radius:16px; padding:28px; width:100%; max-width:420px; }
+    h1 { margin:0 0 4px; font-size:28px; letter-spacing:1px; }
+    h1 span { color:var(--principal); }
+    p.sub { margin:0 0 24px; color:var(--texte-doux); }
+    button { width:100%; padding:14px; border:0; border-radius:10px; background:var(--principal);
+             color:var(--sur-principal); font-size:16px; font-weight:600; cursor:pointer; }
+    button:hover { background:var(--principal-fort); }
+    button:disabled { opacity:.6; cursor:wait; }
+    ul { list-style:none; padding:0; margin:20px 0 0; }
+    li { padding:12px; border-radius:10px; background:var(--carte-2); margin-bottom:8px; }
+    li b { display:block; margin-bottom:2px; }
+    .ok b { color:var(--succes); } .ko { background:var(--erreur-fond); } .ko b { color:var(--erreur); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>DB<span>Speed</span></h1>
+    <p class="sub">Test de connexion Supabase + Resend</p>
+    <button id="btn">Lancer le test</button>
+    <ul id="res"></ul>
+  </div>
+  <script>
+    const btn = document.getElementById('btn');
+    const res = document.getElementById('res');
+    btn.addEventListener('click', async () => {
+      btn.disabled = true; btn.textContent = 'Test en cours…'; res.innerHTML = '';
+      try {
+        const r = await fetch('/api/test-connexion', { method: 'POST' });
+        const d = await r.json();
+        for (const [nom, v] of [['Supabase', d.supabase], ['Resend', d.resend]]) {
+          const li = document.createElement('li');
+          li.className = v.ok ? 'ok' : 'ko';
+          li.innerHTML = `<b>${v.ok ? '✅' : '❌'} ${nom}</b>`;
+          li.append(document.createTextNode(v.detail));
+          res.append(li);
+        }
+      } catch (e) {
+        res.innerHTML = '<li class="ko"><b>❌ Erreur</b>Le test n\'a pas pu se lancer.</li>';
+      }
+      btn.disabled = false; btn.textContent = 'Relancer le test';
+    });
+  </script>
+</body>
+</html>

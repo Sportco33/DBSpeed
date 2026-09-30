@@ -34,3 +34,4 @@
     - **Animations de transition super fluides** à chaque clic et à chaque changement de page.
     - Une appli **ergonomique**, avec une **bonne UI et une bonne UX**.
     - Un écran **bien équilibré et bien réparti** (espaces réguliers, rien de tassé, rien de vide).
+20. Faire un **bon site web** qui montre tout ce que fait l'appli et **donne envie**, avec une explication **simple et précise** pour **télécharger l'appli**.
