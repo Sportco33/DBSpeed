@@ -37,3 +37,5 @@
 20. Faire un **bon site web** qui montre tout ce que fait l'appli et **donne envie**, avec une explication **simple et précise** pour **télécharger l'appli**.
 21. **Fond en marbre** aux couleurs de la palette, comme sur la photo envoyée (colonnes en marbre bordeaux et vert veiné de blanc, chapiteaux dorés).
 22. L'**or doit ressembler à du vrai or** et **briller** comme de l'or.
+23. Dans l'appli, une **première page de connexion** avec **3 types de connexion** : **pilotes, organisateurs, spectateurs**. Sur cette page : **se connecter** et **créer un compte**. Ajouter la **connexion avec Google**.
+24. Une fois connecté, on arrive sur la **page d'accueil**, avec des **onglets en bas de l'écran** : **Accueil**, **Entraînement**, **Compétition**, **Mon profil**. L'onglet profil sert à **modifier ses informations** et **voir sa page**.

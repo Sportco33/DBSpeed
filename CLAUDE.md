@@ -53,6 +53,12 @@ L'utilisateur a peu de crédits Netlify : chaque mise à jour de `main` lance un
 - **Mails** : Resend, domaine vérifié `sportco.cloud`, expéditeur `DBSpeed <resultats@sportco.cloud>`.
 - **Variables Netlify** : `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `RESEND_API_KEY`, `TEST_EMAIL_TO`.
 - Fonctions Netlify dans `netlify/functions/` (TypeScript `.mts`), pages dans `public/`.
+- Chaque page ajoute `/couleurs.css` (palette, marbre `.marbre-vert` / `.marbre-bordeaux`, or `.or-brillant` / `.bouton-or` / `.cadre-or`) et `/sensations.js` en `defer` (vibration + effet d'appui + fondu entre pages ; `window.vibrer('leger' | 'fort' | 'erreur')`). Ne pas utiliser la classe `.apparait` pour autre chose (elle appartient à sensations.js).
+- **Appli** dans `public/app/` : `index.html` (connexion, page de démarrage de l'appli installée), `accueil.html` (onglets en bas), `app.css`, `supabase.js` (client + messages d'erreur en français). Polices libres (OFL) dans `public/app/polices/`.
+- `public/config.js` n'est **pas** dans GitHub : il est écrit à la mise en ligne par `scripts/ecrire-config.mjs` (commande de build Netlify) avec `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY`.
+- supabase-js est chargé depuis `cdn.jsdelivr.net` (`@supabase/supabase-js@2/+esm`), flux `implicit` (pour que le lien du mail marche même dans un autre navigateur).
+- **Base** : table `public.profils` (type_compte pilote/organisateur/spectateur, nom, plaque, organisateur_valide), créée par un déclencheur à la création du compte ; fonction `choisir_type_compte` pour les comptes Google. Chacun ne lit/modifie que son profil (nom et plaque seulement). Les migrations sont copiées dans `supabase/migrations/`.
+- Valider un organisateur : `update public.profils set organisateur_valide = true where id = '...'` (seulement à la demande de Nicolas).
 - Fichier Excel d'exemple : `exemples/temps-exemple.xlsx` (format expliqué dans le cahier des charges).
 
 ## Pièges déjà rencontrés
@@ -60,3 +66,7 @@ L'utilisateur a peu de crédits Netlify : chaque mise à jour de `main` lance un
 - Outil Netlify : une variable créée en mode « secret » ne s'enregistre pas vraiment. La créer en mode normal, **sans préciser les scopes**, puis vérifier avec la liste des variables. Après un changement de variable, la nouvelle valeur ne sera prise en compte qu'au prochain « pushcoco ».
 - Outil Resend : quand il crée une clé, le texte « IMPORTANT » est collé juste après la clé. Ne pas recopier le « I » de « IMPORTANT ».
 - Dans l'espace de travail cloud, npm bloque les paquets `@netlify/*` : on ne peut pas déployer avec la ligne de commande Netlify. On déploie en poussant sur GitHub.
+- **Plusieurs conversations travaillent en même temps** : avant de pousser `travail`, toujours récupérer la dernière version (`git fetch`) et intégrer ce qui a été ajouté. Ne jamais écraser (pas de `--force`).
+- L'espace de travail cloud n'accède pas à `supabase.co`, `cdn.jsdelivr.net`, `api.resend.com` : on teste les pages avec Playwright + un faux client Supabase, et la base avec `execute_sql` dans une transaction annulée (`begin … rollback`).
+- Supabase : sans SMTP personnalisé, les mails ne partent **qu'aux membres de l'équipe Supabase** (« Email address not authorized »). Il faut le SMTP Resend (`smtp.resend.com`, port 465, utilisateur `resend`, mot de passe = clé Resend).
+- Les réglages Auth de Supabase (Site URL, Redirect URLs, SMTP, Google) ne se font pas avec les outils : c'est Nicolas qui les fait dans le tableau de bord.

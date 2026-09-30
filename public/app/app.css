@@ -1,0 +1,527 @@
+/* DBSpeed — styles de l'appli
+   Les couleurs viennent de /couleurs.css (Or / Vert / Bordeaux) : ne pas écrire de code couleur ici.
+   L'effet d'appui, les vibrations et le fondu entre pages viennent de /sensations.js.
+   Idée : la grille de départ. Fond vert sombre, or pour ce qui compte (bouton principal, plaque),
+   bordeaux en petit accent. */
+
+@font-face {
+  font-family: 'Big Shoulders Display';
+  src: url('/app/polices/BigShouldersDisplay-Variable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Barlow';
+  src: url('/app/polices/Barlow-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Barlow';
+  src: url('/app/polices/Barlow-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-display: swap;
+}
+
+:root {
+  /* Rôles propres à l'appli, construits sur la palette de couleurs.css */
+  --bord: var(--vert-300);          /* contour des champs et cartes (bien visible sur le fond) */
+  --verre: color-mix(in srgb, var(--vert-900) 80%, transparent);   /* verre fumé posé sur le marbre */
+  --ombre-texte: 0 1px 2px var(--vert-900), 0 0 12px var(--vert-900);
+  --bord-doux: var(--carte-2);      /* séparations discrètes */
+
+  --police-titre: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
+  --police-texte: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Espaces : toujours les mêmes tailles */
+  --e1: 8px;
+  --e2: 16px;
+  --e3: 24px;
+  --e4: 32px;
+
+  --arrondi: 14px;
+  --barre-onglets: 68px;
+  --duree: 0.22s;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--fond);    /* le marbre vient de la classe .marbre-vert (couleurs.css) */
+  color: var(--texte);
+  font-family: var(--police-texte);
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+[hidden] { display: none !important; }
+
+a { color: var(--principal); }
+
+:focus-visible {
+  outline: 3px solid var(--principal);
+  outline-offset: 3px;
+}
+
+.page {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: var(--e4) var(--e2) var(--e4);
+}
+
+/* ---------- Apparition douce ---------- */
+
+@keyframes apparaitre {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+.glisse { animation: apparaitre var(--duree) ease-out both; }
+/* fondu seul (sans mouvement) : pour un bloc qui contient la barre d'onglets fixe */
+@keyframes fondu { from { opacity: 0; } to { opacity: 1; } }
+.fondu { animation: fondu var(--duree) ease-out both; }
+.types .type { animation: apparaitre var(--duree) ease-out both; }
+.types .type:nth-of-type(2) { animation-delay: 0.05s; }
+.types .type:nth-of-type(3) { animation-delay: 0.1s; }
+@media (prefers-reduced-motion: reduce) {
+  .glisse, .fondu, .types .type, .message { animation: none; }
+}
+
+/* ---------- Marque + feux de la grille de départ ---------- */
+
+.marque {
+  font-family: var(--police-titre);
+  font-weight: 800;
+  font-size: 64px;
+  line-height: 0.9;
+  letter-spacing: 0.5px;
+  margin: 0;
+  color: var(--texte);
+}
+
+.feux {
+  display: flex;
+  gap: var(--e1);
+  margin: var(--e2) 0 var(--e1);
+  padding: var(--e1) 10px;
+  background: var(--verre);
+  border-radius: 999px;
+  width: max-content;
+}
+.feux span {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--carte-2);
+}
+.feux .rouge { --allume: var(--accent); }
+.feux .jaune { --allume: var(--principal); }
+.feux .vert  { --allume: var(--vert-300); }
+.feux span { animation: allumer 0.2s ease-out forwards; }
+.feux span:nth-child(1) { animation-delay: 0.35s; }
+.feux span:nth-child(2) { animation-delay: 0.55s; }
+.feux span:nth-child(3) { animation-delay: 0.75s; }
+.feux span:nth-child(4) { animation-delay: 0.95s; }
+@keyframes allumer {
+  to { background: var(--allume); box-shadow: 0 0 10px var(--allume); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .feux span { animation: none; background: var(--allume); }
+}
+
+.accroche {
+  margin: 0 0 var(--e4);
+  color: var(--texte-doux);
+  font-size: 18px;
+}
+
+/* ---------- Titres ---------- */
+
+h2 {
+  font-family: var(--police-titre);
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1;
+  margin: 0 0 var(--e2);
+}
+
+.bloc { margin-bottom: var(--e4); }
+
+/* ---------- Choix du type de compte ---------- */
+
+.types {
+  border: 0;
+  margin: 0 0 var(--e3);
+  padding: 0;
+}
+.types legend {
+  font-weight: 600;
+  margin-bottom: var(--e1);
+  padding: 0;
+}
+.type {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 2px var(--e2);
+  padding: 12px var(--e2);
+  margin-bottom: var(--e1);
+  background: var(--verre);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 2px solid var(--bord-doux);
+  border-radius: var(--arrondi);
+  cursor: pointer;
+}
+.type input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.type-nom {
+  font-family: var(--police-titre);
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1.05;
+}
+.type-texte {
+  grid-column: 1;
+  color: var(--texte-doux);
+  font-size: 15px;
+}
+.type-coche {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--bord);
+  transition: border-width var(--duree) ease, background-color var(--duree) ease;
+}
+.type:has(input:checked) {
+  border-color: var(--principal);
+}
+.type:has(input:checked) .type-coche {
+  border: 8px solid var(--principal);
+  background: var(--sur-principal);
+}
+.type:has(input:focus-visible) {
+  outline: 3px solid var(--principal);
+  outline-offset: 3px;
+}
+
+/* ---------- Se connecter / Créer un compte ---------- */
+
+.modes {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: var(--e3);
+  background: var(--verre);
+  border-radius: var(--arrondi);
+}
+.modes button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--texte-doux);
+  font: 600 16px var(--police-texte);
+  cursor: pointer;
+}
+.modes button[aria-pressed='true'] {
+  background: var(--carte-2);
+  color: var(--texte);
+}
+
+/* ---------- Formulaires ---------- */
+
+.champ { margin-bottom: var(--e2); }
+.champ label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.champ .aide {
+  display: block;
+  color: var(--texte-doux);
+  font-size: 14px;
+  margin-top: 6px;
+}
+input[type='text'],
+input[type='email'],
+input[type='password'] {
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 14px;
+  border: 2px solid var(--bord);
+  border-radius: var(--arrondi);
+  background: var(--carte);
+  color: var(--texte);
+  font: 400 17px var(--police-texte);
+  transition: border-color var(--duree) ease;
+}
+input:focus-visible {
+  border-color: var(--principal);
+  outline: none;
+}
+
+.bouton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 54px;
+  padding: 12px 18px;
+  border: 2px solid transparent;
+  border-radius: var(--arrondi);
+  font: 600 18px var(--police-texte);
+  text-decoration: none;
+  cursor: pointer;
+}
+/* .bouton-principal : son or brillant vient de la classe .bouton-or (couleurs.css) */
+.bouton-principal { color: var(--sur-principal); }
+.bouton-secondaire {
+  background: var(--verre);
+  color: var(--texte);
+  border-color: var(--bord);
+}
+.bouton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ou {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: var(--e3) 0;
+  color: var(--texte-doux);
+  font-size: 15px;
+}
+.ou::before, .ou::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: var(--bord-doux);
+}
+
+.note {
+  margin: 0 0 var(--e2);
+  padding: 12px 14px;
+  border-left: 4px solid var(--accent);
+  background: var(--verre);
+  border-radius: 0 var(--arrondi) var(--arrondi) 0;
+  font-size: 15px;
+}
+
+.message {
+  margin: 0 0 var(--e2);
+  padding: 12px 14px;
+  border-radius: var(--arrondi);
+  font-size: 16px;
+  font-weight: 600;
+  animation: apparaitre var(--duree) ease-out both;
+}
+.message:empty { display: none; }
+.message.erreur { background: var(--erreur-fond); color: var(--erreur); }
+.message.ok { background: var(--carte-2); color: var(--succes); }
+
+/* ---------- Espace connecté : onglets en bas ---------- */
+
+.espace {
+  padding-bottom: calc(var(--barre-onglets) + env(safe-area-inset-bottom) + var(--e3));
+}
+.entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e2);
+  margin-bottom: var(--e3);
+}
+.entete .marque { font-size: 34px; }
+
+.onglets {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--verre);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-top: 2px solid var(--or-700);
+}
+.onglets a {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: var(--barre-onglets);
+  color: var(--texte-doux);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.onglets svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.onglets a[aria-current='page'] { color: var(--principal); }
+.onglets a::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 20%;
+  right: 20%;
+  height: 4px;
+  border-radius: 0 0 4px 4px;
+  background: var(--principal);
+  transform: scaleX(0);
+  transition: transform var(--duree) ease;
+}
+.onglets a[aria-current='page']::before { transform: scaleX(1); }
+
+.salut {
+  font-family: var(--police-titre);
+  font-weight: 800;
+  font-size: 44px;
+  line-height: 0.95;
+  margin: 0 0 var(--e1);
+}
+.sous-titre {
+  margin: 0 0 var(--e3);
+  color: var(--texte-doux);
+}
+
+.vide {
+  padding: var(--e3) var(--e2);
+  background: var(--verre);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 2px dashed var(--bord-doux);
+  border-radius: var(--arrondi);
+  color: var(--texte-doux);
+}
+.vide strong {
+  display: block;
+  color: var(--texte);
+  margin-bottom: 4px;
+}
+
+/* ---------- La plaque du pilote ---------- */
+
+.plaque {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 132px;
+  height: 108px;
+  padding: var(--e1) 22px 4px;
+  background: var(--or-metal);
+  color: var(--sur-principal);
+  border: 3px solid var(--or-700);
+  box-shadow: inset 0 1px 0 var(--or-50), 0 6px 18px color-mix(in srgb, var(--vert-900) 70%, transparent);
+  border-radius: 22px 22px 10px 10px;
+  font-family: var(--police-titre);
+  font-weight: 900;
+  font-size: 84px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.plaque.initiales {
+  background: var(--accent-fond);
+  color: var(--texte);
+  border-color: var(--accent);
+  font-size: 64px;
+}
+.plaque-petite {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 46px;
+  height: 36px;
+  padding: 2px 10px 0;
+  background: var(--or-metal);
+  color: var(--sur-principal);
+  border-radius: 10px 10px 5px 5px;
+  font-family: var(--police-titre);
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.ma-page {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: var(--e3) var(--e2);
+  margin-bottom: var(--e4);
+  border-radius: var(--arrondi);   /* fond : .marbre-bordeaux .cadre-or (couleurs.css) */
+}
+.ma-page .nom {
+  font-family: var(--police-titre);
+  font-weight: 800;
+  font-size: 36px;
+  line-height: 1;
+  margin: 0;
+}
+.etiquette {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--carte-2);
+  font-size: 15px;
+  font-weight: 600;
+}
+.infos {
+  margin: 0;
+  color: var(--texte-doux);
+  font-size: 15px;
+  word-break: break-word;
+}
+
+#onglet-profil .salut { margin-bottom: var(--e3); }
+
+.chargement {
+  padding: 60px 0;
+  text-align: center;
+  color: var(--texte-doux);
+}
+
+/* ---------- Sur le marbre ---------- */
+
+.panneau {
+  padding: var(--e2);
+  margin-bottom: var(--e3);
+  background: var(--verre);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-radius: 18px;
+  border: 1px solid var(--or-700);
+}
+.panneau .types { margin-bottom: var(--e2); }
+.accroche, .sous-titre, .chargement, .entete .marque, .marque { text-shadow: var(--ombre-texte); }
+.or-brillant { text-shadow: none; }

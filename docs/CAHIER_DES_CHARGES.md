@@ -37,10 +37,23 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 - Sections : accueil (avec un écran d'exemple), comment ça marche (3 étapes), ce que tu obtiens, exemple de classement, **installation pas à pas iPhone (Safari) et Android (Chrome)**, questions fréquentes.
 - Sur Android/Chrome, un bouton « Installer en un clic » apparaît quand le téléphone le permet. Le bon onglet (iPhone ou Android) s'ouvre tout seul.
 
-### L'application (pour les pilotes)
-- **Créer un compte** et se connecter.
-- **Voir ses temps** sur sa manche : temps à chaque ligne, temps entre deux lignes, positions, écart avec le premier.
-- **Voir toutes les manches** et leurs classements.
+### L'application
+**Page de connexion** (`/app/`, c'est aussi la page qui s'ouvre quand on lance l'appli installée)
+- 3 types de compte : **Pilote**, **Organisateur**, **Spectateur**.
+- **Se connecter** ou **Créer un compte** (prénom et nom, email, mot de passe ; numéro de plaque pour un pilote).
+- **Continuer avec Google**. Après la première connexion Google, une « dernière étape » demande le type de compte, le nom et la plaque.
+- Un compte **organisateur doit être validé** par l'équipe DBSpeed avant de pouvoir importer des temps (proposition de Claude, à confirmer).
+
+**Après connexion** (`/app/accueil.html`), des **onglets en bas de l'écran** :
+- **Accueil** : bonjour + dernières manches.
+- **Entraînement** : les temps des tours d'entraînement (contenu à préciser).
+- **Compétition** : les manches des courses et leurs classements (contenu à préciser).
+- **Mon profil** : « ma page » (plaque dorée, nom, type de compte, email), modifier ses infos, se déconnecter.
+
+**Ce que chaque compte peut voir / faire** (à compléter)
+- Pilote : ses temps, ses manches, toutes les manches.
+- Organisateur : importer les temps (une fois validé).
+- Spectateur : suivre les manches et les classements.
 
 ### Couleurs (site + appli)
 - Même palette partout, rangée dans **un seul fichier** : `public/couleurs.css`. Chaque page l'ajoute.
@@ -96,10 +109,12 @@ Onglet `Temps`, une ligne par pilote dans une manche :
 ## 5. Questions encore ouvertes
 
 À régler avec l'utilisateur au fur et à mesure :
-1. **Qui importe le fichier Excel ?** Un compte « organisateur » à part, ou n'importe qui ? (les pilotes, eux, ont un compte pour voir leurs temps)
-2. **Comment relier un compte à un pilote ?** Proposition : le pilote donne son **numéro de plaque** en créant son compte.
+1. **Qui importe le fichier Excel ?** → les **organisateurs**. Reste à confirmer : validation à la main des comptes organisateur ?
+2. **Comment relier un compte à un pilote ?** → fait avec le **numéro de plaque** donné à l'inscription.
 3. **« Télécharger l'application »** : choix pris par défaut le 01/10/2026 → **appli web installable** sur l'écran d'accueil (gratuit, marche avec Netlify). À confirmer ; l'App Store / Google Play reste possible plus tard.
 4. **Mail en plus ?** Envoyer aussi les résultats par mail (Resend) à la fin de la manche ?
 5. **Faut-il garder l'historique** des courses (pour voir sa progression) ?
 6. **Combien d'intermédiaires** sur une vraie piste ? (l'exemple en a 3)
 7. **Format exact des transpondeurs** : temps depuis le départ, ou heure exacte du passage ?
+8. **Que mettre dans les onglets Entraînement et Compétition ?**
+9. **« Voir sa page »** : seulement pour soi, ou une page publique que les autres peuvent voir ?

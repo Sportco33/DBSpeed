@@ -1,5 +1,11 @@
 [build]
+  # Écrit public/config.js à partir des variables Netlify (adresse + clé publique Supabase)
+  command = "node scripts/ecrire-config.mjs"
   publish = "public"
+
+[build.environment]
+  # config.js contient seulement la clé publique Supabase, faite pour le navigateur
+  SECRETS_SCAN_OMIT_PATHS = "public/config.js"
 
 [functions]
   directory = "netlify/functions"

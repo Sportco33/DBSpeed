@@ -3,36 +3,92 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>DBSpeed</title>
   <meta name="theme-color" content="#14241F">
+  <title>DBSpeed</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/icones/icone-180.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="DBSpeed">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="stylesheet" href="/couleurs.css">
+  <link rel="stylesheet" href="/app/app.css">
   <script src="/sensations.js" defer></script>
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-           color: var(--texte); font-family: system-ui, -apple-system, sans-serif;
-           padding: 24px 16px; text-align: center; }
-    .bloc { max-width: 380px; }
-    img { width: 96px; height: 96px; border-radius: 22px; }
-    h1 { font-size: 30px; margin: 16px 0 8px; font-style: italic; }
-    img { box-shadow: 0 0 0 2px var(--or-700), 0 10px 30px rgba(0,0,0,.5); }
-    p { color: var(--texte-doux); line-height: 1.5; }
-    .bloc { padding: 28px 22px; border-radius: 18px; }
-    a { display: inline-block; margin-top: 16px; padding: 12px 22px; border-radius: 10px; font-weight: 700; text-decoration: none; }
-  </style>
+  <script src="/config.js"></script>
+  <script type="module" src="/app/connexion.js"></script>
 </head>
 <body class="marbre-vert">
-  <div class="bloc marbre-bordeaux cadre-or">
-    <img src="/icones/icone-192.png" alt="">
-    <h1>DB<span class="or-brillant">Speed</span></h1>
-    <p>L'appli est bien installée 👍<br>La connexion et tes temps arrivent très bientôt ici.</p>
-    <a class="bouton-or" href="/">Retour au site</a>
-  </div>
+  <main class="page">
+    <h1 class="marque">DB<span class="or-brillant">Speed</span></h1>
+    <div class="feux" aria-hidden="true">
+      <span class="rouge"></span><span class="jaune"></span><span class="jaune"></span><span class="vert"></span>
+    </div>
+    <p class="accroche">Tes temps de passage en BMX race, ligne par ligne.</p>
+
+    <p id="message" class="message" role="alert"></p>
+
+    <div class="panneau">
+    <form id="formulaire" novalidate>
+      <fieldset class="types">
+        <legend>Tu es…</legend>
+        <label class="type touchable">
+          <input type="radio" name="type" value="pilote" checked>
+          <span class="type-nom">Pilote</span>
+          <span class="type-texte">Je roule et je veux voir mes temps.</span>
+          <span class="type-coche" aria-hidden="true"></span>
+        </label>
+        <label class="type touchable">
+          <input type="radio" name="type" value="organisateur">
+          <span class="type-nom">Organisateur</span>
+          <span class="type-texte">J'organise des courses et j'importe les temps.</span>
+          <span class="type-coche" aria-hidden="true"></span>
+        </label>
+        <label class="type touchable">
+          <input type="radio" name="type" value="spectateur">
+          <span class="type-nom">Spectateur</span>
+          <span class="type-texte">Je suis les manches et les classements.</span>
+          <span class="type-coche" aria-hidden="true"></span>
+        </label>
+      </fieldset>
+
+      <div class="modes" role="group" aria-label="Choisir">
+        <button type="button" id="mode-connexion" aria-pressed="true">Se connecter</button>
+        <button type="button" id="mode-inscription" aria-pressed="false">Créer un compte</button>
+      </div>
+
+      <p id="note-organisateur" class="note" hidden>
+        Un compte organisateur est vérifié par l'équipe DBSpeed avant de pouvoir importer des temps.
+      </p>
+
+      <div class="champ" id="champ-nom" hidden>
+        <label for="nom">Prénom et nom</label>
+        <input type="text" id="nom" name="nom" autocomplete="name" maxlength="80">
+      </div>
+
+      <div class="champ" id="champ-plaque" hidden>
+        <label for="plaque">Numéro de plaque</label>
+        <input type="text" id="plaque" name="plaque" inputmode="numeric" maxlength="10" autocomplete="off">
+        <span class="aide">Le numéro sur ta plaque de vélo. Il sert à retrouver tes manches.</span>
+      </div>
+
+      <div class="champ">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" autocomplete="email" inputmode="email" required>
+      </div>
+
+      <div class="champ">
+        <label for="mot-de-passe">Mot de passe</label>
+        <input type="password" id="mot-de-passe" name="mot-de-passe" autocomplete="current-password" minlength="6" required>
+        <span class="aide" id="aide-mdp" hidden>6 caractères minimum.</span>
+      </div>
+
+      <button type="submit" class="bouton bouton-principal bouton-or" id="valider">Me connecter</button>
+    </form>
+
+    <div class="ou">ou</div>
+
+    <button type="button" class="bouton bouton-secondaire" id="google">Continuer avec Google</button>
+    </div>
+  </main>
   <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
   </script>

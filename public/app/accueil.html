@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#14241F">
+  <title>DBSpeed</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icones/icone-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="DBSpeed">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="/couleurs.css">
+  <link rel="stylesheet" href="/app/app.css">
+  <script src="/sensations.js" defer></script>
+  <script src="/config.js"></script>
+  <script type="module" src="/app/accueil.js"></script>
+</head>
+<body class="marbre-vert">
+  <main class="page espace">
+    <p id="chargement" class="chargement">Chargement…</p>
+    <p id="message" class="message" role="alert"></p>
+
+    <!-- Dernière étape pour un compte créé avec Google : choisir son type -->
+    <section id="finir-inscription" hidden>
+      <h1 class="marque">DB<span class="or-brillant">Speed</span></h1>
+      <p class="accroche">Dernière étape : dis-nous qui tu es.</p>
+      <form id="form-finir" class="panneau" novalidate>
+        <fieldset class="types">
+          <legend>Tu es…</legend>
+          <label class="type touchable">
+            <input type="radio" name="type" value="pilote" checked>
+            <span class="type-nom">Pilote</span>
+            <span class="type-texte">Je roule et je veux voir mes temps.</span>
+            <span class="type-coche" aria-hidden="true"></span>
+          </label>
+          <label class="type touchable">
+            <input type="radio" name="type" value="organisateur">
+            <span class="type-nom">Organisateur</span>
+            <span class="type-texte">J'organise des courses et j'importe les temps.</span>
+            <span class="type-coche" aria-hidden="true"></span>
+          </label>
+          <label class="type touchable">
+            <input type="radio" name="type" value="spectateur">
+            <span class="type-nom">Spectateur</span>
+            <span class="type-texte">Je suis les manches et les classements.</span>
+            <span class="type-coche" aria-hidden="true"></span>
+          </label>
+        </fieldset>
+        <p id="finir-note-organisateur" class="note" hidden>
+          Un compte organisateur est vérifié par l'équipe DBSpeed avant de pouvoir importer des temps.
+        </p>
+        <div class="champ">
+          <label for="finir-nom">Prénom et nom</label>
+          <input type="text" id="finir-nom" autocomplete="name" maxlength="80">
+        </div>
+        <div class="champ" id="finir-champ-plaque">
+          <label for="finir-plaque">Numéro de plaque</label>
+          <input type="text" id="finir-plaque" inputmode="numeric" maxlength="10" autocomplete="off">
+          <span class="aide">Le numéro sur ta plaque de vélo. Il sert à retrouver tes manches.</span>
+        </div>
+        <button type="submit" class="bouton bouton-principal bouton-or">Valider</button>
+      </form>
+    </section>
+
+    <!-- L'appli, avec les onglets en bas -->
+    <div id="appli" hidden>
+      <header class="entete">
+        <p class="marque">DB<span class="or-brillant">Speed</span></p>
+        <span id="entete-plaque" class="plaque-petite" hidden></span>
+      </header>
+
+      <section id="onglet-accueil" aria-labelledby="titre-accueil" hidden>
+        <h1 id="titre-accueil" class="salut or-brillant">Salut</h1>
+        <p id="accueil-sous-titre" class="sous-titre"></p>
+        <p id="accueil-attente" class="note" hidden>
+          Ton compte organisateur attend d'être validé par l'équipe DBSpeed. Tu pourras importer des temps juste après.
+        </p>
+        <div class="bloc">
+          <h2>Dernières manches</h2>
+          <div class="vide">
+            <strong>Pas encore de manche.</strong>
+            <span id="accueil-vide">Les résultats arriveront ici après la prochaine course.</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="onglet-entrainement" aria-labelledby="titre-entrainement" hidden>
+        <h1 id="titre-entrainement" class="salut or-brillant">Entraînement</h1>
+        <p class="sous-titre">Tes tours d'entraînement, avec tes temps à chaque ligne.</p>
+        <div class="vide">
+          <strong>Pas encore d'entraînement.</strong>
+          Tes temps d'entraînement arriveront ici.
+        </div>
+      </section>
+
+      <section id="onglet-competition" aria-labelledby="titre-competition" hidden>
+        <h1 id="titre-competition" class="salut or-brillant">Compétition</h1>
+        <p class="sous-titre">Les manches des courses et leurs classements.</p>
+        <div class="vide">
+          <strong>Pas encore de compétition.</strong>
+          Les manches et les classements arriveront ici.
+        </div>
+      </section>
+
+      <section id="onglet-profil" aria-labelledby="titre-profil" hidden>
+        <h1 id="titre-profil" class="salut or-brillant">Mon profil</h1>
+
+        <div class="ma-page marbre-bordeaux cadre-or" aria-label="Ma page">
+          <span id="profil-plaque" class="plaque"></span>
+          <p id="profil-nom" class="nom"></p>
+          <span id="profil-type" class="etiquette"></span>
+          <p id="profil-email" class="infos"></p>
+        </div>
+
+        <div class="bloc">
+          <h2>Modifier mes infos</h2>
+          <p id="message-profil" class="message" role="status"></p>
+          <form id="form-profil" novalidate>
+            <div class="champ">
+              <label for="profil-champ-nom">Prénom et nom</label>
+              <input type="text" id="profil-champ-nom" autocomplete="name" maxlength="80">
+            </div>
+            <div class="champ" id="profil-bloc-plaque" hidden>
+              <label for="profil-champ-plaque">Numéro de plaque</label>
+              <input type="text" id="profil-champ-plaque" inputmode="numeric" maxlength="10" autocomplete="off">
+            </div>
+            <button type="submit" class="bouton bouton-principal bouton-or">Enregistrer</button>
+          </form>
+        </div>
+
+        <button type="button" id="deconnexion" class="bouton bouton-secondaire">Se déconnecter</button>
+      </section>
+
+      <nav class="onglets" aria-label="Onglets">
+        <a href="#accueil" data-onglet="accueil">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5.5h4V20"/></svg>
+          Accueil
+        </a>
+        <a href="#entrainement" data-onglet="entrainement">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5"/><path d="M9.5 2.5h5"/><path d="M12 2.5V6"/></svg>
+          Entraînement
+        </a>
+        <a href="#competition" data-onglet="competition">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V3.5"/><path d="M5 4h13l-2.5 4.5L18 13H5"/></svg>
+          Compétition
+        </a>
+        <a href="#profil" data-onglet="profil">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1.2-3.8 4-5.5 7.5-5.5s6.3 1.7 7.5 5.5"/></svg>
+          Mon profil
+        </a>
+      </nav>
+    </div>
+  </main>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+  </script>
+</body>
+</html>

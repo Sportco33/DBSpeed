@@ -43,7 +43,7 @@
     cible = e.target.closest(touchables);
     if (!cible || cible.disabled) return;
     cible.classList.add('appuye');
-    vibrer(cible.classList.contains('btn-or') ? 'fort' : 'leger');
+    vibrer(cible.matches('.btn-or, .bouton-or, .bouton-principal, button[type="submit"]') ? 'fort' : 'leger');
   }, { passive: true });
   const relacher = () => { if (cible) cible.classList.remove('appuye'); cible = null; };
   addEventListener('pointerup', relacher, { passive: true });
