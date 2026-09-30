@@ -1,6 +1,6 @@
 # Cahier des charges — DBSpeed
 
-*Dernière mise à jour : 30/09/2026. Ce document évolue avec le projet.*
+*Dernière mise à jour : 01/10/2026. Ce document évolue avec le projet.*
 
 ## 1. L'idée
 
@@ -46,6 +46,27 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 - **Vert** = couleur secondaire (fonds et cartes, en sombre).
 - **Bordeaux** = accent (détails, badges, erreurs).
 - Les pages utilisent des noms de rôle (`--fond`, `--principal`, `--texte`…), jamais les codes couleur directement : pour changer une couleur partout, on la change dans ce fichier.
+
+### Ergonomie et sensations (site + appli) — à respecter sur chaque écran
+- **Retour haptique à chaque appui** : une petite vibration quand on touche un bouton, un onglet, une carte, un lien. Un peu plus marquée pour une action importante (valider, envoyer), différente pour une erreur.
+  - Sur Android : ça marche dans le navigateur. Sur iPhone, le navigateur ne laisse pas vibrer une page web : on remplace par un **effet visuel d'appui** (le bouton s'enfonce légèrement), et ce sera une vraie vibration si on fait plus tard une vraie appli.
+  - Tout est rangé dans **un seul fichier commun** (ex. `public/sensations.js`) que chaque page ajoute, comme `couleurs.css`.
+- **Animations fluides** :
+  - Chaque bouton réagit **tout de suite** au toucher (il s'enfonce puis revient).
+  - **Transition douce entre les pages** (glissement ou fondu), jamais d'écran blanc qui clignote.
+  - Les listes et les cartes **apparaissent en douceur**, les unes après les autres.
+  - Animations **courtes** (0,15 à 0,35 seconde), fluides même sur un petit téléphone.
+  - Si le téléphone est réglé sur « réduire les animations », on les réduit aussi.
+- **Ergonomie (UX)** :
+  - Tout se fait **au pouce, d'une main** : gros boutons (au moins 44 px), actions importantes en bas de l'écran.
+  - **Un seul bouton principal par écran**, bien visible.
+  - L'utilisateur **sait toujours où il est** (titre, onglet actif) et **peut revenir en arrière**.
+  - Chaque action donne un **retour clair** : chargement, réussite, erreur (avec un message simple).
+- **Belle interface (UI) bien équilibrée** :
+  - Espaces **réguliers** partout (toujours les mêmes tailles d'espace), rien de tassé, rien de trop vide.
+  - Éléments **bien alignés et bien répartis** sur l'écran.
+  - Peu de tailles de texte différentes, et une hiérarchie claire (titre, sous-titre, texte).
+  - Les couleurs de la palette utilisées avec mesure : l'or pour ce qui compte, pas partout.
 
 ## 3. Format du fichier Excel (version actuelle)
 

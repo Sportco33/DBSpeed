@@ -16,6 +16,13 @@ Lis aussi, avant de travailler :
 - Avancer étape par étape, pas tout d'un coup.
 - **Terminer chaque réponse par une partie « À améliorer »** : les points principaux à améliorer, le plus important en premier (2 ou 3 maximum).
 
+## Ergonomie et sensations (à appliquer sur chaque écran, sans qu'on le redemande)
+
+- **Retour haptique à chaque appui** (bouton, onglet, carte, lien) + effet visuel d'appui.
+- **Animations de transition super fluides** à chaque clic et entre les pages.
+- Appli **ergonomique** (bonne UI / UX), écran **bien équilibré et bien réparti**.
+- Détails dans `docs/CAHIER_DES_CHARGES.md` (partie « Ergonomie et sensations »).
+
 ## Publier : le mot de code « pushcoco » (obligatoire)
 
 L'utilisateur a peu de crédits Netlify : chaque mise à jour de `main` lance une mise en ligne qui coûte des crédits.

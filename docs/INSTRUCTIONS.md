@@ -29,3 +29,8 @@
     - Vert : `#EAF1EE` `#C8DBD3` `#6E9A89` `#2E5246` `#213B32` `#14241F`
     - Bordeaux : `#F6ECEE` `#E6C9CE` `#B06B77` `#5C2A33` `#431E25` `#2A1217`
     → Rangée dans `public/couleurs.css`.
+19. **Ergonomie et sensations (UI / UX)**, pour l'application ET la webapp :
+    - **Retour haptique** (vibration courte) **à chaque fois qu'on appuie sur quelque chose** : boutons, onglets, cartes, liens.
+    - **Animations de transition super fluides** à chaque clic et à chaque changement de page.
+    - Une appli **ergonomique**, avec une **bonne UI et une bonne UX**.
+    - Un écran **bien équilibré et bien réparti** (espaces réguliers, rien de tassé, rien de vide).

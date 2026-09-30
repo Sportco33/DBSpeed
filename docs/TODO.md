@@ -24,6 +24,11 @@
 10. [ ] **Envoyer les résultats par mail** (Resend) — à confirmer.
 11. [ ] **Adapter au format des transpondeurs** quand on aura un vrai fichier.
 
+## À faire partout (en même temps que chaque écran)
+- [ ] **Fichier commun « sensations »** (`public/sensations.js`) : vibration à chaque appui + effet d'appui visuel, ajouté sur toutes les pages.
+- [ ] **Transitions fluides entre les pages** et apparition douce des listes.
+- [ ] **Vérifier chaque écran** : gros boutons, un seul bouton principal, espaces réguliers, bien équilibré.
+
 ## Petits nettoyages (moins urgent)
 - [ ] Économiser les crédits Netlify : ne pas relancer de mise en ligne quand seuls les fichiers `docs/` changent.
 - [ ] Enlever la page de test quand la vraie page d'accueil sera prête.
