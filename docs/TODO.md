@@ -20,6 +20,7 @@
 7. [ ] **Adapter au format des transpondeurs** quand on aura un vrai fichier.
 
 ## Petits nettoyages (moins urgent)
+- [ ] Économiser les crédits Netlify : ne pas relancer de mise en ligne quand seuls les fichiers `docs/` changent.
 - [ ] Enlever la page de test quand la vraie page d'accueil sera prête.
 - [ ] Donner un nom plus propre au site (ex. `dbspeed-bmx.netlify.app`).
 - [ ] Choisir si le dépôt GitHub reste public ou passe en privé.

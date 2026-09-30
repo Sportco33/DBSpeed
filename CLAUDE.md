@@ -16,6 +16,17 @@ Lis aussi, avant de travailler :
 - Avancer étape par étape, pas tout d'un coup.
 - **Terminer chaque réponse par une partie « À améliorer »** : les points principaux à améliorer, le plus important en premier (2 ou 3 maximum).
 
+## Publier : le mot de code « pushcoco » (obligatoire)
+
+L'utilisateur a peu de crédits Netlify : chaque mise à jour de `main` lance une mise en ligne qui coûte des crédits.
+- **Ne jamais pousser sur `main` sans que l'utilisateur ait dit « pushcoco ».**
+- Pendant le travail : faire les commits sur la branche **`travail`** et la pousser sur GitHub (ça sauvegarde sans mettre en ligne, pour ne rien perdre d'une conversation à l'autre).
+- Au début d'une conversation : partir de la branche `travail` (la récupérer depuis GitHub), pas de `main`.
+- Quand l'utilisateur dit **« pushcoco »** :
+  1. Vérifier que tout ce qui a été dit est pris en compte (code + `docs/INSTRUCTIONS.md`, `docs/TODO.md`, `docs/CAHIER_DES_CHARGES.md`).
+  2. Faire le commit sur `travail`, puis fusionner `travail` dans `main` et pousser `main`.
+  3. Vérifier que Netlify a bien fini la mise en ligne, et le dire à l'utilisateur avec le lien du site.
+
 ## Tenir les fichiers à jour (obligatoire)
 
 - Chaque nouvelle consigne de l'utilisateur → l'ajouter dans `docs/INSTRUCTIONS.md` (avec la date).
@@ -27,7 +38,8 @@ Lis aussi, avant de travailler :
 
 - **Code** : GitHub `Sportco33/DBSpeed` (dépôt **public** : ne jamais mettre de clé ou mot de passe dans le code).
 - **Site** : Netlify, projet `dbspeed-2let` (site id `e7817334-e146-4733-91ec-23186b563821`) → https://dbspeed-2let.netlify.app
-  - Chaque `git push` sur `main` met le site à jour tout seul (1 minute environ).
+  - Chaque `git push` sur `main` met le site à jour tout seul (1 minute environ) et coûte des crédits → seulement après « pushcoco ».
+  - La branche `travail` ne doit pas être mise en ligne (réglage Netlify : « Deploy only the production branch »).
   - Le site est protégé (connexion Netlify demandée) tant qu'on ne l'a pas rendu public.
 - **Base de données** : Supabase, projet « DBSpeed » (ref `yqclmsmqkndwzghsbsbi`, région Paris), organisation SportCo.
   - Offre gratuite : 2 projets actifs maximum. Le projet « SportCo » est en pause pour laisser la place.
@@ -38,6 +50,6 @@ Lis aussi, avant de travailler :
 
 ## Pièges déjà rencontrés
 
-- Outil Netlify : une variable créée en mode « secret » ne s'enregistre pas vraiment. La créer en mode normal, **sans préciser les scopes**, puis vérifier avec la liste des variables. Après un changement de variable, relancer un déploiement (commit vide + push).
+- Outil Netlify : une variable créée en mode « secret » ne s'enregistre pas vraiment. La créer en mode normal, **sans préciser les scopes**, puis vérifier avec la liste des variables. Après un changement de variable, la nouvelle valeur ne sera prise en compte qu'au prochain « pushcoco ».
 - Outil Resend : quand il crée une clé, le texte « IMPORTANT » est collé juste après la clé. Ne pas recopier le « I » de « IMPORTANT ».
 - Dans l'espace de travail cloud, npm bloque les paquets `@netlify/*` : on ne peut pas déployer avec la ligne de commande Netlify. On déploie en poussant sur GitHub.
