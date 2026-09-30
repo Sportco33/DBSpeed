@@ -11,6 +11,7 @@
 - [x] Cahier des charges, TODO et fichier des consignes
 - [x] Palette de couleurs Or / Vert / Bordeaux dans `public/couleurs.css`, appliquée à la page de test (01/10/2026)
 - [x] Site de présentation (`public/index.html`) : accueil, comment ça marche, ce que tu obtiens, exemple de classement, installation iPhone/Android pas à pas, questions. Appli installable (manifest, icônes, `/app/` provisoire). Page de test déplacée dans `public/test.html` (01/10/2026)
+- [x] Fond en marbre (vert + bordeaux) et or brillant, sur toutes les pages (accueil, appli, test) (01/10/2026)
 
 ## À faire, dans l'ordre
 2. [ ] **Importer le fichier Excel** : une page où on choisit le fichier, et l'appli le lit.

@@ -15,22 +15,23 @@
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-           background: var(--fond); color: var(--texte); font-family: system-ui, -apple-system, sans-serif;
+           color: var(--texte); font-family: system-ui, -apple-system, sans-serif;
            padding: 24px 16px; text-align: center; }
     .bloc { max-width: 380px; }
     img { width: 96px; height: 96px; border-radius: 22px; }
     h1 { font-size: 30px; margin: 16px 0 8px; font-style: italic; }
-    h1 span { color: var(--principal); }
+    img { box-shadow: 0 0 0 2px var(--or-700), 0 10px 30px rgba(0,0,0,.5); }
     p { color: var(--texte-doux); line-height: 1.5; }
-    a { display: inline-block; margin-top: 16px; color: var(--principal); }
+    .bloc { padding: 28px 22px; border-radius: 18px; }
+    a { display: inline-block; margin-top: 16px; padding: 12px 22px; border-radius: 10px; font-weight: 700; text-decoration: none; }
   </style>
 </head>
-<body>
-  <div class="bloc">
+<body class="marbre-vert">
+  <div class="bloc marbre-bordeaux cadre-or">
     <img src="/icones/icone-192.png" alt="">
-    <h1>DB<span>Speed</span></h1>
+    <h1>DB<span class="or-brillant">Speed</span></h1>
     <p>L'appli est bien installée 👍<br>La connexion et tes temps arrivent très bientôt ici.</p>
-    <a href="/">Retour au site</a>
+    <a class="bouton-or" href="/">Retour au site</a>
   </div>
   <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');

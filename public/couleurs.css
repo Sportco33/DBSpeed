@@ -47,4 +47,97 @@
   --succes:        var(--vert-100);   /* clair = lisible sur fond sombre */
   --erreur:        var(--bordeaux-100);
   --erreur-fond:   var(--bordeaux-700);
+
+  /* ---------------------------------------------------------
+     Matières : marbre et or
+     --------------------------------------------------------- */
+  --marbre-vert:     url("/images/marbre-vert.jpg");
+  --marbre-bordeaux: url("/images/marbre-bordeaux.jpg");
+
+  /* Or métallique : reflets clairs et foncés, comme une vraie dorure */
+  --or-metal: linear-gradient(115deg,
+      #5E4518 0%,  #9A7228 10%, #E2C06E 22%, #FFF6D8 30%,
+      #D4A63A 40%, #9A7228 52%, #D4A63A 62%, #FFF1C4 72%,
+      #E2C06E 80%, #9A7228 90%, #5E4518 100%);
+}
+
+/* ================= MARBRE ================= */
+
+/* Fond de page en marbre vert (reste en place quand on fait défiler) */
+.marbre-vert {
+  background: var(--vert-900) var(--marbre-vert) center / 1024px repeat;
+  background-attachment: fixed;
+}
+/* Sur téléphone, « fixed » bug parfois : on le retire */
+@media (max-width: 800px) { .marbre-vert { background-attachment: scroll; } }
+
+/* Bloc en marbre bordeaux, un peu assombri pour que le texte se lise bien */
+.marbre-bordeaux {
+  background:
+    linear-gradient(rgba(22, 10, 13, .35), rgba(22, 10, 13, .45)),
+    var(--bordeaux-900) var(--marbre-bordeaux) center / 1024px repeat;
+}
+
+/* ================= OR ================= */
+
+/* Texte en or qui brille (titres, 1re place…) */
+.or-brillant {
+  background: var(--or-metal);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 6px rgba(226, 192, 110, .35))
+          drop-shadow(0 1px 0 rgba(0, 0, 0, .6));
+  animation: or-reflet 5s ease-in-out infinite alternate;
+}
+
+/* Bouton en or, avec un éclat de lumière qui passe dessus */
+.bouton-or {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  background: var(--or-metal);
+  background-size: 250% 100%;
+  color: var(--vert-900);
+  text-shadow: 0 1px 0 rgba(255, 246, 216, .6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 230, .8),
+    inset 0 -2px 4px rgba(60, 40, 10, .45),
+    0 4px 14px rgba(212, 166, 58, .35);
+  animation: or-reflet 5s ease-in-out infinite alternate;
+}
+.bouton-or::after {
+  content: "";
+  position: absolute; top: 0; left: -60%;
+  width: 40%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .75), transparent);
+  transform: skewX(-20deg);
+  animation: or-eclat 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+.bouton-or:hover { filter: brightness(1.08); }
+.bouton-or:active { filter: brightness(.95); transform: translateY(1px); }
+
+/* Cadre doré autour d'un bloc (comme les chapiteaux dorés) */
+.cadre-or {
+  border: 2px solid transparent;
+  background-origin: border-box;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .5), 0 12px 40px rgba(0, 0, 0, .55),
+              0 0 18px rgba(212, 166, 58, .18);
+}
+.cadre-or.marbre-bordeaux {
+  background:
+    linear-gradient(rgba(22, 10, 13, .35), rgba(22, 10, 13, .45)) padding-box,
+    var(--marbre-bordeaux) center / 1024px padding-box,
+    var(--or-metal) border-box var(--bordeaux-900);
+}
+
+@keyframes or-reflet { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
+@keyframes or-eclat  { 0%, 55% { left: -60%; } 100% { left: 130%; } }
+
+/* Si le téléphone demande moins d'animations : l'or reste doré mais immobile */
+@media (prefers-reduced-motion: reduce) {
+  .or-brillant, .bouton-or, .bouton-or::after { animation: none; }
 }

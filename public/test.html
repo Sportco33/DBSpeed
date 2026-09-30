@@ -8,26 +8,24 @@
   <style>
     * { box-sizing:border-box; }
     body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
-           background:var(--fond); color:var(--texte); font-family:system-ui,-apple-system,sans-serif; padding:16px; }
-    .card { background:var(--carte); border-radius:16px; padding:28px; width:100%; max-width:420px; }
-    h1 { margin:0 0 4px; font-size:28px; letter-spacing:1px; }
-    h1 span { color:var(--principal); }
+           color:var(--texte); font-family:system-ui,-apple-system,sans-serif; padding:16px; }
+    .card { border-radius:16px; padding:28px; width:100%; max-width:420px; }
+    h1 { margin:0 0 4px; font-size:32px; letter-spacing:1px; }
+    h1 .db { color:var(--texte); }
     p.sub { margin:0 0 24px; color:var(--texte-doux); }
-    button { width:100%; padding:14px; border:0; border-radius:10px; background:var(--principal);
-             color:var(--sur-principal); font-size:16px; font-weight:600; cursor:pointer; }
-    button:hover { background:var(--principal-fort); }
+    button { width:100%; padding:14px; border-radius:10px; font-size:16px; font-weight:700; cursor:pointer; }
     button:disabled { opacity:.6; cursor:wait; }
     ul { list-style:none; padding:0; margin:20px 0 0; }
-    li { padding:12px; border-radius:10px; background:var(--carte-2); margin-bottom:8px; }
+    li { padding:12px; border-radius:10px; background:rgba(20,36,31,.72); border:1px solid rgba(226,192,110,.25); margin-bottom:8px; }
     li b { display:block; margin-bottom:2px; }
-    .ok b { color:var(--succes); } .ko { background:var(--erreur-fond); } .ko b { color:var(--erreur); }
+    .ok b { color:var(--succes); } .ko { background:rgba(67,30,37,.85); } .ko b { color:var(--erreur); }
   </style>
 </head>
-<body>
-  <div class="card">
-    <h1>DB<span>Speed</span></h1>
+<body class="marbre-vert">
+  <div class="card marbre-bordeaux cadre-or">
+    <h1><span class="db">DB</span><span class="or-brillant">Speed</span></h1>
     <p class="sub">Test de connexion Supabase + Resend</p>
-    <button id="btn">Lancer le test</button>
+    <button id="btn" class="bouton-or">Lancer le test</button>
     <ul id="res"></ul>
   </div>
   <script>

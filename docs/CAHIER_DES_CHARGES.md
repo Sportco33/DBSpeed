@@ -47,6 +47,10 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 - **Or** = couleur principale (boutons, titres, 1re place).
 - **Vert** = couleur secondaire (fonds et cartes, en sombre).
 - **Bordeaux** = accent (détails, badges, erreurs).
+- **Fond en marbre** (comme des colonnes de palais) : marbre **vert** veiné de blanc pour le fond de page, marbre **bordeaux** pour les blocs. Images : `public/images/marbre-vert.jpg` et `marbre-bordeaux.jpg` (fabriquées par `outils/fabriquer-marbre.py`, elles se répètent sans raccord visible).
+- **Or qui brille comme de l'or** : dégradé métallique avec des reflets qui bougent doucement, et un éclat de lumière qui passe sur les boutons. Cadre doré autour des blocs. Classes prêtes : `.or-brillant` (texte), `.bouton-or`, `.cadre-or`, `.marbre-vert`, `.marbre-bordeaux`.
+- Si le téléphone est réglé sur « réduire les animations », l'or reste doré mais ne bouge plus.
+- Appliqué sur : page d'accueil (sections en marbre bordeaux avec filets dorés, cartes en verre fumé à liseré doré, titres et pastilles en or), page appli (`/app/`), page de test (`/test.html`).
 - Les pages utilisent des noms de rôle (`--fond`, `--principal`, `--texte`…), jamais les codes couleur directement : pour changer une couleur partout, on la change dans ce fichier.
 
 ### Ergonomie et sensations (site + appli) — à respecter sur chaque écran
