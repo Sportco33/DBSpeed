@@ -11,13 +11,17 @@
 - [x] Cahier des charges, TODO et fichier des consignes
 
 ## À faire, dans l'ordre
-1. [ ] **Importer le fichier Excel** : une page où on choisit le fichier, et l'appli le lit.
-2. [ ] **Calculer les résultats** : temps à chaque ligne, temps entre deux lignes, positions, écart avec le premier, pilote qui ne finit pas.
-3. [ ] **Afficher les résultats** : classement de la manche + fiche de chaque pilote, pensé pour téléphone.
+1. [ ] **Site de présentation** : page d'accueil qui présente DBSpeed + bouton pour installer l'appli.
+2. [ ] **Importer le fichier Excel** : une page où on choisit le fichier, et l'appli le lit.
+3. [ ] **Calculer les résultats** : temps à chaque ligne, temps entre deux lignes, positions, écart avec le premier, pilote qui ne finit pas.
 4. [ ] **Enregistrer dans Supabase** : garder les manches, pilotes et temps (avec la sécurité de la base activée).
-5. [ ] **Envoyer les résultats par mail** aux pilotes (Resend) — à confirmer (voir questions ouvertes).
-6. [ ] **Rendre le site public** pour les pilotes (enlever la protection Netlify).
-7. [ ] **Adapter au format des transpondeurs** quand on aura un vrai fichier.
+5. [ ] **Comptes pilotes** : créer un compte, se connecter, relier le compte à son numéro de plaque.
+6. [ ] **Page « Mes manches »** : le pilote voit ses temps et positions, pensé pour téléphone.
+7. [ ] **Page « Toutes les manches »** : liste des manches et leurs classements.
+8. [ ] **Rendre l'appli installable** sur l'écran d'accueil du téléphone.
+9. [ ] **Rendre le site public** (enlever la protection Netlify).
+10. [ ] **Envoyer les résultats par mail** (Resend) — à confirmer.
+11. [ ] **Adapter au format des transpondeurs** quand on aura un vrai fichier.
 
 ## Petits nettoyages (moins urgent)
 - [ ] Économiser les crédits Netlify : ne pas relancer de mise en ligne quand seuls les fichiers `docs/` changent.

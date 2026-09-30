@@ -19,3 +19,6 @@
 14. **Ne pas faire d'erreur** : vérifier avant de dire que c'est fait.
 15. À chaque fois, dire **les choses principales à améliorer**, en commençant par la plus importante.
 16. **Mot de code « pushcoco »** : ne publier (commit + push sur `main`, donc mise en ligne Netlify) **que quand l'utilisateur dit « pushcoco »**, car il a peu de crédits Netlify. À ce moment-là, prendre en compte tout ce qui a été dit dans toutes les conversations et tout ce qui est sur GitHub, puis commit et push.
+17. Faire une **webapp** avec :
+    - un **site qui présente le projet** et qui permet de **télécharger l'application** ;
+    - une **application** où les utilisateurs peuvent **créer un compte**, **voir les temps de leur manche** et **voir toutes les manches**.

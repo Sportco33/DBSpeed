@@ -31,6 +31,15 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 - La **fiche de chaque pilote** avec tous ses temps et positions.
 - Pensé d'abord pour le **téléphone**.
 
+### Le site de présentation
+- Une page qui **présente DBSpeed** (à quoi ça sert, comment ça marche).
+- Un bouton pour **télécharger / installer l'application** sur son téléphone.
+
+### L'application (pour les pilotes)
+- **Créer un compte** et se connecter.
+- **Voir ses temps** sur sa manche : temps à chaque ligne, temps entre deux lignes, positions, écart avec le premier.
+- **Voir toutes les manches** et leurs classements.
+
 ## 3. Format du fichier Excel (version actuelle)
 
 Onglet `Temps`, une ligne par pilote dans une manche :
@@ -53,8 +62,10 @@ Onglet `Temps`, une ligne par pilote dans une manche :
 ## 5. Questions encore ouvertes
 
 À régler avec l'utilisateur au fur et à mesure :
-1. **Qui utilise l'appli ?** Le chronométreur qui importe le fichier, les pilotes qui regardent leurs temps, les deux ?
-2. **Comment les pilotes reçoivent leurs temps ?** Sur une page, par mail (Resend), les deux ? Où trouver leur adresse mail ?
-3. **Faut-il garder l'historique** des courses (pour voir sa progression) ?
-4. **Combien d'intermédiaires** sur une vraie piste ? (l'exemple en a 3)
-5. **Format exact des transpondeurs** : temps depuis le départ, ou heure exacte du passage ?
+1. **Qui importe le fichier Excel ?** Un compte « organisateur » à part, ou n'importe qui ? (les pilotes, eux, ont un compte pour voir leurs temps)
+2. **Comment relier un compte à un pilote ?** Proposition : le pilote donne son **numéro de plaque** en créant son compte.
+3. **« Télécharger l'application »** : appli web installable sur l'écran d'accueil (gratuit, marche avec Netlify) ou vraie appli sur l'App Store / Google Play (payant, beaucoup plus long) ?
+4. **Mail en plus ?** Envoyer aussi les résultats par mail (Resend) à la fin de la manche ?
+5. **Faut-il garder l'historique** des courses (pour voir sa progression) ?
+6. **Combien d'intermédiaires** sur une vraie piste ? (l'exemple en a 3)
+7. **Format exact des transpondeurs** : temps depuis le départ, ou heure exacte du passage ?
