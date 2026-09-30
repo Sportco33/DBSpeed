@@ -362,7 +362,7 @@ input:focus-visible {
   max-width: 480px;
   margin: 0 auto;
   padding-bottom: env(safe-area-inset-bottom);
-  background: var(--verre);
+  background: color-mix(in srgb, var(--vert-900) 94%, transparent);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border-top: 2px solid var(--or-700);
