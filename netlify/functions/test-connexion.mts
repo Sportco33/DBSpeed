@@ -51,7 +51,9 @@ export default async (req: Request, context: Context) => {
     });
     const data = await r.json();
     result.resend.ok = r.ok;
-    result.resend.detail = r.ok ? `Mail envoyé à ${to}` : `Erreur Resend : ${data?.message ?? r.status}`;
+    // Diagnostic : on montre seulement le début et la longueur de la clé, jamais la clé entière
+    const infoCle = resendKey ? `clé lue : ${resendKey.slice(0, 7)}… (${resendKey.length} caractères)` : "clé absente";
+    result.resend.detail = r.ok ? `Mail envoyé à ${to}` : `Erreur Resend : ${data?.message ?? r.status} — ${infoCle}`;
   } catch (e) {
     result.resend.detail = `Impossible de joindre Resend : ${(e as Error).message}`;
   }
