@@ -67,3 +67,4 @@
 33. Ajouter la **localisation** dans l'appli : la **demander dès la première connexion**, puis **l'enregistrer**, et **dès qu'il se connecte, mettre la localisation** tout de suite.
 34. **Ne rien payer** : tous les services utilisés doivent rester gratuits (pas de carte bancaire, pas d'offre payante, pas d'essai gratuit qui demande une carte).
 35. Faire un **diagnostic complet** de l'appli avec un **score sur 100**, puis **l'améliorer le plus possible**.
+36. Rechercher les **données sur les pilotes Elite hommes et femmes** (01/10/2026). → Rangées dans `public/app/competitions/pilotes-elite.js` (20 hommes, 18 femmes, avec sources).
