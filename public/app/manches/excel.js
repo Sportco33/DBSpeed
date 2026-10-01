@@ -295,7 +295,7 @@ function devinerSeparateur(texte) {
     const roles = entete ? new Set(entete.roles.filter(Boolean)).size : 0;
     // nombre de cases le plus fréquent (au moins 2), et combien de lignes l'ont
     const compte = new Map();
-    for (const l of pleines.slice(0, 30)) if (l.length > 1) compte.set(l.length, (compte.get(l.length) || 0) + 1);
+    for (const l of pleines.slice(0, 20)) if (l.length > 1) compte.set(l.length, (compte.get(l.length) || 0) + 1);
     const regulieres = Math.max(0, ...compte.values());
     // on compare dans l'ordre : titres complets, titres trouvés, colonnes comprises, lignes régulières
     const note = [entete?.complet ? 1 : 0, entete ? 1 : 0, roles, regulieres];
@@ -502,7 +502,7 @@ export function analyserTableau(tableau, { csv = false, numeros = null } = {}) {
     if (l.every(vide)) continue;
     // CSV : plus de cases que de titres → le séparateur ou les virgules des temps posent problème
     if (csv && l.length > nbTitres && l.slice(nbTitres).some((x) => !vide(x))) {
-      erreurs.push(`La ligne ${ligneExcel} a plus de cases que les titres : vérifie le séparateur (; ou ,) et les virgules des temps.`);
+      erreurs.push(`Ligne ${ligneExcel} : il y a plus de cases que de titres. Vérifie le séparateur (; ou ,) et les virgules des temps.`);
       continue;
     }
     const plaque = texteCase(l[cPlaque]);
@@ -581,7 +581,9 @@ export function analyserTableau(tableau, { csv = false, numeros = null } = {}) {
     let pilote = col('pilote') >= 0 ? texteCase(l[col('pilote')]) : '';
     if (col('prenom') >= 0) pilote = [texteCase(l[col('prenom')]), pilote].filter(Boolean).join(' ');
 
-    const cle = `${categorie ?? ''}\u0000${normaliser(etiquette)}`;
+    // « Manche 3 » et « 3 » sont la même manche
+    const n = etiquette ? numeroSimple(etiquette) : 1;
+    const cle = `${categorie ?? ''}\u0000${n != null ? `#${n}` : normaliser(etiquette)}`;
     if (!parManche.has(cle)) parManche.set(cle, { etiquette, categorie, pilotes: [], ligne: ligneExcel });
     const manche = parManche.get(cle);
     const doublon = manche.pilotes.find((p) => plaqueSansZeros(p.plaque) === plaqueSansZeros(plaque));
@@ -614,18 +616,6 @@ export function analyserTableau(tableau, { csv = false, numeros = null } = {}) {
         m.nom = null;
         if (m.numero < 1 || m.numero > 9999) erreurs.push(`Ligne ${m.ligne} : numéro de manche « ${m.etiquette} » impossible${enCat} (il doit aller de 1 à 9999).`);
       });
-      // « Manche 3 » et « 3 » sont la même manche
-      const vus = new Map();
-      for (const m of liste) {
-        if (vus.has(m.numero)) {
-          const autre = vus.get(m.numero);
-          for (const p of m.pilotes) {
-            if (autre.pilotes.some((x) => plaqueSansZeros(x.plaque) === plaqueSansZeros(p.plaque))) erreurs.push(`La plaque ${p.plaque} est deux fois dans la manche ${m.numero}${enCat}.`);
-            else autre.pilotes.push(p);
-          }
-          m.fusionnee = true;
-        } else vus.set(m.numero, m);
-      }
     } else {
       // des noms (« 1/4 finale A », « Q2 »…) : numéros dans l'ordre du fichier, le nom est gardé
       const nomsVus = new Map();
@@ -640,7 +630,7 @@ export function analyserTableau(tableau, { csv = false, numeros = null } = {}) {
     }
   }
 
-  const finales = manches.filter((m) => !m.fusionnee);
+  const finales = manches;
   for (const m of finales) {
     const nomM = `${m.nom || `Manche ${m.numero}`}${m.categorie ? ` (${m.categorie})` : ''}`;
     if (m.pilotes.length > MAX_PILOTES) {

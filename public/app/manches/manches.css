@@ -118,3 +118,17 @@
 
 /* Le vrai champ fichier est caché : le cadre doré va sur le bouton qui l'ouvre */
 #m-fichier:focus-visible + label { outline: 3px solid var(--or-300); outline-offset: 3px; }
+
+/* Titre d'une manche dans une course ou l'aperçu (un vrai titre, même allure qu'avant) */
+#onglet-accueil .m-titre-manche {
+  margin: 0; min-width: 0; overflow-wrap: anywhere;
+  font-family: var(--police-texte); font-size: 17px; font-weight: 700; line-height: 1.3;
+}
+#onglet-accueil abbr[title] { text-decoration: none; cursor: help; }
+#onglet-accueil h1[tabindex='-1']:focus { outline: none; }
+.m-reste { text-align: center; }
+
+/* Petits téléphones (320 px) : les cartes ne poussent jamais la page sur le côté */
+#onglet-accueil .m-manches { grid-template-columns: minmax(0, 1fr); }
+#onglet-accueil .carte-manche { min-width: 0; }
+#onglet-accueil .segments-affichage button { min-height: 44px; }

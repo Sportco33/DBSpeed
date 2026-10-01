@@ -10,15 +10,29 @@
 
 import { messageErreur } from '/app/supabase.js';
 import { esc, lienRetour, vide, animer, brancherLiens, demander } from '/app/outils.js';
-import { lireFichierTemps } from '/app/manches/excel.js';
+import { lireFichierTemps, plaqueSansZeros } from '/app/manches/excel.js';
 import { calculerManche, texteTemps, texteEcart, textePlace } from '/app/manches/calcul.js';
 
 let ctx = null;
 let routeAvant = null;
 let jeton = 0;                       // une page plus récente a été demandée : on abandonne l'ancienne
-const positions = new Map();         // où on était dans chaque page (pour revenir au même endroit)
+const positions = new Map();         // où on était dans chaque page de l'historique (pour revenir au même endroit)
+const DUREE_CACHE = 60 * 1000;       // les données gardées plus d'une minute sont rechargées
 const cache = { courses: null, mesManches: null, course: new Map(), manche: new Map() };
-const etat = { affichage: 'arrivee', recherche: '', categorie: '', importation: null };
+const etat = { affichage: 'arrivee', recherche: '', categorie: '', courseId: null, importation: null };
+
+// L'historique : chaque page de l'onglet reçoit un numéro (gardé dans history.state)
+// et retient la page d'où l'on venait (« avant »). Comme ça on sait si on arrive
+// par le bouton retour du téléphone, et si « Retour » peut simplement revenir en arrière.
+let compteur = Date.now();           // numéros jamais réutilisés, même après un rechargement
+let indexActuel = null;              // numéro de la page affichée
+let avantActuel = null;              // la page d'avant (route, ou null si on vient d'ailleurs)
+let remplacement = false;            // la prochaine adresse remplace la page actuelle (location.replace)
+let autreOnglet = true;              // on arrive d'un autre onglet (ou au démarrage)
+const remplacer = (adresse) => { remplacement = true; location.replace(adresse); };
+
+// Une adresse avec un identifiant de la base (uuid) : sinon, pas la peine de demander
+const ID_VALIDE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const ICONES = {
   fichier: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>',
@@ -29,86 +43,117 @@ const ICONES = {
 };
 
 const MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+const MOIS_LONGS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 const dateDe = (jour) => new Date(`${jour}T12:00:00`);
-const dateLongue = (jour) => dateDe(jour).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-const dateCourte = (jour) => { const d = dateDe(jour); return `${d.getDate()} ${MOIS[d.getMonth()]} ${d.getFullYear()}`; };
+const quantieme = (d) => (d.getDate() === 1 ? '1er' : String(d.getDate()));
+// « jeudi 1er octobre 2026 »
+const dateLongue = (jour) => { const d = dateDe(jour); return `${JOURS[d.getDay()]} ${quantieme(d)} ${MOIS_LONGS[d.getMonth()]} ${d.getFullYear()}`; };
+// « 1er oct. 2026 »
+const dateCourte = (jour) => { const d = dateDe(jour); return `${quantieme(d)} ${MOIS[d.getMonth()]} ${d.getFullYear()}`; };
 const aujourdhui = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
-const nomManche = (m) => `Manche ${m.numero}${m.categorie ? ` · ${m.categorie}` : ''}`;
+// Le nom d'une manche : celui du fichier (« 1/4 finale A »), sinon « Manche 3 »
+const titreManche = (m) => m.nom || `Manche ${m.numero}`;
+const nomManche = (m) => `${titreManche(m)}${m.categorie ? ` · ${m.categorie}` : ''}`;
 const nomPilote = (p) => p.pilote || `Plaque ${p.plaque}`;
 const maPlaque = () => (ctx.profil.type_compte === 'pilote' ? (ctx.profil.plaque || '').trim() : '');
+// « 021 » et « 21 » sont la même plaque
+const memePlaque = (a, b) => Boolean(a) && Boolean(b) && plaqueSansZeros(a).toLowerCase() === plaqueSansZeros(b).toLowerCase();
+const estMoi = (p) => memePlaque(p.plaque, maPlaque());
+// Nombre de pilotes différents (par plaque) dans des manches
+const compterPilotes = (listes) => new Set(listes.flat().map((p) => plaqueSansZeros(p.plaque).toLowerCase())).size;
 const estOrganisateurValide = () => ctx.profil.type_compte === 'organisateur' && ctx.profil.organisateur_valide;
+// La course est à moi (une course dont l'organisateur a supprimé son compte n'est à personne)
+const estMaCourse = (c) => Boolean(c.organisateur) && c.organisateur === ctx.profil.id;
+const titrePage = (t) => { document.title = `${t} · DBSpeed`; };
 
 // Les secteurs : S1 = départ → 1re ligne, S2 = 1re ligne → 2e ligne…
 const nomsSecteurs = (lignes) => lignes.map((nom, i) => `${i === 0 ? 'Départ' : lignes[i - 1]} → ${nom}`);
 
 // Place, avec une médaille pour le podium
 function placeHtml(p) {
-  if (!p.fini) return `<span class="m-abandon" title="N'a pas fini">${p.place}</span>`;
+  if (!p.fini) return `<span class="m-abandon" title="N'a pas fini">${p.place}<span class="cache"> (n'a pas fini)</span></span>`;
   return p.place <= 3 ? `<span class="medaille m${p.place}">${p.place}</span>` : String(p.place);
 }
 
 // Ce qui est écrit à la place du temps quand le pilote n'a pas fini
 function finHtml(p, lignes) {
   if (p.fini) return texteTemps(p.final);
-  if (p.derniere < 0) return '<span class="chute">Pas de temps</span>';
-  return `<span class="chute">Arrêt après ${esc(lignes[p.derniere])}</span>`;
+  if (p.derniere < 0) return '<span class="chute" title="N\'a pas fini">Non fini</span>';
+  return `<span class="chute" title="N'a pas fini">Non fini · ${esc(lignes[p.derniere])}</span>`;
 }
 
 // ---------------------------------------------------------------------------
 // Données
 // ---------------------------------------------------------------------------
 
+// Une donnée gardée en mémoire est encore bonne si elle a moins d'une minute
+const frais = (x) => x && Date.now() - x.quand < DUREE_CACHE;
+
 async function dernieresCourses(limite = 10) {
-  if (cache.courses && cache.courses.limite >= limite) return cache.courses.liste.slice(0, limite);
+  if (frais(cache.courses) && cache.courses.limite >= limite) return cache.courses.liste.slice(0, limite);
   const { data, error } = await ctx.supabase.from('courses')
     .select('id, nom, jour, lieu, lignes, organisateur, manches(count)')
     .order('jour', { ascending: false }).order('cree_le', { ascending: false })
     .limit(limite);
   if (error) throw error;
-  cache.courses = { limite, liste: data };
+  cache.courses = { limite, liste: data, quand: Date.now() };
   return data;
 }
 
-// Toutes les manches où ma plaque apparaît (avec les autres pilotes, pour calculer ma place)
+// Les façons d'écrire ma plaque dans un fichier : « 21 », « 021 », « 0021 »
+function variantesPlaque(p) {
+  if (!/^\d+$/.test(p)) return [p];
+  const sans = plaqueSansZeros(p);
+  return [...new Set([p, sans, `0${sans}`, `00${sans}`])];
+}
+
+// Toutes les manches où ma plaque apparaît (avec les autres pilotes, pour calculer ma place),
+// de la plus récente à la plus ancienne
 async function mesManches() {
   const plaque = maPlaque();
   if (!plaque) return [];
-  if (cache.mesManches) return cache.mesManches;
+  if (frais(cache.mesManches) && cache.mesManches.plaque === plaque) return cache.mesManches.liste;
   const { data, error } = await ctx.supabase.from('resultats')
-    .select('id, plaque, manches(id, numero, categorie, courses(id, nom, jour, lieu, lignes), resultats(id, plaque, pilote, couloir, temps))')
-    .eq('plaque', plaque)
-    .limit(200);
+    .select('id, plaque, manches(id, numero, nom, categorie, courses(id, nom, jour, lieu, lignes, cree_le), resultats(id, plaque, pilote, couloir, temps))')
+    .in('plaque', variantesPlaque(plaque))
+    .limit(500);
   if (error) throw error;
-  cache.mesManches = data.filter((r) => r.manches?.courses).map((r) => {
+  const liste = data.filter((r) => r.manches?.courses && memePlaque(r.plaque, plaque)).map((r) => {
     const m = r.manches;
     const classement = calculerManche(m.resultats);
     return { manche: m, course: m.courses, moi: classement.find((p) => p.id === r.id), total: classement.length };
-  }).sort((a, b) => b.course.jour.localeCompare(a.course.jour) || b.manche.numero - a.manche.numero);
-  return cache.mesManches;
+  }).filter((x) => x.moi).sort((a, b) => b.course.jour.localeCompare(a.course.jour)
+    || String(b.course.cree_le || '').localeCompare(String(a.course.cree_le || ''))
+    || b.manche.numero - a.manche.numero);
+  cache.mesManches = { plaque, liste, quand: Date.now() };
+  return liste;
 }
 
+const parOrdre = (a, b) => (a.categorie ?? '').localeCompare(b.categorie ?? '', 'fr') || a.numero - b.numero;
+
 async function course(id) {
-  if (cache.course.has(id)) return cache.course.get(id);
+  if (frais(cache.course.get(id))) return cache.course.get(id).data;
   const { data, error } = await ctx.supabase.from('courses')
-    .select('id, nom, jour, lieu, lignes, fichier, organisateur, manches(id, numero, categorie, resultats(id, plaque, pilote, couloir, temps))')
+    .select('id, nom, jour, lieu, lignes, fichier, organisateur, manches(id, numero, nom, categorie, resultats(id, plaque, pilote, couloir, temps))')
     .eq('id', id).maybeSingle();
   if (error) throw error;
   if (data) {
-    data.manches.sort((a, b) => (a.categorie ?? '').localeCompare(b.categorie ?? '', 'fr') || a.numero - b.numero);
+    data.manches.sort(parOrdre);
     for (const m of data.manches) m.classement = calculerManche(m.resultats);
   }
-  cache.course.set(id, data);
+  cache.course.set(id, { data, quand: Date.now() });
   return data;
 }
 
 async function manche(id) {
-  if (cache.manche.has(id)) return cache.manche.get(id);
+  if (frais(cache.manche.get(id))) return cache.manche.get(id).data;
   const { data, error } = await ctx.supabase.from('manches')
-    .select('id, numero, categorie, course_id, courses(id, nom, jour, lieu, lignes), resultats(id, plaque, pilote, couloir, temps)')
+    .select('id, numero, nom, categorie, course_id, courses(id, nom, jour, lieu, lignes), resultats(id, plaque, pilote, couloir, temps)')
     .eq('id', id).maybeSingle();
   if (error) throw error;
   if (data) data.classement = calculerManche(data.resultats);
-  cache.manche.set(id, data);
+  cache.manche.set(id, { data, quand: Date.now() });
   return data;
 }
 
@@ -125,6 +170,7 @@ function oublierTout() {
 
 function carteCourse(c, moi) {
   const d = dateDe(c.jour);
+  // (d.getDate() reste un nombre : la pastille est trop petite pour « 1er »)
   const nbManches = c.manches?.[0]?.count ?? c.manches?.length ?? 0;
   return `<a class="carte-compet m-carte-course touchable" href="#accueil/course/${esc(c.id)}">
     <span class="c-date"><span class="c-jour">${d.getDate()}</span><span class="c-mois">${esc(MOIS[d.getMonth()])}</span></span>
@@ -151,20 +197,21 @@ function carteMaManche({ manche: m, course: c, moi, total }) {
 
 // Tableau d'une manche. affichage : arrivee | secteurs | passages
 function tableManche(m, lignes, affichage, lienBase) {
-  const lien = (p) => (lienBase ? ` data-lien="${esc(`${lienBase}/${p.id}`)}" class="touchable${p.plaque === maPlaque() ? ' m-moi' : ''}"` : p.plaque === maPlaque() ? ' class="m-moi"' : '');
+  const lien = (p) => (lienBase ? ` data-lien="${esc(`${lienBase}/${p.id}`)}" class="touchable${estMoi(p) ? ' m-moi' : ''}"` : estMoi(p) ? ' class="m-moi"' : '');
+  const PL = '<th><abbr title="Place">Pl.</abbr></th>';
   const pilote = (p) => `<td class="cel-pilote"><strong class="m-plaque">${esc(p.plaque)}</strong> ${esc(p.pilote || '')}</td>`;
   let tete;
   let corps;
   if (affichage === 'secteurs') {
-    tete = `<th>Pl.</th><th>Pilote</th>${lignes.map((_, i) => `<th class="cel-num">S${i + 1}</th>`).join('')}`;
+    tete = `${PL}<th>Pilote</th>${lignes.map((_, i) => `<th class="cel-num">S${i + 1}</th>`).join('')}`;
     corps = m.classement.map((p) => `<tr${lien(p)}><td class="cel-place">${placeHtml(p)}</td>${pilote(p)}
       ${p.passages.map((x) => `<td class="cel-num ${x.meilleurSecteur ? 'meilleur' : ''}">${x.secteur == null ? '—' : x.secteur.toFixed(3)}</td>`).join('')}</tr>`).join('');
   } else if (affichage === 'passages') {
-    tete = `<th>Pl.</th><th>Pilote</th>${lignes.map((n) => `<th class="cel-num">${esc(n)}</th>`).join('')}`;
+    tete = `${PL}<th>Pilote</th>${lignes.map((n) => `<th class="cel-num">${esc(n)}</th>`).join('')}`;
     corps = m.classement.map((p) => `<tr${lien(p)}><td class="cel-place">${placeHtml(p)}</td>${pilote(p)}
       ${p.passages.map((x) => `<td class="cel-num">${x.temps == null ? '—' : `${texteTemps(x.temps)}<small class="pos-mini ${x.place === 1 ? 'p1' : ''}">${textePlace(x.place)}</small>`}</td>`).join('')}</tr>`).join('');
   } else {
-    tete = '<th>Pl.</th><th class="cel-num">Coul.</th><th>Pilote</th><th class="cel-num">Temps</th><th class="cel-num">Écart</th>';
+    tete = `${PL}<th class="cel-num"><abbr title="Couloir">Coul.</abbr></th><th>Pilote</th><th class="cel-num">Temps</th><th class="cel-num">Écart</th>`;
     corps = m.classement.map((p) => `<tr${lien(p)}><td class="cel-place">${placeHtml(p)}</td>
       <td class="cel-num doux">${p.couloir ?? ''}</td>${pilote(p)}
       <td class="cel-num">${finHtml(p, lignes)}</td>
@@ -189,7 +236,13 @@ function astuceAffichage(lignes) {
 }
 
 function erreurChargement(zone, err, retour) {
+  titrePage('Impossible de charger');
   zone.innerHTML = `${retour || ''}${vide('Impossible de charger.', messageErreur(err))}`;
+}
+
+function introuvable(zone, retour, titre) {
+  titrePage(titre);
+  zone.innerHTML = retour + vide(`${titre}.`, 'Elle a peut-être été supprimée par son organisateur.');
 }
 
 // ---------------------------------------------------------------------------
@@ -197,6 +250,7 @@ function erreurChargement(zone, err, retour) {
 // ---------------------------------------------------------------------------
 
 async function ecranAccueil(zone, j) {
+  titrePage('Accueil');
   const pilote = Boolean(maPlaque());
   zone.innerHTML = `
     ${estOrganisateurValide() ? `<a class="bouton bouton-principal bouton-or m-importer" href="#accueil/importer">${ICONES.envoyer} Importer un fichier de temps</a>` : ''}
@@ -224,7 +278,7 @@ async function ecranAccueil(zone, j) {
       : 'Les résultats arriveront ici dès qu’un organisateur aura importé sa première course.');
   } else {
     const mesCourses = new Set((mes.value || []).map((x) => x.course.id));
-    boite.innerHTML = `<div class="m-liste">${courses.value.map((c) => carteCourse(c, mesCourses.has(c.id) || c.organisateur === ctx.profil.id)).join('')}</div>
+    boite.innerHTML = `<div class="m-liste">${courses.value.map((c) => carteCourse(c, mesCourses.has(c.id) || estMaCourse(c))).join('')}</div>
       <a class="lien-fleche" href="#accueil/courses">Toutes les courses ${ICONES.fleche}</a>`;
   }
 }
@@ -233,19 +287,26 @@ async function ecranAccueil(zone, j) {
 // 2. Toutes les courses
 // ---------------------------------------------------------------------------
 
+const MAX_COURSES = 200;
+
 async function ecranCourses(zone, j) {
-  zone.innerHTML = `${lienRetour('#accueil', 'Accueil')}<h1 class="titre-ecran salut or-brillant">Toutes les courses</h1><p class="chargement">Chargement…</p>`;
+  titrePage('Toutes les courses');
+  const retour = lienRetour('#accueil', 'Accueil');
+  zone.innerHTML = `${retour}<h1 class="titre-ecran salut or-brillant">Toutes les courses</h1><p class="chargement">Chargement…</p>`;
   let liste;
-  try { liste = await dernieresCourses(200); } catch (err) { if (j === jeton) erreurChargement(zone, err, lienRetour('#accueil', 'Accueil')); return; }
+  try { liste = await dernieresCourses(MAX_COURSES); } catch (err) { if (j === jeton) erreurChargement(zone, err, retour); return; }
   if (j !== jeton) return;
-  zone.innerHTML = `${lienRetour('#accueil', 'Accueil')}
+  const combien = liste.length >= MAX_COURSES
+    ? `Les ${MAX_COURSES} plus récentes.`
+    : `${liste.length} course${liste.length > 1 ? 's' : ''}, de la plus récente à la plus ancienne.`;
+  zone.innerHTML = `${retour}
     <h1 class="titre-ecran salut or-brillant">Toutes les courses</h1>
-    <p class="sous-titre">${liste.length} course${liste.length > 1 ? 's' : ''}, de la plus récente à la plus ancienne.</p>
+    <p class="sous-titre">${combien}</p>
     <div class="recherche petite">${ICONES.loupe}
       <label for="m-filtre" class="cache">Chercher une course ou un lieu</label>
       <input type="search" id="m-filtre" placeholder="Une course, un lieu…" autocomplete="off" maxlength="60">
     </div>
-    <div class="m-liste" id="m-toutes">${liste.map((c) => carteCourse(c, c.organisateur === ctx.profil.id)).join('') || vide('Pas encore de course.', '')}</div>`;
+    <div class="m-liste" id="m-toutes">${liste.map((c) => carteCourse(c, estMaCourse(c))).join('') || vide('Pas encore de course.', '')}</div>`;
   const champ = zone.querySelector('#m-filtre');
   const sansAccents = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   champ.addEventListener('input', () => {
@@ -262,19 +323,25 @@ async function ecranCourses(zone, j) {
 // ---------------------------------------------------------------------------
 
 async function ecranCourse(zone, j, id) {
-  const retour = lienRetour('#accueil', 'Accueil');
+  // « Retour » ramène là d'où l'on vient : toutes les courses, ou l'accueil
+  const retour = avantActuel === 'courses' ? lienRetour('#accueil/courses', 'Toutes les courses') : lienRetour('#accueil', 'Accueil');
+  if (!ID_VALIDE.test(id)) { introuvable(zone, retour, 'Course introuvable'); return; }
+  // une autre course : on repart sans recherche ni catégorie
+  if (etat.courseId !== id) { etat.courseId = id; etat.recherche = ''; etat.categorie = ''; }
   zone.innerHTML = `${retour}<p class="chargement">Chargement…</p>`;
   let c;
   try { c = await course(id); } catch (err) { if (j === jeton) erreurChargement(zone, err, retour); return; }
   if (j !== jeton) return;
-  if (!c) { zone.innerHTML = retour + vide('Course introuvable.', 'Elle a peut-être été supprimée par son organisateur.'); return; }
+  if (!c) { introuvable(zone, retour, 'Course introuvable'); return; }
+  titrePage(c.nom);
 
-  const nbPilotes = new Set(c.manches.flatMap((m) => m.resultats.map((r) => r.plaque))).size;
+  const nbPilotes = compterPilotes(c.manches.map((m) => m.resultats));
   const abandons = c.manches.reduce((n, m) => n + m.classement.filter((p) => !p.fini).length, 0);
   const categories = [...new Set(c.manches.map((m) => m.categorie).filter(Boolean))];
   if (!categories.includes(etat.categorie)) etat.categorie = '';
   const moi = maPlaque();
-  const jeRoule = moi && c.manches.some((m) => m.resultats.some((r) => r.plaque === moi));
+  const jeRoule = Boolean(moi) && c.manches.some((m) => m.resultats.some(estMoi));
+  const aMoi = estMaCourse(c);
 
   zone.innerHTML = `${retour}
     <h1 class="titre-ecran salut or-brillant">${esc(c.nom)}</h1>
@@ -289,49 +356,51 @@ async function ecranCourse(zone, j, id) {
       <label for="m-cherche-pilote" class="cache">Chercher un pilote (plaque ou nom)</label>
       <input type="search" id="m-cherche-pilote" placeholder="Une plaque, un nom…" autocomplete="off" maxlength="40" value="${esc(etat.recherche)}">
     </div>
-    ${jeRoule ? `<button type="button" class="puce m-voir-moi" data-moi aria-pressed="${etat.recherche === moi}">Mes manches (plaque ${esc(moi)})</button>` : ''}
+    ${jeRoule ? `<button type="button" class="puce m-voir-moi" data-moi aria-pressed="false">Mes manches (plaque ${esc(moi)})</button>` : ''}
     ${categories.length > 1 ? `<div class="puces puces-defile" role="group" aria-label="Catégorie">
       ${[['', 'Toutes'], ...categories.map((x) => [x, x])].map(([v, t]) => `<button type="button" class="puce" data-categorie="${esc(v)}" aria-pressed="${etat.categorie === v}">${esc(t)}</button>`).join('')}
     </div>` : ''}
     <p class="compte" id="m-compte" role="status" aria-live="polite"></p>
     <div class="m-manches" id="m-manches">
       ${c.manches.map((m) => `<article class="carte-manche" data-manche="${esc(m.id)}">
-        <header class="mp-tete"><strong>${esc(nomManche(m))}</strong><span>${m.classement.length} pilote${m.classement.length > 1 ? 's' : ''}</span></header>
+        <header class="mp-tete"><h2 class="m-titre-manche">${esc(nomManche(m))}</h2><span>${m.classement.length} pilote${m.classement.length > 1 ? 's' : ''}</span></header>
         ${tableManche(m, c.lignes, 'arrivee', `accueil/manche/${m.id}`)}
         <a class="lien-fleche" href="#accueil/manche/${esc(m.id)}">Secteurs et passages ${ICONES.fleche}</a>
       </article>`).join('')}
     </div>
-    ${c.organisateur === ctx.profil.id ? `<section class="bloc m-gerer">
+    ${aMoi ? `<section class="bloc m-gerer">
       <h2>Ta course</h2>
       <p class="petit doux">Importée depuis ${c.fichier ? `« ${esc(c.fichier)} »` : 'un fichier'}. Une erreur dans les temps ? Supprime la course, corrige le fichier et importe-le à nouveau.</p>
       <button type="button" class="bouton bouton-danger" data-supprimer>${ICONES.poubelle} Supprimer cette course</button>
       <p class="message" id="m-message-supprimer" role="alert"></p>
     </section>` : ''}`;
 
-  // Filtrer : catégorie + pilote cherché
+  // Filtrer : catégorie + pilote cherché (une plaque : « 021 » = « 21 »)
   const sansAccents = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const cMoi = () => Boolean(moi) && memePlaque(etat.recherche.trim(), moi);
   const filtrer = () => {
-    const q = sansAccents(etat.recherche.trim());
+    const brut = etat.recherche.trim();
+    const q = sansAccents(brut);
     let vues = 0;
     c.manches.forEach((m) => {
       const carte = zone.querySelector(`[data-manche="${m.id}"]`);
       const bonneCat = !etat.categorie || m.categorie === etat.categorie;
-      const trouve = (p) => q && (sansAccents(p.plaque) === q || sansAccents(p.pilote).includes(q));
+      const trouve = (p) => Boolean(q) && (memePlaque(p.plaque, brut) || sansAccents(p.pilote).includes(q));
       const visible = bonneCat && (!q || m.classement.some(trouve));
       carte.hidden = !visible;
-      carte.querySelectorAll('tbody tr').forEach((tr, k) => tr.classList.toggle('m-trouve', Boolean(trouve(m.classement[k]))));
+      carte.querySelectorAll('tbody tr').forEach((tr, k) => tr.classList.toggle('m-trouve', trouve(m.classement[k])));
       if (visible) vues++;
     });
     const compte = zone.querySelector('#m-compte');
     compte.textContent = q || etat.categorie
       ? (vues ? `${vues} manche${vues > 1 ? 's' : ''} trouvée${vues > 1 ? 's' : ''}.` : 'Aucune manche ne correspond.')
       : '';
-    zone.querySelector('[data-moi]')?.setAttribute('aria-pressed', String(Boolean(moi) && etat.recherche === moi));
+    zone.querySelector('[data-moi]')?.setAttribute('aria-pressed', String(cMoi()));
   };
   const champ = zone.querySelector('#m-cherche-pilote');
   champ.addEventListener('input', () => { etat.recherche = champ.value; filtrer(); });
   zone.querySelector('[data-moi]')?.addEventListener('click', () => {
-    etat.recherche = etat.recherche === moi ? '' : moi;
+    etat.recherche = cMoi() ? '' : moi;
     champ.value = etat.recherche;
     filtrer();
   });
@@ -354,6 +423,7 @@ async function ecranCourse(zone, j, id) {
     bouton.disabled = true;
     const { error } = await ctx.supabase.from('courses').delete().eq('id', c.id);
     bouton.disabled = false;
+    if (j !== jeton) return;
     const message = zone.querySelector('#m-message-supprimer');
     if (error) {
       message.textContent = messageErreur(error); message.className = 'message erreur';
@@ -362,7 +432,7 @@ async function ecranCourse(zone, j, id) {
     }
     window.vibrer?.('fort');
     oublierTout();
-    location.hash = 'accueil';
+    remplacer('#accueil');   // la page de la course n'existe plus : on ne la laisse pas dans l'historique
   });
 }
 
@@ -371,11 +441,14 @@ async function ecranCourse(zone, j, id) {
 // ---------------------------------------------------------------------------
 
 async function ecranManche(zone, j, id) {
-  zone.innerHTML = `${lienRetour('#accueil', 'Accueil')}<p class="chargement">Chargement…</p>`;
+  const retourAccueil = lienRetour('#accueil', 'Accueil');
+  if (!ID_VALIDE.test(id)) { introuvable(zone, retourAccueil, 'Manche introuvable'); return; }
+  zone.innerHTML = `${retourAccueil}<p class="chargement">Chargement…</p>`;
   let m;
-  try { m = await manche(id); } catch (err) { if (j === jeton) erreurChargement(zone, err, lienRetour('#accueil', 'Accueil')); return; }
+  try { m = await manche(id); } catch (err) { if (j === jeton) erreurChargement(zone, err, retourAccueil); return; }
   if (j !== jeton) return;
-  if (!m) { zone.innerHTML = lienRetour('#accueil', 'Accueil') + vide('Manche introuvable.', 'Elle a peut-être été supprimée par son organisateur.'); return; }
+  if (!m) { introuvable(zone, retourAccueil, 'Manche introuvable'); return; }
+  titrePage(titreManche(m));
   const c = m.courses;
   const vainqueur = m.classement[0];
   const dessiner = () => {
@@ -397,9 +470,11 @@ async function ecranManche(zone, j, id) {
       const y = window.scrollY;
       dessiner();
       window.scrollTo(0, y);
+      zone.querySelector(`[data-affichage="${etat.affichage}"]`)?.focus({ preventScroll: true });
       animer(zone.querySelector('.tableau-defile'), 'glisse');
     }));
     brancherLiens(zone);
+    brancherRetour(zone);
   };
   dessiner();
 }
@@ -409,12 +484,18 @@ async function ecranManche(zone, j, id) {
 // ---------------------------------------------------------------------------
 
 async function ecranPilote(zone, j, idManche, idResultat) {
+  const pasTrouve = () => {
+    titrePage('Pilote introuvable');
+    zone.innerHTML = lienRetour('#accueil', 'Accueil') + vide('Pilote introuvable dans cette manche.', '');
+  };
+  if (!ID_VALIDE.test(idManche) || !ID_VALIDE.test(idResultat)) { pasTrouve(); return; }
   zone.innerHTML = `${lienRetour(`#accueil/manche/${esc(idManche)}`, 'La manche')}<p class="chargement">Chargement…</p>`;
   let m;
   try { m = await manche(idManche); } catch (err) { if (j === jeton) erreurChargement(zone, err, lienRetour('#accueil', 'Accueil')); return; }
   if (j !== jeton) return;
   const k = m ? m.classement.findIndex((p) => p.id === idResultat) : -1;
-  if (k < 0) { zone.innerHTML = lienRetour('#accueil', 'Accueil') + vide('Pilote introuvable dans cette manche.', ''); return; }
+  if (k < 0) { pasTrouve(); return; }
+  titrePage(nomPilote(m.classement[k]));
   const c = m.courses;
   const p = m.classement[k];
   const avant = m.classement[k - 1];
@@ -479,7 +560,8 @@ async function ecranPilote(zone, j, idManche, idResultat) {
 // 6. Importer un fichier (organisateurs validés)
 // ---------------------------------------------------------------------------
 
-function ecranImporter(zone) {
+function ecranImporter(zone, j) {
+  titrePage('Importer des temps');
   const retour = lienRetour('#accueil', 'Accueil');
   if (!estOrganisateurValide()) {
     zone.innerHTML = retour + vide('Réservé aux organisateurs validés.', ctx.profil.type_compte === 'organisateur'
@@ -501,6 +583,7 @@ function ecranImporter(zone) {
         <ul>
           <li>Temps en secondes depuis la chute de la grille : <strong>36.254</strong> (ou 0:36.254).</li>
           <li>Case vide (ou DNF) : le pilote n'est pas passé sur la ligne (chute, abandon).</li>
+          <li>La manche peut être un numéro (1, 2, 3…) ou un nom (« 1/4 finale A »).</li>
           <li>Colonne <strong>Catégorie</strong> facultative. Colonnes Pilote et Couloir facultatives.</li>
           <li>Si « Départ » est une heure (transpondeurs), DBSpeed compte les temps à partir de là.</li>
           <li>8 pilotes au maximum par manche.</li>
@@ -519,6 +602,8 @@ function ecranImporter(zone) {
     message.innerHTML = '<span class="roue" aria-hidden="true"></span> Lecture du fichier…';
     message.className = 'message ok';
     const analyse = await lireFichierTemps(fichier);
+    // on a quitté l'écran pendant la lecture : on ne touche plus à rien
+    if (j !== jeton) return;
     etat.importation = {
       ...analyse,
       fichier: fichier.name.slice(0, 200),
@@ -527,12 +612,15 @@ function ecranImporter(zone) {
       lieu: ctx.profil.club || '',
     };
     window.vibrer?.(analyse.erreurs.length ? 'erreur' : 'fort');
-    ecranImporter(zone);
+    ecranImporter(zone, j);
+    brancherRetour(zone);
     animer(zone.querySelector('#m-apercu'), 'glisse');
     zone.querySelector('#m-apercu').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
   });
-  if (a) brancherApercu(zone);
+  if (a) brancherApercu(zone, j);
 }
+
+const MAX_APERCU = 20;   // l'aperçu montre les 20 premières manches (un gros fichier en a des centaines)
 
 function apercuHtml(a) {
   if (a.erreurs.length) {
@@ -543,20 +631,21 @@ function apercuHtml(a) {
       ${a.erreurs.length > 20 ? `<p>… et ${a.erreurs.length - 20} autre${a.erreurs.length - 20 > 1 ? 's' : ''}.</p>` : ''}
     </section>`;
   }
-  const pilotes = a.manches.reduce((n, m) => n + m.pilotes.length, 0);
+  const pilotes = compterPilotes(a.manches.map((m) => m.pilotes));
   const classees = a.manches.map((m) => ({ ...m, classement: calculerManche(m.pilotes) }));
   const abandons = classees.reduce((n, m) => n + m.classement.filter((p) => !p.fini).length, 0);
+  const reste = classees.length - MAX_APERCU;
   return `
     <section class="bloc">
       <h2>Ce que DBSpeed a trouvé</h2>
       <div class="chiffres">
         <div class="or"><strong>${a.manches.length}</strong><span>manche${a.manches.length > 1 ? 's' : ''}</span></div>
-        <div><strong>${pilotes}</strong><span>passage${pilotes > 1 ? 's' : ''} de pilote</span></div>
+        <div><strong>${pilotes}</strong><span>pilote${pilotes > 1 ? 's' : ''}</span></div>
         <div><strong>${a.lignes.length}</strong><span>ligne${a.lignes.length > 1 ? 's' : ''} de chrono</span></div>
         <div><strong>${abandons}</strong><span>non fini${abandons > 1 ? 's' : ''}</span></div>
       </div>
       <p class="m-colonnes"><span>Départ</span>${a.lignes.map((l) => `<span>${esc(l)}</span>`).join('')}</p>
-      ${a.avertissements.length ? `<div class="note"><strong>À vérifier :</strong><ul>${a.avertissements.slice(0, 10).map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+      ${a.avertissements.length ? `<div class="note"><strong>À vérifier :</strong><ul>${a.avertissements.slice(0, 10).map((x) => `<li>${esc(x)}</li>`).join('')}</ul>${a.avertissements.length > 10 ? `<p>… et ${a.avertissements.length - 10} autre${a.avertissements.length - 10 > 1 ? 's' : ''}.</p>` : ''}</div>` : ''}
     </section>
 
     <form class="panneau" id="m-form-import" novalidate>
@@ -580,15 +669,16 @@ function apercuHtml(a) {
     <section class="bloc">
       <h2>Aperçu des résultats</h2>
       <div class="m-manches">
-        ${classees.map((m) => `<article class="carte-manche">
-          <header class="mp-tete"><strong>${esc(nomManche(m))}</strong><span>${m.classement.length} pilote${m.classement.length > 1 ? 's' : ''}</span></header>
+        ${classees.slice(0, MAX_APERCU).map((m) => `<article class="carte-manche">
+          <header class="mp-tete"><h3 class="m-titre-manche">${esc(nomManche(m))}</h3><span>${m.classement.length} pilote${m.classement.length > 1 ? 's' : ''}</span></header>
           ${tableManche(m, a.lignes, 'arrivee', null)}
         </article>`).join('')}
       </div>
+      ${reste > 0 ? `<p class="petit doux m-reste">… et ${reste} autre${reste > 1 ? 's' : ''} manche${reste > 1 ? 's' : ''}.</p>` : ''}
     </section>`;
 }
 
-function brancherApercu(zone) {
+function brancherApercu(zone, j) {
   const form = zone.querySelector('#m-form-import');
   if (!form) return;
   const a = etat.importation;
@@ -598,8 +688,11 @@ function brancherApercu(zone) {
     a.jour = form.querySelector('#m-jour').value;
     a.lieu = form.querySelector('#m-lieu').value;
   });
+  const bouton = form.querySelector('button[type="submit"]');
+  let confirme = false;   // « importer quand même » déjà répondu oui
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (bouton.disabled) return;
     const message = form.querySelector('#m-message-envoi');
     const erreur = (texte, champ) => {
       message.textContent = texte; message.className = 'message erreur';
@@ -611,35 +704,126 @@ function brancherApercu(zone) {
     const lieu = form.querySelector('#m-lieu').value.trim();
     if (nom.length < 2) return erreur('Donne un nom à la course (2 lettres au moins).', form.querySelector('#m-nom'));
     if (!/^\d{4}-\d{2}-\d{2}$/.test(jour)) return erreur('Choisis le jour de la course.', form.querySelector('#m-jour'));
-    const bouton = form.querySelector('button[type="submit"]');
     bouton.disabled = true;
     message.innerHTML = '<span class="roue" aria-hidden="true"></span> Enregistrement…';
     message.className = 'message ok';
+
+    // Déjà importée ? (même nom, même jour) : on demande avant d'en faire un doublon
+    if (!confirme) {
+      const { data: deja, error: errDeja } = await ctx.supabase.from('courses').select('id').eq('nom', nom).eq('jour', jour).limit(1);
+      if (j !== jeton) return;
+      if (!errDeja && deja?.length) {
+        message.textContent = ''; message.className = 'message';
+        const ok = await demander(bouton, {
+          texte: 'Une course avec ce nom et ce jour existe déjà. L’importer quand même ?',
+          oui: 'Oui, importer',
+        });
+        if (j !== jeton) return;
+        if (!ok) { bouton.disabled = false; return; }
+        confirme = true;
+        message.innerHTML = '<span class="roue" aria-hidden="true"></span> Enregistrement…';
+        message.className = 'message ok';
+      }
+    }
+
     const { data, error } = await ctx.supabase.rpc('importer_course', {
       p_nom: nom, p_jour: jour, p_lieu: lieu || null, p_lignes: a.lignes, p_fichier: a.fichier,
-      p_manches: a.manches.map((m) => ({ numero: m.numero, categorie: m.categorie, pilotes: m.pilotes })),
+      p_manches: a.manches.map((m) => ({ numero: m.numero, nom: m.nom ?? null, categorie: m.categorie, pilotes: m.pilotes })),
     });
     bouton.disabled = false;
     if (error) return erreur(messageErreur(error));
     window.vibrer?.('fort');
     etat.importation = null;
     oublierTout();
-    location.hash = `accueil/course/${data}`;
+    // l'écran d'import est fini : la course le remplace dans l'historique
+    remplacer(`#accueil/course/${data}`);
   });
+}
+
+// ---------------------------------------------------------------------------
+// Revenir en arrière
+// ---------------------------------------------------------------------------
+
+// Le lien « Retour » : si la page d'avant est celle qu'il montre, on revient vraiment
+// en arrière (le navigateur garde l'historique propre, et on retrouve l'endroit où on était)
+function brancherRetour(zone) {
+  zone.querySelectorAll('[data-retour]').forEach((lien) => {
+    if (lien.dataset.retourBranche) return;
+    lien.dataset.retourBranche = '1';
+    lien.addEventListener('click', (e) => {
+      const cible = (lien.getAttribute('href') || '').replace(/^#accueil\/?/, '');
+      if (avantActuel === null || cible !== avantActuel) return;   // sinon : lien normal
+      e.preventDefault();
+      history.back();
+    });
+  });
+}
+
+// Le titre de l'écran reçoit le focus (lecteur d'écran, clavier), sans faire défiler
+function focusTitre(zone) {
+  const h1 = zone.querySelector('h1');
+  if (!h1) return;
+  h1.tabIndex = -1;
+  h1.focus({ preventScroll: true });
 }
 
 // ---------------------------------------------------------------------------
 // Entrée
 // ---------------------------------------------------------------------------
 
+// La page de l'onglet Accueil montrée par l'adresse (« course/… »), ou null pour un autre onglet
+function routeDansAdresse() {
+  let brut = location.hash.replace(/^#/, '');
+  try { brut = decodeURIComponent(brut); } catch { /* adresse bizarre */ }
+  const parties = brut.split('/').filter(Boolean);
+  return parties[0] === 'accueil' || !parties.length ? parties.slice(1).join('/') : null;
+}
+
+// On note sans arrêt où on est dans la page (aussi quand on part vers un autre onglet).
+// Quand l'adresse vient de changer (retour du téléphone), le navigateur fait défiler tout seul
+// avant que la nouvelle page s'affiche : ce défilement-là ne compte pas pour l'ancienne page.
+let zoneVue = null;
+window.addEventListener('scroll', () => {
+  if (indexActuel === null || !zoneVue || zoneVue.closest('[hidden]')) return;
+  if (routeDansAdresse() !== routeAvant) return;
+  positions.set(indexActuel, window.scrollY);
+}, { passive: true });
+
 export function afficherManches(zone, parties, contexte) {
   ctx = contexte;
+  zoneVue = zone;
   const route = parties.join('/');
-  if (route === routeAvant) return;
-  // on retient où on était sur la page qu'on quitte
-  if (routeAvant !== null) positions.set(routeAvant, window.scrollY);
-  const enArriere = routeAvant !== null && (routeAvant.startsWith(route) || route === '');
+  if (route === routeAvant && !autreOnglet) return;
+  const depuisOnglet = autreOnglet;
+  autreOnglet = false;
+
+  // Où en est-on dans l'historique ? Chaque page reçoit un numéro dans history.state.
+  const etatHisto = history.state && typeof history.state === 'object' ? history.state : null;
+  const dejaVue = etatHisto?.dbsManche != null && etatHisto.dbsRoute === route;
+  // on retient où on était sur la page qu'on quitte (pas quand on la remplace)
+  // (déjà noté par l'écouteur de défilement ; ici seulement si on vient de cliquer un lien,
+  // car le navigateur n'a pas encore bougé la page)
+  if (indexActuel !== null && !remplacement && !depuisOnglet && !dejaVue) positions.set(indexActuel, window.scrollY);
+  let enArriere = false;
+  let position = 0;
+  if (dejaVue) {
+    // page déjà vue : on y revient (bouton retour / avancer du téléphone, ou retour d'un autre onglet)
+    // et on retrouve l'endroit où on était
+    enArriere = depuisOnglet || etatHisto.dbsManche < (indexActuel ?? Infinity);
+    position = positions.get(etatHisto.dbsManche) || 0;
+    indexActuel = etatHisto.dbsManche;
+    avantActuel = etatHisto.dbsAvant ?? null;
+  } else {
+    const avant = remplacement ? avantActuel : (depuisOnglet ? null : routeAvant);
+    indexActuel = ++compteur;
+    avantActuel = avant;
+    try {
+      history.replaceState({ ...(etatHisto || {}), dbsManche: indexActuel, dbsRoute: route, dbsAvant: avant }, '');
+    } catch { /* historique plein : tant pis, on fera sans */ }
+  }
+  remplacement = false;
   routeAvant = route;
+
   const j = ++jeton;
   const [page, a, b] = parties;
   animer(zone, enArriere ? 'glisse-droite' : 'glisse-gauche');
@@ -649,17 +833,22 @@ export function afficherManches(zone, parties, contexte) {
   else if (page === 'course' && a) fini = ecranCourse(zone, j, a);
   else if (page === 'manche' && a && b) fini = ecranPilote(zone, j, a, b);
   else if (page === 'manche' && a) fini = ecranManche(zone, j, a);
-  else if (page === 'importer') fini = ecranImporter(zone);
-  else { location.replace('#accueil'); return; }
+  else if (page === 'importer') fini = ecranImporter(zone, j);
+  else { remplacer('#accueil'); return; }
+  window.scrollTo(0, position);
   Promise.resolve(fini).then(() => {
     if (j !== jeton) return;
     brancherLiens(zone);
-    window.scrollTo(0, enArriere ? positions.get(route) || 0 : 0);
+    brancherRetour(zone);
+    focusTitre(zone);
+    // une fois la page remplie, on retrouve l'endroit où on était
+    window.scrollTo(0, position);
   });
-  window.scrollTo(0, enArriere ? positions.get(route) || 0 : 0);
 }
 
-// À appeler quand on revient sur l'onglet Accueil depuis un autre onglet
+// À appeler quand on revient sur l'onglet Accueil depuis un autre onglet,
+// ou quand le profil change (la plaque) : les données sont rechargées.
 export function rafraichirManches() {
-  routeAvant = null;
+  oublierTout();
+  autreOnglet = true;
 }

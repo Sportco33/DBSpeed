@@ -81,6 +81,9 @@ function ongletActuel() {
 
 let ongletPrecedent = null;
 
+// Le titre de la page (onglet du navigateur, appli installée). L'Accueil met le sien lui-même.
+const TITRES = { entrainement: 'Entraînement', competition: 'Compétition', lieux: 'Lieux', profil: 'Mon profil' };
+
 function montrerOnglet() {
   const actuel = ongletActuel();
   const parties = chemin();
@@ -107,11 +110,16 @@ function montrerOnglet() {
     if (lien.dataset.onglet === actuel) lien.setAttribute('aria-current', 'page');
     else lien.removeAttribute('aria-current');
   }
+  if (TITRES[actuel]) document.title = `${TITRES[actuel]} · DBSpeed`;
   if (actuel === 'accueil') {
     // l'onglet Accueil : mes manches, les courses, une manche, la fiche d'un pilote, importer
     const sousPage = parties.slice(1);
     $('accueil-intro').hidden = sousPage.length > 0;
-    module('manches').then((m) => m.afficherManches($('accueil-vue'), sousPage, { supabase, profil })).catch(siEchec);
+    module('manches').then((m) => {
+      // on revient d'un autre onglet : les données sont rechargées (nouvelle course importée…)
+      if (change) m.rafraichirManches();
+      m.afficherManches($('accueil-vue'), sousPage, { supabase, profil });
+    }).catch(siEchec);
   } else if (actuel === 'competition') {
     // l'onglet Compétition a ses propres pages (et gère lui-même le défilement)
     module('competition').then((m) => m.afficherCompetition($('competition-vue'), parties[0] === 'competition' ? parties.slice(1) : [])).catch(siEchec);
@@ -227,6 +235,8 @@ $('form-profil').addEventListener('submit', async (e) => {
   const probleme = await enregistrer(changements);
   if (bouton) bouton.disabled = false;
   if (probleme) return afficher(zone, probleme);
+  // la plaque a peut-être changé : « Mes dernières manches » sera rechargé
+  if (charges.manches) charges.manches.then((m) => m.rafraichirManches()).catch(() => {});
   afficher(zone, 'Infos enregistrées.', 'ok');
 });
 
