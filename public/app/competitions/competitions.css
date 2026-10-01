@@ -340,3 +340,11 @@
 #competition-vue .fiche-hero .place-grosse { color: var(--texte); }
 #competition-vue .fiche-hero { display: grid; gap: 6px; padding: var(--e3) var(--e2); border-radius: var(--rayon); }
 #c-demo { margin-top: 4px; }
+
+/* ---------- Carte « DN1 » sur la liste des compétitions ---------- */
+.carte-dn1 {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 12px 14px;
+  border-radius: var(--rayon); color: var(--texte); text-decoration: none;
+}
+.carte-dn1 > svg { color: var(--texte-doux); }
+.carte-dn1 .ligne-texte small { color: var(--texte); opacity: .85; }

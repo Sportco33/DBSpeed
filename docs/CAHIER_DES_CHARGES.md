@@ -107,6 +107,12 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 - Organisateur : importer les temps (une fois validé).
 - Spectateur : suivre les manches et les classements.
 
+### Championnat de France des clubs (DN1), onglet Compétition
+
+- En haut de la liste des compétitions, une carte **« Championnat de France des clubs »** ouvre la **DN1** de la saison : les 10 équipes, le champion, le classement publié (places et points), les vainqueurs DN2 et Équipe Avenir, les sources.
+- En touchant une équipe : sa ville, sa région, son club, sa place, puis ses **pilotes femmes** et ses **pilotes hommes** (drapeau, pays, catégorie Elite ou U23).
+- Les pilotes juniors (U19) sont **seulement comptés** : leur nom n'est pas affiché (ce sont souvent des mineurs).
+
 ### Note des lieux sur 20 (onglet Lieux)
 
 Chaque piste de BMX et chaque pump track de France a une **note DBSpeed sur 20**, calculée avec la fiche officielle du ministère des Sports (Data ES). Une info qui n'est pas remplie dans la fiche compte 0 point. La fiche du lieu montre la note et le détail de chaque critère.

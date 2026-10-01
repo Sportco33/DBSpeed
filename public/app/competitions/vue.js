@@ -7,8 +7,11 @@
 //   /ID/resultats         → temps et classements (classement final, qualifs, toutes les manches)
 //   /ID/manche/MID        → une manche en détail (arrivée, secteurs, passages)
 //   /ID/tableau           → arbre du tableau final (1/16, 1/8, 1/4, 1/2, finale)
+//   /dn1                  → championnat de France des clubs DN1 2026 (les 10 équipes)
+//   /dn1/CLUB             → une équipe de DN1 : ses pilotes femmes et hommes
 import { listerCompetitions as listerExemples, chargerCompetition as chargerExemple, PAYS } from '/app/competitions/donnees-exemple.js';
 import { COMPETITIONS_REELLES, PAYS_EN_PLUS } from '/app/competitions/donnees-reelles.js';
+import { DN1_2026 } from '/app/competitions/dn1-2026.js';
 import { esc, lienRetour, vide, puces, surChoix, animer, secteurs, brancherLiens } from '/app/outils.js';
 
 Object.assign(PAYS, PAYS_EN_PLUS);
@@ -176,12 +179,14 @@ export async function afficherCompetition(zone, chemin) {
 
   const [id, type, cible] = chemin;
   let c = null;
-  if (id) {
+  if (id && id !== 'dn1') {
     c = await chargerCompetition(id);
     if (monJeton !== jeton) return; // l'utilisateur est déjà allé ailleurs
   }
 
   if (!id) await ecranListe(zone);
+  else if (id === 'dn1' && type) ecranClubDN1(zone, type);
+  else if (id === 'dn1') ecranDN1(zone);
   else if (!c) zone.innerHTML = vide('Compétition introuvable', 'Elle a peut-être été supprimée.') + lienRetour('#competition', 'Compétitions');
   else if (c.reelle && type === 'pilote') ecranPiloteReel(zone, c, cible);
   else if (c.reelle) ecranCompetitionReelle(zone, c);
@@ -234,6 +239,11 @@ async function ecranListe(zone) {
     </label>
     ${puces('Filtrer', [['toutes', 'Toutes'], ['en-cours', 'En direct'], ['a-venir', 'À venir'], ['terminee', 'Terminées']], memoire.filtre, 'puces-defile puces-filtre')}
     <p class="compte" id="c-compte" aria-live="polite"></p>
+    <a class="carte-dn1 marbre-bordeaux cadre-or" href="#competition/dn1">
+      <span class="logo-equipe">DN1</span>
+      <span class="ligne-texte"><strong>Championnat de France des clubs</strong><small>Les 10 équipes de DN1 2026 et leurs pilotes</small></span>
+      ${ICONES.fleche}
+    </a>
     <div id="c-liste" class="liste-compets"></div>
     <p class="note">Ce sont les <strong>vraies compétitions 2026</strong> (UCI, UEC, Fédération française…), avec les résultats publiés. Le détail des manches et les temps à chaque ligne arriveront quand les organisateurs importeront leurs fichiers.</p>
     <button type="button" class="bouton bouton-secondaire" id="c-demo">${memoire.demo ? 'Cacher les compétitions d’exemple' : 'Voir aussi des compétitions d’exemple (démo des temps détaillés)'}</button>`;
@@ -941,5 +951,90 @@ function ecranPiloteReel(zone, c, id) {
         <span class="ligne-texte"><strong>${esc(r.categorie)}</strong><small>${r.place === 1 ? 'Victoire' : `${placeF(r.place, /Femmes/.test(r.categorie))} place`}${r.temps != null ? ` · ${temps(r.temps)} s` : ''}</small></span>
       </div></li>`).join('')}</ul>
       <p class="note">Les temps de ses manches et à chaque ligne ne sont pas publiés pour cette compétition.</p>
+    </section>`;
+}
+
+// ===========================================================================
+// Championnat de France des clubs : DN1 2026
+// ===========================================================================
+const clubDN1 = (id) => DN1_2026.clubs.find((x) => x.id === id);
+const pluriel = (n, un, plusieurs) => `${n} ${n > 1 ? plusieurs : un}`;
+
+function ecranDN1(zone) {
+  const d = DN1_2026;
+  const champion = clubDN1(d.champion);
+  const clubs = [...d.clubs].sort((a, b) => a.ville.localeCompare(b.ville, 'fr'));
+  const ligneClub = (x) => `<li><a class="ligne" href="#competition/dn1/${x.id}">
+      <span class="logo-equipe">${esc(x.sigle)}</span>
+      <span class="ligne-texte"><strong>${esc(x.equipe)}</strong><small>${esc(x.ville)} · ${pluriel(x.femmes.length, 'femme', 'femmes')} · ${pluriel(x.hommes.length, 'homme', 'hommes')}</small></span>
+      ${x.id === d.champion ? '<span class="ligne-place top">Champion</span>' : ''}${ICONES.fleche}</a></li>`;
+  const ligneRang = ([id, points], i) => {
+    const x = clubDN1(id);
+    return `<li><a class="ligne" href="#competition/dn1/${x.id}">
+      <span class="medaille ${i < 3 ? `m${i + 1}` : 'mx'}">${i + 1}</span>
+      <span class="ligne-texte"><strong>${esc(x.equipe)}</strong><small>${esc(x.ville)}</small></span>
+      <span class="ligne-place">${points} pts</span>${ICONES.fleche}</a></li>`;
+  };
+  zone.innerHTML = `
+    ${lienRetour('#competition', 'Compétitions')}
+    <div class="c-hero marbre-bordeaux cadre-or">
+      <div class="c-hero-haut"><span class="etiquette">Championnat de France des clubs</span></div>
+      <h1 class="c-titre">DN1 ${d.saison}</h1>
+      <p class="c-hero-ligne">${ICONES.drapeau}<span>Champion : ${esc(champion.club)}</span></p>
+    </div>
+    <p class="c-description">Les 10 meilleurs clubs de France. Chaque équipe a de 5 à 10 pilotes, femmes et hommes ensemble (Elite, U23 et juniors U19). Ses 5 meilleurs résultats comptent à chaque Coupe de France et aux championnats de France.</p>
+
+    <section class="bloc">
+      <h2>Les 10 équipes</h2>
+      <ul class="lignes">${clubs.map(ligneClub).join('')}</ul>
+    </section>
+
+    <section class="bloc">
+      <h2>Classement d’avril</h2>
+      <p class="doux petit">Classement publié après les premières manches. Le classement final n’est pas encore publié en détail : seul le champion est connu (${esc(champion.club)}).</p>
+      <ol class="lignes">${d.classementAvril.map(ligneRang).join('')}</ol>
+    </section>
+
+    <section class="bloc">
+      <h2>Les autres titres</h2>
+      <dl class="infos-liste">
+        <div>${ICONES.drapeau}<dt>DN2</dt><dd>${esc(d.vainqueurDN2)} (15 équipes)</dd></div>
+        <div>${ICONES.drapeau}<dt>Équipe Avenir</dt><dd>${esc(d.vainqueurEquipeAvenir)}</dd></div>
+      </dl>
+    </section>
+
+    <section class="bloc">
+      <h2>Sources</h2>
+      <ul class="sources">${d.sources.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.nom)}</a></li>`).join('')}</ul>
+    </section>`;
+}
+
+function ecranClubDN1(zone, id) {
+  const x = clubDN1(id);
+  if (!x) { zone.innerHTML = lienRetour('#competition/dn1', 'DN1') + vide('Équipe introuvable', ''); return; }
+  const rang = DN1_2026.classementAvril.findIndex(([cle]) => cle === id) + 1;
+  const lignePilote = ([nom, pays, cat]) => `<li><div class="ligne">
+      <span class="ligne-texte"><strong>${esc(nom)}</strong><small>${drapeau(pays)} ${esc(nomPays(pays))}</small></span>
+      <span class="ligne-place${cat === 'Elite' ? ' top' : ''}">${esc(cat)}</span></div></li>`;
+  const groupe = (titre, liste) => `<section class="bloc">
+      <h2>${titre} <span class="doux">(${liste.length})</span></h2>
+      ${liste.length ? `<ul class="lignes">${liste.map(lignePilote).join('')}</ul>` : '<p class="doux">Pas de pilote Elite ou U23 dans l’équipe.</p>'}
+    </section>`;
+  const u19 = x.u19.filles + x.u19.garcons;
+  zone.innerHTML = `
+    ${lienRetour('#competition/dn1', 'DN1 2026')}
+    <div class="c-hero marbre-bordeaux cadre-or">
+      <div class="c-hero-haut"><span class="etiquette">DN1 ${DN1_2026.saison}</span>${id === DN1_2026.champion ? '<span class="etiquette">Champion de France</span>' : ''}</div>
+      <h1 class="c-titre">${esc(x.equipe)}</h1>
+      <p class="c-hero-ligne">${ICONES.lieu}<span>${esc(x.ville)} · ${esc(x.region)}</span></p>
+      ${x.club && x.club !== x.equipe ? `<p class="c-hero-ligne">${ICONES.orga}<span>Club : ${esc(x.club)}</span></p>` : ''}
+      ${rang ? `<p class="c-hero-ligne">${ICONES.drapeau}<span>${rang}${rang === 1 ? 'er' : 'e'} au classement d’avril</span></p>` : ''}
+    </div>
+    ${groupe('Femmes', x.femmes)}
+    ${groupe('Hommes', x.hommes)}
+    ${u19 ? `<p class="note">Et ${pluriel(u19, 'pilote junior (U19)', 'pilotes juniors (U19)')} : leurs noms ne sont pas affichés.</p>` : ''}
+    <section class="bloc">
+      <h2>Source</h2>
+      <ul class="sources"><li><a href="${esc(DN1_2026.sources[0].url)}" target="_blank" rel="noopener">${esc(DN1_2026.sources[0].nom)}</a></li></ul>
     </section>`;
 }

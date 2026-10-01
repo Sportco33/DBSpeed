@@ -285,4 +285,5 @@ export const PAYS_EN_PLUS = {
   MAS: { nom: 'Malaisie', drapeau: '🇲🇾' },
   CHN: { nom: 'Chine', drapeau: '🇨🇳' },
   SVK: { nom: 'Slovaquie', drapeau: '🇸🇰' },
+  ECU: { nom: 'Équateur', drapeau: '🇪🇨' },
 };
