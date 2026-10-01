@@ -20,6 +20,36 @@ const COUPE_DU_MONDE = 'Coupe du monde UCI';
 const COUPE_EUROPE = "Coupe d'Europe UEC";
 const COUPE_FRANCE = 'Coupe de France';
 
+// Coupe de France 2026 : résultats Elite publiés (recherche du 01/10/2026). Vesoul : pas encore trouvés.
+const COUPE_FRANCE_2026 = {
+  machecoul: {
+    description: "Ouverture de la Coupe de France. Evan Oliviera gagne le samedi pour sa 1re course Elite, Arthur Pilard le dimanche. Chez les femmes, la Britannique Bethany Shriever gagne les deux jours.",
+    resultats: {
+      'Elite Hommes · Manche 1': [[1, 'Evan Oliviera', 'FRA'], [2, 'Alexis Pieczanowsky', 'FRA'], [3, 'Mattéo Faure', 'FRA'], [4, 'Pierre Geisse', 'FRA'], [5, 'Clément Rocherieux', 'FRA']],
+      'Elite Femmes · Manche 1': [[1, 'Bethany Shriever', 'GBR']],
+      'Elite Hommes · Manche 2': [[1, 'Arthur Pilard', 'FRA']],
+      'Elite Femmes · Manche 2': [[1, 'Bethany Shriever', 'GBR'], [2, 'Axelle Étienne', 'FRA']],
+    },
+    sources: [{ nom: 'FFC – Machecoul lance la saison', url: 'https://velo.ffc.fr/coupe-france-bmx-race-2026-machecoul-lance-saison-bmx/' }],
+  },
+  'la-chapelle': {
+    description: 'Clément Rocherieux (BMX Club Joué-lès-Tours) gagne sa première manche Elite le samedi.',
+    resultats: { 'Elite Hommes · Manche 5': [[1, 'Clément Rocherieux', 'FRA']] },
+    sources: [{ nom: 'Comité FFC 37 – manche 5', url: 'https://www.cdffc37.fr/actualite-1742-un-podium-sur-la-cinquiy-me-manche-de-la-coupe-de-france-de-bmx.html?version=computer' }],
+  },
+  troyes: {
+    description: "Finale de la Coupe de France. Evan Oliviera gagne le classement général Elite Hommes devant Arthur Pilard et Clément Rocherieux ; Marie Favrel gagne chez les Dames devant Léa Brindjonc. Clubs : BMX Besançon gagne la DN1 et l'Équipe Avenir, Saint-Étienne la DN2.",
+    resultats: {
+      'Elite Hommes · Manche 7': [[1, 'Mathis Jacquet', 'FRA'], [2, 'Evan Oliviera', 'FRA'], [3, 'Clément Rocherieux', 'FRA']],
+      'Elite Hommes · Manche 8': [[1, 'Mathis Ragot Richard', 'FRA'], [2, 'Mathis Jacquet', 'FRA'], [3, 'Jérémy Rencurel', 'FRA']],
+      'Elite Femmes · Manche 8': [[1, 'Merel Smulders', 'NED']],
+      'Elite Hommes · Classement final': [[1, 'Evan Oliviera', 'FRA'], [2, 'Arthur Pilard', 'FRA'], [3, 'Clément Rocherieux', 'FRA']],
+      'Elite Femmes · Classement final': [[1, 'Marie Favrel', 'FRA'], [2, 'Léa Brindjonc', 'FRA']],
+    },
+    sources: [{ nom: 'ERA BMX – compte rendu de Troyes', url: 'https://erabmx.com/news/race-report-coupe-de-france-troyes/' }],
+  },
+};
+
 export const COMPETITIONS_REELLES = [
   // ------------------------------------------------------------------ Coupe du monde UCI
   {
@@ -206,9 +236,9 @@ export const COMPETITIONS_REELLES = [
   ].map(([cle, ville, debut, fin], i) => ({
     id: `ffc-coupe-2026-${cle}`, nom: `${COUPE_FRANCE} – Manches ${2 * i + 1} et ${2 * i + 2}`, type: COUPE_FRANCE, niveau: 'National',
     ville, pays: 'FRA', piste: null, debut, fin, organisateur: 'FFC (Fédération Française de Cyclisme)',
-    description: 'Une étape de la Coupe de France de BMX Racing : 8 manches sur 4 week-ends en 2026.',
-    resultats: {},
-    sources: [{ nom: 'FFC – note aux clubs BMX Racing 2026', url: FFC_NOTE }],
+    description: COUPE_FRANCE_2026[cle]?.description || 'Une étape de la Coupe de France de BMX Racing : 8 manches sur 4 week-ends en 2026.',
+    resultats: COUPE_FRANCE_2026[cle]?.resultats || {},
+    sources: [{ nom: 'FFC – note aux clubs BMX Racing 2026', url: FFC_NOTE }, ...(COUPE_FRANCE_2026[cle]?.sources || [])],
   })),
   {
     id: 'ffc-trophee-2026-chabeuil', nom: 'Trophée de France de BMX (jeunes)', type: 'Trophée de France', niveau: 'National',

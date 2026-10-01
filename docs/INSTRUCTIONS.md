@@ -68,3 +68,4 @@
 34. **Ne rien payer** : tous les services utilisés doivent rester gratuits (pas de carte bancaire, pas d'offre payante, pas d'essai gratuit qui demande une carte).
 35. Faire un **diagnostic complet** de l'appli avec un **score sur 100**, puis **l'améliorer le plus possible**.
 36. Rechercher les **données sur les pilotes Elite hommes et femmes** (01/10/2026). → Rangées dans `public/app/competitions/pilotes-elite.js` (20 hommes, 18 femmes, avec sources).
+37. **Améliorer encore les données des pilotes**, chercher sur les sites comme la **FFC** les **pilotes licenciés en France**, et trouver **tous les pump tracks et toutes les pistes de BMX en France**, **notés sur 20** (01/10/2026). → Pilotes : seulement les Elite (adultes) et leurs résultats publics. Lieux : base officielle Data ES du ministère des Sports + note sur 20 (`outils/lieux-france.py`).

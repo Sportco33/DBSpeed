@@ -646,6 +646,30 @@ function ligneInfo(icone, titre, valeur) {
     <div><p class="info-titre">${esc(titre)}</p><p class="info-valeur">${valeur}</p></div></div>`;
 }
 
+// Note DBSpeed sur 20 (calculée par outils/lieux-france.py avec la fiche officielle Data ES)
+const NOTE_CRITERES = {
+  bmx: [['longueur', 'Longueur de la piste', 4], ['sol', 'Sol', 4], ['eclairage', 'Éclairage', 3], ['confort', 'Vestiaires, toilettes, douches', 3],
+    ['recente', 'Piste récente ou refaite', 3], ['competition', 'Homologation et tribune', 2], ['acces_libre', 'Accès libre', 1]],
+  pump: [['taille', 'Taille', 6], ['sol', 'Sol', 5], ['eclairage', 'Éclairage', 3], ['acces_libre', 'Accès libre', 3], ['recente', 'Récent', 3]],
+};
+
+function htmlNote(complement) {
+  const note = complement?.note;
+  if (!Number.isFinite(note)) return '';
+  const criteres = NOTE_CRITERES[complement.genre] || NOTE_CRITERES.bmx;
+  const detail = complement.note_detail || {};
+  const lignes = criteres.map(([cle, texte, max]) => {
+    const pts = Number.isFinite(detail[cle]) ? detail[cle] : 0;
+    return `<li><span>${esc(texte)}</span><span class="note-barre" aria-hidden="true"><i style="width:${Math.round((pts / max) * 100)}%"></i></span><b>${pts}/${max}</b></li>`;
+  }).join('');
+  return `<section class="fiche-bloc" aria-labelledby="fiche-t-note">
+      <h2 id="fiche-t-note">Note DBSpeed</h2>
+      <p class="note-totale"><b class="or-brillant">${note}</b><span>/20</span></p>
+      <ul class="note-criteres">${lignes}</ul>
+      <p class="info-plus">Calculée avec la fiche officielle du ministère des Sports. Une info pas remplie compte 0 point.</p>
+    </section>`;
+}
+
 const PETITES_ICONES = {
   adresse: '<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
   horloge: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
@@ -729,6 +753,8 @@ function htmlFiche(piste, complement) {
     <a class="bouton bouton-principal bouton-or" href="${esc(itineraire)}" target="_blank" rel="noopener">
       <svg class="bouton-icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 21 3l-8 18-2-8z"/></svg>Y aller
     </a>
+
+    ${htmlNote(complement)}
 
     <section class="fiche-bloc" aria-labelledby="fiche-t-lieu">
       <h2 id="fiche-t-lieu">Le lieu</h2>

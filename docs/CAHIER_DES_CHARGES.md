@@ -107,6 +107,13 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 - Organisateur : importer les temps (une fois validé).
 - Spectateur : suivre les manches et les classements.
 
+### Note des lieux sur 20 (onglet Lieux)
+
+Chaque piste de BMX et chaque pump track de France a une **note DBSpeed sur 20**, calculée avec la fiche officielle du ministère des Sports (Data ES). Une info qui n'est pas remplie dans la fiche compte 0 point. La fiche du lieu montre la note et le détail de chaque critère.
+
+- **Piste de BMX** : longueur 4 pts (350 m et plus : 4 ; 300 m : 3 ; 200 m : 2 ; moins : 1) · sol 4 (enrobé 4 ; béton, terre artificielle, stabilisé, synthétique 3 ; terre battue 2 ; naturel 1) · éclairage 3 · vestiaires, toilettes, douches 3 (1 chacun) · récente ou refaite 3 (depuis 2018 : 3 ; 2008-2017 : 2 ; avant : 1) · homologation et tribune 2 · accès libre 1.
+- **Pump track** : taille 6 (surface : 1 500 m² et plus 6, 800 : 5, 400 : 4, 200 : 3, moins : 2 ; sinon longueur) · sol 5 (enrobé 5 ; béton 4 ; synthétique 3 ; modulaire/autre, terre artificielle, stabilisé 2 ; terre 1) · éclairage 3 · accès libre 3 · récent 3 (depuis 2020 : 3 ; 2015-2019 : 2 ; avant : 1).
+
 ### Couleurs (site + appli)
 - Même palette partout, rangée dans **un seul fichier** : `public/couleurs.css`. Chaque page l'ajoute.
 - **Or** = couleur principale (boutons, titres, 1re place).

@@ -678,3 +678,13 @@
 
 #onglet-lieux .fiche-sources { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 15px; }
 #onglet-lieux .fiche-sources a { color: var(--principal); overflow-wrap: anywhere; }
+
+/* Note DBSpeed sur 20 */
+#onglet-lieux .note-totale { display: flex; align-items: baseline; gap: 4px; margin-bottom: 12px; }
+#onglet-lieux .note-totale b { font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; }
+#onglet-lieux .note-totale span { font-size: 20px; color: var(--texte-doux, var(--texte)); }
+#onglet-lieux .note-criteres { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 8px; }
+#onglet-lieux .note-criteres li { display: grid; grid-template-columns: 1fr 72px 40px; gap: 10px; align-items: center; font-size: 15px; }
+#onglet-lieux .note-criteres b { text-align: right; font-variant-numeric: tabular-nums; }
+#onglet-lieux .note-barre { height: 8px; border-radius: 99px; background: var(--carte-2); overflow: hidden; }
+#onglet-lieux .note-barre i { display: block; height: 100%; border-radius: inherit; background: var(--principal); }
