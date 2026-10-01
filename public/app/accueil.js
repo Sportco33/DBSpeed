@@ -45,8 +45,14 @@ function ongletActuel() {
   return ONGLETS.includes(nom) ? nom : 'accueil';
 }
 
+let ongletPrecedent = null;
+
 function montrerOnglet() {
   const actuel = ongletActuel();
+  // la nouvelle page arrive du côté de l'onglet touché (à droite → elle vient de la droite)
+  const sens = ongletPrecedent && ONGLETS.indexOf(actuel) < ONGLETS.indexOf(ongletPrecedent) ? 'glisse-droite' : 'glisse-gauche';
+  const change = ongletPrecedent !== actuel;
+  ongletPrecedent = actuel;
   // Nettoie l'adresse si elle contient autre chose qu'un nom d'onglet (ex. retour de Google)
   if (window.location.hash !== `#${actuel}`) {
     history.replaceState(null, '', `${window.location.pathname}#${actuel}`);
@@ -54,11 +60,11 @@ function montrerOnglet() {
   for (const nom of ONGLETS) {
     const section = $(`onglet-${nom}`);
     const visible = nom === actuel;
-    if (visible && section.hidden) {
-      // apparition douce de l'onglet
-      section.classList.remove('glisse');
+    if (visible && change) {
+      // apparition douce de l'onglet, ses blocs l'un après l'autre
+      section.classList.remove('glisse-gauche', 'glisse-droite');
       void section.offsetWidth;
-      section.classList.add('glisse');
+      section.classList.add(sens);
     }
     section.hidden = !visible;
   }

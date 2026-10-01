@@ -341,8 +341,17 @@ export function lancerTuto({ profil, enregistrer, allerOnglet, depart = 'debut' 
       const pilote = profil.type_compte === 'pilote';
       montrerCarte(`
         ${progression(total, total)}
-        <div class="tuto-damier" aria-hidden="true"></div>
-        <h2 class="tuto-titre">Tu es <span class="or-brillant">prêt</span> !</h2>
+        <div class="tuto-arrivee" aria-hidden="true">
+          <svg class="tuto-pilote" viewBox="0 0 64 44">
+            <g class="roue"><circle cx="13" cy="33" r="9"/><path d="M13 24v18M4 33h18"/></g>
+            <g class="roue roue-avant"><circle cx="51" cy="33" r="9"/><path d="M51 24v18M42 33h18"/></g>
+            <path class="cadre" d="M13 33 L27 33 L45 20 L24 20 Z M45 20 L51 33 M44 17 L48 15"/>
+            <path class="corps" d="M24 19 L30 9 L42 14 M30 9 L27 20 M33 11 L44 17"/>
+            <circle class="tete" cx="31" cy="5" r="4"/>
+          </svg>
+          <div class="tuto-damier"></div>
+        </div>
+        <h2 class="tuto-titre">Tu es <span class="or-brillant tuto-pret">prêt</span> !</h2>
         <p class="tuto-texte">${pilote
           ? 'Roule à fond : tes temps arriveront ici juste après ta prochaine manche.'
           : 'Les manches et les classements arriveront ici après la prochaine course.'}</p>

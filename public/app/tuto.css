@@ -277,3 +277,80 @@ html.tuto-ouvert, html.tuto-ouvert body { overflow: hidden; }
   padding: var(--e2) var(--e2) calc(var(--e2) + env(safe-area-inset-bottom));
   background: linear-gradient(to bottom, transparent, var(--fond) 18%);
 }
+
+/* ---------- Animations du tuto (vivant, mais lisible) ---------- */
+
+/* Les 3 points de la bienvenue arrivent l'un après l'autre, l'icône « saute » */
+@keyframes point-entre { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+@keyframes ico-saute { 0% { transform: scale(0.3) rotate(-20deg); } 60% { transform: scale(1.15) rotate(6deg); } 100% { transform: none; } }
+.tuto-carte.entre .tuto-points li { animation: point-entre 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.tuto-carte.entre .tuto-points li .tuto-ico { animation: ico-saute 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.tuto-carte.entre .tuto-points li:nth-child(1), .tuto-carte.entre .tuto-points li:nth-child(1) .tuto-ico { animation-delay: 0.3s; }
+.tuto-carte.entre .tuto-points li:nth-child(2), .tuto-carte.entre .tuto-points li:nth-child(2) .tuto-ico { animation-delay: 0.42s; }
+.tuto-carte.entre .tuto-points li:nth-child(3), .tuto-carte.entre .tuto-points li:nth-child(3) .tuto-ico { animation-delay: 0.54s; }
+
+/* La barre de progression se remplit pour l'étape en cours */
+@keyframes remplir { from { background-size: 0% 100%; } to { background-size: 100% 100%; } }
+.tuto-progression span.actuel {
+  background: linear-gradient(var(--or-500), var(--or-500)) no-repeat left / 100% 100%, var(--carte-2);
+  animation: remplir 0.5s 0.15s ease-out both;
+}
+
+/* Le projecteur s'allume en grésillant, puis son faisceau balance doucement */
+@keyframes allumage {
+  0% { opacity: 0; } 20% { opacity: 0.7; } 28% { opacity: 0.2; } 45% { opacity: 1; } 55% { opacity: 0.6; } 100% { opacity: 1; }
+}
+.tuto-projecteur.allume { animation: allumage 0.6s ease-out both; }
+@keyframes balance {
+  0%, 100% { transform: translateX(-50%) rotate(-2deg); }
+  50% { transform: translateX(-50%) rotate(2deg); }
+}
+.tuto-projecteur::before { transform-origin: 50% 100%; animation: balance 4s ease-in-out infinite; }
+
+/* Le contenu de la bulle arrive juste après la bulle */
+.tuto-bulle.entre > * { animation: apparaitre 0.3s ease-out both; }
+.tuto-bulle.entre > :nth-child(2) { animation-delay: 0.06s; }
+.tuto-bulle.entre > :nth-child(3) { animation-delay: 0.12s; }
+.tuto-bulle.entre > :nth-child(4) { animation-delay: 0.18s; }
+
+/* Dernière carte : un pilote BMX passe la ligne d'arrivée */
+.tuto-arrivee { position: relative; height: 60px; margin-top: var(--e2); }
+.tuto-arrivee .tuto-damier {
+  position: absolute; left: 0; right: 0; bottom: 0; margin: 0;
+  animation: damier-file 1.2s linear infinite;
+}
+@keyframes damier-file { to { background-position: 32px 0; } }
+.tuto-pilote {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  width: 64px;
+  height: 44px;
+  fill: none;
+  stroke: var(--or-300);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: traverse 1.4s 0.2s cubic-bezier(0.3, 0.6, 0.3, 1) both;
+}
+.tuto-pilote .tete { fill: var(--or-300); stroke: none; }
+.tuto-pilote .roue { transform-box: fill-box; transform-origin: center; animation: tourne 0.35s linear 4; animation-delay: 0.2s; }
+@keyframes traverse {
+  0% { transform: translateX(-80px); opacity: 0; }
+  15% { opacity: 1; }
+  70% { transform: translateX(calc(min(440px, 100vw) - 130px)) translateY(0); }
+  82% { transform: translateX(calc(min(440px, 100vw) - 118px)) translateY(-8px) rotate(-8deg); }  /* petit saut de joie */
+  100% { transform: translateX(calc(min(440px, 100vw) - 110px)); }
+}
+@keyframes tourne { to { transform: rotate(360deg); } }
+
+/* « prêt » grossit quand le pilote passe la ligne */
+@keyframes pret { 0% { transform: scale(1); } 50% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.tuto-pret { display: inline-block; animation: pret 0.5s 1.3s cubic-bezier(0.2, 0.8, 0.2, 1) both, or-reflet 5s ease-in-out infinite alternate; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tuto-carte.entre .tuto-points li, .tuto-carte.entre .tuto-points li .tuto-ico, .tuto-progression span.actuel,
+  .tuto-projecteur.allume, .tuto-projecteur::before, .tuto-bulle.entre > *, .tuto-arrivee .tuto-damier,
+  .tuto-pilote, .tuto-pilote .roue, .tuto-pret { animation: none !important; }
+  .tuto-pilote { left: auto; right: 0; }
+}

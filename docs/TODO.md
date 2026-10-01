@@ -16,6 +16,7 @@
 - [x] Vraie page `/app/` : connexion avec 3 types (pilote, organisateur, spectateur), se connecter, créer un compte, Google (sur `travail`, pas encore en ligne)
 - [x] Espace connecté `/app/accueil.html` : onglets en bas (Accueil, Entraînement, Compétition, Mon profil), modifier ses infos, se déconnecter, en marbre et or (sur `travail`)
 - [x] Tuto de la première connexion : bienvenue, infos (club, catégorie), visite guidée avec projecteur, « Revoir le tuto » ; base Supabase mise à jour (club, catégorie, tuto_fini) (sur `travail`) (01/10/2026)
+- [x] Animations partout (01/10/2026) : site (arrivée de l'accueil, démo de manche en direct dans le téléphone, titres et classement qui arrivent en défilant, questions qui s'ouvrent en douceur, damier qui défile) ; appli (arrivée de la connexion, pastille qui glisse Se connecter / Créer un compte, champs qui s'ouvrent en douceur, onglets qui glissent du bon côté, reflet sur la plaque) ; tuto (projecteur qui s'allume et balance, points qui arrivent un par un, pilote BMX qui passe la ligne) (sur `travail`)
 
 ## À faire, dans l'ordre
 1. [ ] **Réglages à faire par Nicolas** (sinon la connexion ne marche pas en ligne) :

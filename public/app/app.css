@@ -238,8 +238,22 @@ h2 {
   font: 600 16px var(--police-texte);
   cursor: pointer;
 }
-.modes button[aria-pressed='true'] {
+/* une pastille glisse sous le choix actif */
+.modes::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 6px);
+  border-radius: 10px;
   background: var(--carte-2);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--vert-900) 60%, transparent);
+  transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.modes[data-mode='inscription']::before { transform: translateX(calc(100% + 4px)); }
+.modes button { position: relative; z-index: 1; transition: color var(--duree) ease; }
+.modes button[aria-pressed='true'] {
   color: var(--texte);
 }
 
@@ -536,4 +550,62 @@ select {
   background-position: calc(100% - 22px) 50%, calc(100% - 16px) 50%;
   background-size: 6px 6px;
   background-repeat: no-repeat;
+}
+
+/* ---------- Animations (vivant, mais toujours lisible) ---------- */
+
+/* Arrivée de la page de connexion : les éléments montent l'un après l'autre */
+.page > .marque, .page > .accroche, .page > .panneau {
+  animation: apparaitre 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.page > .accroche { animation-delay: 0.1s; }
+.page > .panneau { animation-delay: 0.18s; }
+
+/* Texte du bouton qui change (Me connecter / Créer mon compte) */
+@keyframes texte-change { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.bouton.change { animation: texte-change 0.25s ease-out; }
+
+/* Le choix du type de compte : la coche « saute » quand on la touche */
+@keyframes coche { 0% { transform: scale(0.6); } 60% { transform: scale(1.2); } 100% { transform: none; } }
+.type:has(input:checked) .type-coche { animation: coche 0.32s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+/* Espace connecté : l'en-tête descend, la barre d'onglets monte */
+@keyframes descend { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
+@keyframes barre-monte { from { transform: translateY(100%); } to { transform: none; } }
+#appli:not([hidden]) .entete { animation: descend 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+#appli:not([hidden]) .onglets { animation: barre-monte 0.45s 0.1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+/* Changer d'onglet : la page glisse du bon côté, ses blocs arrivent l'un après l'autre */
+@keyframes vers-gauche { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes vers-droite { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+.glisse-gauche > * { animation: vers-gauche 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.glisse-droite > * { animation: vers-droite 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+:is(.glisse-gauche, .glisse-droite) > :nth-child(2) { animation-delay: 0.04s; }
+:is(.glisse-gauche, .glisse-droite) > :nth-child(3) { animation-delay: 0.08s; }
+:is(.glisse-gauche, .glisse-droite) > :nth-child(4) { animation-delay: 0.12s; }
+:is(.glisse-gauche, .glisse-droite) > :nth-child(n+5) { animation-delay: 0.16s; }
+
+/* L'icône de l'onglet choisi fait un petit bond */
+@keyframes bond { 0% { transform: none; } 40% { transform: translateY(-5px) scale(1.12); } 100% { transform: none; } }
+.onglets a[aria-current='page'] svg { animation: bond 0.38s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+/* La plaque dorée : un reflet de lumière passe dessus de temps en temps */
+.plaque, .plaque-petite { position: relative; overflow: hidden; }
+.plaque:not(.initiales)::after, .plaque-petite::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  transform: skewX(-20deg);
+  animation: or-eclat 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page > .marque, .page > .accroche, .page > .panneau, .bouton.change, .type-coche,
+  #appli .entete, #appli .onglets, .glisse-gauche > *, .glisse-droite > *, .onglets svg,
+  .plaque::after, .plaque-petite::after { animation: none !important; }
 }

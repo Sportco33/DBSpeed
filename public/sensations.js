@@ -6,6 +6,10 @@
    - effet d'appui visuel (le bouton s'enfonce) partout
    - apparition douce des blocs quand on fait défiler
    - fondu entre les pages
+   - window.montrer(el, vrai/faux) : afficher / cacher un bloc en douceur (au lieu d'un coup)
+   - questions (<details>) qui s'ouvrent et se ferment en douceur
+   - data-apparait (sur un parent : ses enfants arrivent l'un après l'autre)
+     et data-revele (sur un élément : il arrive seul) quand on fait défiler
    - tout est réduit si le téléphone est réglé sur « réduire les animations »
    ========================================================= */
 (function () {
@@ -53,6 +57,7 @@
   // --- Apparition douce des blocs ------------------------------------------
   function preparerApparitions() {
     const blocs = document.querySelectorAll('[data-apparait]');
+    const seuls = document.querySelectorAll('[data-revele]');
     if (calme || !('IntersectionObserver' in window)) return;
     const obs = new IntersectionObserver((entrees) => {
       entrees.forEach((en) => {
@@ -69,7 +74,57 @@
         obs.observe(el);
       });
     });
+    seuls.forEach((el) => {
+      el.classList.add('apparait');
+      obs.observe(el);
+    });
   }
+
+  // --- Afficher / cacher un bloc en douceur ---------------------------------
+  window.montrer = function (el, visible) {
+    if (!el) return;
+    if (!el._anim && visible === !el.hidden) return;
+    if (calme || !el.animate) { el.hidden = !visible; return; }
+    if (el._anim) el._anim.cancel();
+    el.style.overflow = 'hidden';
+    let anim;
+    if (visible) {
+      el.hidden = false;
+      const h = el.scrollHeight;
+      anim = el.animate(
+        [{ height: '0px', opacity: 0, marginTop: '0px', marginBottom: '0px', transform: 'translateY(-6px)' },
+         { height: h + 'px', opacity: 1, transform: 'none' }],
+        { duration: 280, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    } else {
+      const h = el.offsetHeight;
+      anim = el.animate(
+        [{ height: h + 'px', opacity: 1 },
+         { height: '0px', opacity: 0, marginTop: '0px', marginBottom: '0px' }],
+        { duration: 200, easing: 'ease-in' });
+    }
+    el._anim = anim;
+    anim.onfinish = () => { el.hidden = !visible; el.style.overflow = ''; el._anim = null; };
+  };
+
+  // --- Questions (<details>) qui s'ouvrent en douceur ---------------------
+  addEventListener('click', (e) => {
+    const resume = e.target.closest('summary');
+    const bloc = resume && resume.parentElement;
+    if (!bloc || bloc.tagName !== 'DETAILS' || calme || !bloc.animate || bloc._anim) return;
+    e.preventDefault();
+    const depart = bloc.offsetHeight;
+    const ouvrir = !bloc.open;
+    if (ouvrir) bloc.open = true;
+    const arrivee = ouvrir ? bloc.offsetHeight : resume.offsetHeight
+      + parseFloat(getComputedStyle(bloc).borderTopWidth) + parseFloat(getComputedStyle(bloc).borderBottomWidth);
+    bloc.style.overflow = 'hidden';
+    bloc._anim = bloc.animate([{ height: depart + 'px' }, { height: arrivee + 'px' }],
+      { duration: ouvrir ? 300 : 220, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    bloc._anim.onfinish = () => {
+      if (!ouvrir) bloc.open = false;
+      bloc.style.overflow = ''; bloc._anim = null;
+    };
+  });
 
   // --- Fondu quand on change de page ----------------------------------------
   addEventListener('click', (e) => {

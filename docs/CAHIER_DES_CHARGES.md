@@ -82,6 +82,11 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
   - Les listes et les cartes **apparaissent en douceur**, les unes après les autres.
   - Animations **courtes** (0,15 à 0,35 seconde), fluides même sur un petit téléphone.
   - Si le téléphone est réglé sur « réduire les animations », on les réduit aussi.
+- **Vivant et de qualité, mais toujours lisible** (site, appli, tuto) :
+  - Chaque écran **arrive en mouvement** (les éléments montent l'un après l'autre), chaque changement (onglet, champ qui s'ouvre, question) est **animé**, jamais un saut sec.
+  - Les animations **expliquent** : la démo du site **rejoue une vraie manche** (le chrono tourne, le pilote avance sur la piste, sa place change à chaque ligne) ; le tuto éclaire chaque partie avec un **projecteur**.
+  - **Le texte ne bouge jamais pendant qu'on doit le lire** : il arrive, puis il reste immobile. Les résultats restent affichés assez longtemps pour être lus.
+  - De petits détails « vivants » : reflet qui passe sur l'or et la plaque, damier qui défile, icône d'onglet qui bondit, pilote BMX qui passe la ligne à la fin du tuto.
 - **Ergonomie (UX)** :
   - Tout se fait **au pouce, d'une main** : gros boutons (au moins 44 px), actions importantes en bas de l'écran.
   - **Un seul bouton principal par écran**, bien visible.

@@ -40,3 +40,4 @@
 23. Dans l'appli, une **première page de connexion** avec **3 types de connexion** : **pilotes, organisateurs, spectateurs**. Sur cette page : **se connecter** et **créer un compte**. Ajouter la **connexion avec Google**.
 24. Une fois connecté, on arrive sur la **page d'accueil**, avec des **onglets en bas de l'écran** : **Accueil**, **Entraînement**, **Compétition**, **Mon profil**. L'onglet profil sert à **modifier ses informations** et **voir sa page**.
 25. À la **première connexion**, un **tuto fluide, intuitif, clair et simple**, qui montre avec un **projecteur** ce qu'il faut comprendre. La personne doit aussi **entrer les informations la concernant**.
+26. L'**application**, le **site** et le **tuto** doivent être **animés**, **vivants** et **de qualité**, tout en restant **lisibles et compréhensibles**.

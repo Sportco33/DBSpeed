@@ -30,12 +30,19 @@ function mettreAJour() {
   const type = typeChoisi();
   $('mode-connexion').setAttribute('aria-pressed', String(!inscription));
   $('mode-inscription').setAttribute('aria-pressed', String(inscription));
-  $('champ-nom').hidden = !inscription;
-  $('champ-plaque').hidden = !(inscription && type === 'pilote');
-  $('note-organisateur').hidden = !(inscription && type === 'organisateur');
-  $('aide-mdp').hidden = !inscription;
+  document.querySelector('.modes').dataset.mode = mode;   // la pastille glisse sous le bon bouton
+  // les champs s'ouvrent et se ferment en douceur (sensations.js)
+  const montrer = (el, visible) => (window.montrer ? window.montrer(el, visible) : (el.hidden = !visible));
+  montrer($('champ-nom'), inscription);
+  montrer($('champ-plaque'), inscription && type === 'pilote');
+  montrer($('note-organisateur'), inscription && type === 'organisateur');
+  montrer($('aide-mdp'), inscription);
   $('mot-de-passe').autocomplete = inscription ? 'new-password' : 'current-password';
-  boutonValider.textContent = inscription ? 'Créer mon compte' : 'Me connecter';
+  const texte = inscription ? 'Créer mon compte' : 'Me connecter';
+  if (boutonValider.textContent !== texte) {
+    boutonValider.textContent = texte;
+    boutonValider.classList.remove('change'); void boutonValider.offsetWidth; boutonValider.classList.add('change');
+  }
 }
 
 $('mode-connexion').addEventListener('click', () => { mode = 'connexion'; afficher(''); mettreAJour(); });

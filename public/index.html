@@ -202,6 +202,44 @@
       .classement tr.premier td:first-child, .petit-titre { animation: none; }
     }
 
+    /* ============ Animations (vivant, mais toujours lisible) ============ */
+    /* Arrivée de l'accueil : les éléments montent l'un après l'autre */
+    @keyframes monte { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+    @keyframes telephone-entre { from { opacity: 0; transform: translateY(40px) rotate(4deg) scale(.96); } to { opacity: 1; transform: none; } }
+    .accueil .conteneur > div:first-child > * { animation: monte .6s cubic-bezier(.2,.8,.2,1) both; }
+    .accueil .conteneur > div:first-child > :nth-child(2) { animation-delay: .08s; }
+    .accueil .conteneur > div:first-child > :nth-child(3) { animation-delay: .2s; }
+    .accueil .conteneur > div:first-child > :nth-child(4) { animation-delay: .3s; }
+    .accueil .conteneur > div:first-child > :nth-child(5) { animation-delay: .38s; }
+    .telephone { animation: telephone-entre .8s .2s cubic-bezier(.2,.8,.2,1) both; }
+
+    /* Démo : la manche se joue en direct dans le téléphone */
+    .demo-piste { position: relative; height: 8px; margin: 2px 2px 16px; border-radius: 8px; background: var(--carte-2); }
+    .demo-piste .rempli { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 8px; background: var(--or-metal); background-size: 250% 100%; }
+    .demo-piste i { position: absolute; top: -3px; width: 2px; height: 14px; background: var(--vert-100); opacity: .55; border-radius: 2px; }
+    .demo-piste .velo { position: absolute; top: 50%; left: 0; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%;
+                        background: var(--or-300); box-shadow: 0 0 0 3px var(--vert-900), 0 0 14px var(--or-300); }
+    .demo-chrono { font-size: 13px; letter-spacing: 1px; text-transform: uppercase; }
+    .lignes li { transition: opacity .3s ease; }
+    .lignes li.attente { opacity: .28; }
+    .lignes li.attente .pos, .lignes li.attente .ecart { visibility: hidden; }
+    @keyframes saute { 0% { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.18); } 100% { transform: none; opacity: 1; } }
+    .saute { animation: saute .4s cubic-bezier(.2,.8,.2,1) both; }
+    .temps-final.fini { animation: eclat-temps .9s ease-out; }
+    @keyframes eclat-temps { 0% { text-shadow: 0 0 0 transparent; } 30% { text-shadow: 0 0 18px var(--or-300); color: var(--or-100); } 100% { text-shadow: 0 0 0 transparent; } }
+
+    /* Changer d'onglet iPhone / Android en douceur */
+    @keyframes panneau-entre { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+    .panneau.entre { animation: panneau-entre .3s cubic-bezier(.2,.8,.2,1) both; }
+
+    /* Le damier défile doucement, comme un drapeau d'arrivée */
+    @keyframes damier-defile { to { background-position: 28px 0; } }
+    .damier { animation: damier-defile 4s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .accueil .conteneur > div:first-child > *, .telephone, .damier, .panneau.entre, .saute { animation: none; }
+    }
+
     @media (min-width: 860px) {
       .accueil { padding: 80px 0; }
       .accueil .conteneur { grid-template-columns: 1.15fr 1fr; }
@@ -238,13 +276,18 @@
       <!-- Démo : ce que voit le pilote -->
       <div class="telephone" aria-label="Exemple d'écran de l'appli">
         <div class="ecran">
-          <div class="ecran-haut"><b>Manche 1</b><span class="badge">8 pilotes</span></div>
-          <div class="pilote">
-            <span class="place">1<sup style="font-size:18px">er</sup></span>
-            <div><small class="doux">Plaque 21 · Couloir 4</small><strong>Enzo Robert</strong></div>
-            <div class="temps-final chrono">36.118</div>
+          <div class="ecran-haut"><b>Manche 1</b><span class="badge" id="demo-badge">8 pilotes</span></div>
+          <div class="demo-piste" aria-hidden="true">
+            <span class="rempli"></span>
+            <i style="left:17.1%"></i><i style="left:48%"></i><i style="left:75%"></i>
+            <span class="velo"></span>
           </div>
-          <ul class="lignes chrono">
+          <div class="pilote">
+            <span class="place" id="demo-place">1<sup style="font-size:18px">er</sup></span>
+            <div><small class="doux">Plaque 21 · Couloir 4</small><strong>Enzo Robert</strong></div>
+            <div class="temps-final chrono" id="demo-temps">36.118</div>
+          </div>
+          <ul class="lignes chrono" id="demo-lignes">
             <li><span>Inter 1</span><span class="ecart doux">+0.079</span><span class="pos">2e</span></li>
             <li><span>Inter 2</span><span class="ecart doux">+0.124</span><span class="pos">3e</span></li>
             <li><span>Inter 3</span><span class="ecart doux">—</span><span class="pos p1">1er</span></li>
@@ -326,7 +369,7 @@
         <div class="classement">
           <table class="chrono">
             <thead><tr><th>Pl.</th><th>Pilote</th><th style="text-align:right">Temps</th><th style="text-align:right">Écart</th></tr></thead>
-            <tbody>
+            <tbody data-apparait>
               <tr class="premier"><td>1</td><td>Enzo Robert</td><td class="num">36.118</td><td class="num doux">—</td></tr>
               <tr><td>2</td><td>Lucas Martin</td><td class="num">36.254</td><td class="num doux">+0.136</td></tr>
               <tr><td>3</td><td>Hugo Bernard</td><td class="num">36.512</td><td class="num doux">+0.394</td></tr>
@@ -424,13 +467,21 @@
 </footer>
 
 <script>
+  // Les titres de chaque partie arrivent en douceur quand on fait défiler
+  document.querySelectorAll('section .petit-titre, section h2, section .sous-titre, .classement, .encadre, .final .btn')
+    .forEach(el => el.setAttribute('data-revele', ''));
+
   // Onglets iPhone / Android
   const onglets = document.querySelectorAll('.onglet');
   function choisir(id) {
     onglets.forEach(o => {
       const actif = o.id === id;
       o.setAttribute('aria-selected', actif);
-      document.getElementById(o.getAttribute('aria-controls')).hidden = !actif;
+      const panneau = document.getElementById(o.getAttribute('aria-controls'));
+      if (actif && panneau.hidden) {
+        panneau.classList.remove('entre'); void panneau.offsetWidth; panneau.classList.add('entre');
+      }
+      panneau.hidden = !actif;
     });
   }
   onglets.forEach(o => o.addEventListener('click', () => choisir(o.id)));
@@ -459,6 +510,72 @@
     direct.hidden = true;
     document.getElementById('deja-installee').hidden = false;
   });
+
+  // ---------- Démo : la manche d'Enzo se joue en direct dans le téléphone ----------
+  (function () {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;   // on garde l'écran final, immobile
+    const ARRIVEE = 36.118;
+    const LIGNES = [6.187, 17.355, 27.092, 36.118];   // passage d'Enzo à chaque ligne
+    const PLACES = [2, 3, 1, 1];                       // sa position à chaque ligne
+    const VITESSE = 4;                                 // la manche dure ~9 s au lieu de 36 s
+    const PAUSE = 4200;                                // le résultat reste affiché pour être lu
+    const tel = document.querySelector('.telephone');
+    const rempli = tel.querySelector('.demo-piste .rempli');
+    const velo = tel.querySelector('.demo-piste .velo');
+    const temps = document.getElementById('demo-temps');
+    const place = document.getElementById('demo-place');
+    const badge = document.getElementById('demo-badge');
+    const lignes = [...document.querySelectorAll('#demo-lignes li')];
+    const ecrirePlace = n => { place.innerHTML = n ? `${n}<sup style="font-size:18px">${n === 1 ? 'er' : 'e'}</sup>` : '–'; };
+    const sauter = el => { el.classList.remove('saute'); void el.offsetWidth; el.classList.add('saute'); };
+
+    let chrono = 0, dernier = null, passees = 0, visible = true, finie = false, enCours = false, pret = false;
+
+    function lancer() {
+      if (!pret || enCours || finie || !visible) return;
+      enCours = true; dernier = null; requestAnimationFrame(image);
+    }
+
+    function remettre() {
+      chrono = 0; dernier = null; passees = 0; finie = false;
+      lignes.forEach(li => li.classList.add('attente'));
+      ecrirePlace(0); temps.textContent = '0.000'; temps.classList.remove('fini');
+      rempli.style.width = '0%'; velo.style.left = '0%';
+      badge.textContent = 'En course';
+    }
+
+    function image(t) {
+      if (!visible || finie) { enCours = false; return; }
+      if (dernier === null) dernier = t;
+      chrono = Math.min(ARRIVEE, chrono + ((t - dernier) / 1000) * VITESSE);
+      dernier = t;
+      const part = (chrono / ARRIVEE) * 100;
+      rempli.style.width = part + '%'; velo.style.left = part + '%';
+      temps.textContent = chrono.toFixed(3);
+      while (passees < LIGNES.length && chrono >= LIGNES[passees]) {
+        const li = lignes[passees];
+        li.classList.remove('attente');
+        sauter(li.querySelector('.pos'));
+        ecrirePlace(PLACES[passees]); sauter(place);
+        passees += 1;
+      }
+      if (chrono >= ARRIVEE) {
+        finie = true;
+        temps.textContent = ARRIVEE.toFixed(3);
+        temps.classList.add('fini');
+        badge.textContent = 'Arrivée !';
+        enCours = false;
+        setTimeout(() => { remettre(); lancer(); }, PAUSE);
+        return;
+      }
+      requestAnimationFrame(image);
+    }
+
+    // on ne joue la démo que quand le téléphone est à l'écran
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; lancer(); }).observe(tel);
+    remettre();
+    setTimeout(() => { pret = true; lancer(); }, 1000);   // on attend que le téléphone soit arrivé
+  })();
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
 </script>
