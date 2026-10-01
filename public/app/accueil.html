@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="/app/competitions/competitions.css">
   <link rel="stylesheet" href="/app/entrainement/entrainement.css">
   <link rel="stylesheet" href="/app/lieux.css">
+  <link rel="stylesheet" href="/app/manches/manches.css">
   <script src="/sensations.js" defer></script>
   <script src="/config.js"></script>
   <script type="module" src="/app/accueil.js"></script>
@@ -81,6 +82,8 @@
       </header>
 
       <section id="onglet-accueil" aria-labelledby="titre-accueil" hidden>
+        <!-- Le haut de l'accueil (bonjour, position) : caché quand on ouvre une course ou une manche -->
+        <div id="accueil-intro">
         <h1 id="titre-accueil" class="salut or-brillant">Salut</h1>
         <p id="accueil-sous-titre" class="sous-titre"></p>
         <p id="accueil-attente" class="note" hidden>
@@ -95,13 +98,9 @@
           <button type="button" class="bouton bouton-principal bouton-or" id="accueil-position-oui">Activer</button>
           <button type="button" class="lien-discret" id="accueil-position-non">Non merci</button>
         </div>
-        <div class="bloc">
-          <h2>Dernières manches</h2>
-          <div class="vide">
-            <strong>Pas encore de manche.</strong>
-            <span id="accueil-vide">Les résultats arriveront ici après la prochaine course.</span>
-          </div>
         </div>
+        <!-- Rempli par /app/manches/vue.js : mes manches, courses, manche, fiche pilote, importer -->
+        <div id="accueil-vue"></div>
       </section>
 
       <section id="onglet-entrainement" aria-label="Entraînement" hidden>

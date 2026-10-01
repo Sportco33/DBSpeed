@@ -1,0 +1,120 @@
+/* DBSpeed — onglet Accueil : les manches (import, courses, manche, fiche pilote).
+   Réutilise les styles communs des onglets Compétition et Entraînement
+   (.t, .chiffres, .carte-manche, .medaille, .segments, .puce, .question…).
+   Tout est rangé sous #onglet-accueil pour ne rien mélanger. */
+
+#onglet-accueil { --rayon: var(--arrondi); }
+
+#onglet-accueil .cache {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+#onglet-accueil .roue {
+  display: inline-block; width: 16px; height: 16px; margin-right: 8px; vertical-align: -2px;
+  border: 2px solid var(--carte-2); border-top-color: var(--principal); border-radius: 50%;
+  animation: m-tourne 0.8s linear infinite;
+}
+@keyframes m-tourne { to { transform: rotate(360deg); } }
+
+#onglet-accueil .bouton svg, #onglet-accueil .lien-fleche svg, #onglet-accueil .recherche > svg {
+  width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor;
+  stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+}
+#onglet-accueil .lien-fleche svg { width: 18px; height: 18px; }
+
+/* Le bouton Importer, en haut de l'accueil des organisateurs */
+.m-importer { margin-bottom: var(--e4); }
+
+/* Listes de cartes (mes manches, courses) */
+.m-liste { display: grid; gap: var(--e1); }
+.m-carte-course { width: 100%; }
+.m-a-toi { color: var(--or-300); font-weight: 600; }
+
+/* Une de mes manches : grosse place à gauche */
+.m-carte-manche {
+  display: grid; grid-template-columns: 64px 1fr 20px; align-items: center; gap: 12px;
+  padding: 12px 14px; color: var(--texte); text-decoration: none;
+  background: var(--verre); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  border: 1px solid var(--bord-doux); border-radius: var(--rayon);
+}
+.m-carte-manche .place-grosse { font-size: 34px; text-align: center; min-width: 0; }
+.m-carte-manche > svg { width: 20px; height: 20px; fill: none; stroke: var(--texte-doux); stroke-width: 2.2; stroke-linecap: round; }
+.m-carte-corps { display: grid; gap: 2px; min-width: 0; }
+.m-carte-corps strong { font-size: 17px; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m-carte-corps .doux { font-size: 14px; }
+.m-carte-temps { font-variant-numeric: tabular-nums; font-weight: 600; }
+.m-carte-temps small { font-weight: 400; }
+
+/* Une course : les manches les unes sous les autres */
+.m-manches { display: grid; gap: var(--e2); margin-bottom: var(--e4); }
+.m-voir-moi { margin: 0 0 var(--e2); }
+.m-plaque { font-family: var(--police-titre); font-weight: 800; font-size: 17px; color: var(--or-300); margin-right: 4px; }
+.t tr.m-moi { background: color-mix(in srgb, var(--or-700) 22%, transparent); }
+.t tr.m-trouve { background: color-mix(in srgb, var(--carte-2) 80%, transparent); }
+.t tr.m-trouve .cel-pilote { color: var(--principal); }
+.m-abandon { color: var(--texte-doux); }
+.m-gerer .bouton { margin-top: var(--e1); }
+
+/* Une manche : le vainqueur mis en avant */
+.m-vainqueur {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px;
+  margin-bottom: var(--e2); padding: 12px 14px; border-radius: var(--rayon); background: var(--verre);
+}
+.m-vainqueur > span:nth-child(2) { display: grid; min-width: 0; }
+.m-vainqueur .doux { font-size: 14px; }
+.m-vainqueur-temps { font-family: var(--police-titre); font-weight: 800; font-size: 26px; font-variant-numeric: tabular-nums; }
+.m-note { margin: var(--e1) 0 var(--e4); text-align: center; }
+
+/* La fiche d'un pilote */
+.m-fiche-tete { display: flex; align-items: center; gap: var(--e2); margin-bottom: var(--e2); }
+.m-fiche-tete .plaque.m-plaque-fiche { min-width: 88px; height: 72px; font-size: 52px; flex: none; border-radius: 16px 16px 8px 8px; }
+.m-fiche-tete .titre-ecran { font-size: 32px; overflow-wrap: anywhere; }
+.m-fiche-tete .sous-titre { margin: 0; }
+
+/* La place à chaque ligne : une frise de pastilles */
+.m-parcours {
+  display: flex; gap: 6px; margin: 0; padding: 0 0 4px; list-style: none;
+  overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+}
+.m-parcours li {
+  flex: 1 1 0; min-width: 58px; display: grid; justify-items: center; gap: 4px; padding: 10px 6px; scroll-snap-align: start;
+  background: var(--verre); border: 1px solid var(--bord-doux); border-radius: 12px; text-align: center;
+}
+.m-parcours li.p1 { border-color: var(--or-700); }
+.m-parcours-ligne { font-size: 12px; color: var(--texte-doux); line-height: 1.15; }
+.m-parcours-place { font-family: var(--police-titre); font-weight: 800; font-size: 24px; line-height: 1; }
+.m-parcours li.p1 .m-parcours-place { color: var(--or-300); }
+.t tbody th small { display: block; font-size: 12px; font-weight: 400; white-space: normal; }
+
+.m-voisins { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e1); margin-bottom: var(--e4); }
+
+/* Importer */
+.m-depot { margin-bottom: var(--e2); }
+.m-depot label.bouton { margin-bottom: var(--e1); }
+.m-format { margin-top: var(--e1); padding: 0 14px; background: var(--verre); border: 1px solid var(--bord-doux); border-radius: var(--rayon); }
+.m-format summary { min-height: 48px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
+.m-format p, .m-format li { font-size: 15px; }
+.m-format ul { padding-left: 20px; margin: 0 0 var(--e1); }
+.m-colonnes { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 var(--e2); padding: 0; }
+.m-colonnes span {
+  padding: 4px 10px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  background: var(--carte-2); border: 1px solid var(--bord-doux);
+}
+.m-colonnes span:last-child { border-color: var(--or-700); color: var(--or-300); }
+.m-erreurs {
+  margin-bottom: var(--e4); padding: 14px 16px; border-radius: var(--rayon);
+  background: var(--erreur-fond); border: 1px solid var(--accent); color: var(--bordeaux-50);
+}
+.m-erreurs h2 { margin-top: 0; font-size: 20px; }
+.m-erreurs ul { padding-left: 20px; margin: 0; display: grid; gap: 6px; }
+.note ul { margin: 6px 0 0; padding-left: 20px; }
+#m-form-import { margin-bottom: var(--e4); }
+#m-form-import .bouton { margin-top: var(--e1); }
+#m-form-import .petit { margin: var(--e1) 0 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  #onglet-accueil .roue { animation: none; }
+}
+
+/* Le vrai champ fichier est caché : le cadre doré va sur le bouton qui l'ouvre */
+#m-fichier:focus-visible + label { outline: 3px solid var(--or-300); outline-offset: 3px; }

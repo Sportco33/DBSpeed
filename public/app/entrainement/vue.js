@@ -6,7 +6,7 @@
 //   /classement[/PISTE]  → classement d'une piste (meilleur tour publié de chaque pilote)
 // Un compte organisateur ou spectateur arrive directement sur le classement.
 import { messageErreur } from '/app/supabase.js';
-import { esc, lienRetour, vide, puces, surChoix, animer, secteurs, brancherLiens } from '/app/outils.js';
+import { esc, lienRetour, vide, puces, surChoix, animer, secteurs, brancherLiens, demander } from '/app/outils.js';
 
 // ---------------------------------------------------------------------------
 // Mémoire de l'onglet (pour retrouver le même mois en revenant en arrière)
@@ -86,29 +86,6 @@ function erreurEcran(zone, err, retour = true) {
     <div class="vide"><strong>Impossible de charger.</strong>${esc(messageErreur(err))}</div>`;
 }
 
-// Petite question « tu es sûr ? » qui s'ouvre sous un bouton
-function demander(apres, { texte, oui, classeOui = 'bouton-or bouton-principal' }) {
-  return new Promise((resoudre) => {
-    apres.parentElement.querySelector('.question')?.remove();
-    const q = document.createElement('div');
-    q.className = 'question';
-    q.hidden = true;
-    q.innerHTML = `<p>${texte}</p>
-      <div class="question-boutons">
-        <button type="button" class="bouton bouton-secondaire" data-non>Annuler</button>
-        <button type="button" class="bouton ${classeOui}" data-oui>${esc(oui)}</button>
-      </div>`;
-    apres.after(q);
-    window.montrer ? window.montrer(q, true) : (q.hidden = false);
-    const fermer = (rep) => {
-      window.montrer ? window.montrer(q, false) : (q.hidden = true);
-      setTimeout(() => q.remove(), 260);
-      resoudre(rep);
-    };
-    q.querySelector('[data-non]').addEventListener('click', () => fermer(false));
-    q.querySelector('[data-oui]').addEventListener('click', () => fermer(true));
-  });
-}
 
 // ---------------------------------------------------------------------------
 // Données

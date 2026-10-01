@@ -274,6 +274,7 @@ h2 {
 input[type='text'],
 input[type='email'],
 input[type='password'],
+input[type='date'],
 select {
   width: 100%;
   min-height: 52px;
@@ -285,6 +286,7 @@ select {
   font: 400 17px var(--police-texte);
   transition: border-color var(--duree) ease;
 }
+input[type='date'] { color-scheme: dark; }
 input:focus-visible {
   border-color: var(--principal);
   outline: none;

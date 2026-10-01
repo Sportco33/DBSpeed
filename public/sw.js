@@ -6,7 +6,7 @@
 //   en arrière-plan.
 // - On ne touche JAMAIS à /api/* ni aux autres sites (Supabase, cartes, CDN…).
 // Pour forcer tout le monde à repartir de zéro : changer le numéro ci-dessous.
-const CACHE = 'dbspeed-v2';
+const CACHE = 'dbspeed-v3';
 
 // Le strict minimum gardé dès l'installation.
 const COQUILLE = [
@@ -17,6 +17,11 @@ const COQUILLE = [
   '/images/marbre-vert.jpg', '/images/marbre-bordeaux.jpg',
   '/app/polices/Barlow-Regular.woff2', '/app/polices/Barlow-SemiBold.woff2',
   '/app/polices/BigShouldersDisplay-Variable.woff2',
+  // l'espace connecté et l'onglet Accueil (mes manches) : utiles au bord de la piste, sans réseau
+  '/app/accueil.js', '/app/supabase.js', '/app/outils.js', '/app/tuto.js', '/app/tuto.css',
+  '/app/position.js', '/app/lieux-osm.js',
+  '/app/manches/vue.js', '/app/manches/calcul.js', '/app/manches/excel.js', '/app/manches/manches.css',
+  '/app/competitions/competitions.css', '/app/entrainement/entrainement.css', '/app/lieux.css',
 ];
 
 // Une réponse « propre » à garder : bonne (200), et venant de notre site.
@@ -87,10 +92,25 @@ async function copieDabord(e) {
   return frais;
 }
 
+// Une bibliothèque à version fixe : la copie si on l'a, sinon Internet (et on la garde)
+async function bibliotheque(requete) {
+  const copie = await caches.match(requete);
+  if (copie) return copie;
+  const rep = await fetch(requete);
+  if (rep.ok && (rep.type === 'cors' || rep.type === 'basic')) garder(requete, rep.clone()).catch(() => {});
+  return rep;
+}
+
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+  // Bibliothèques à version fixe sur jsdelivr (supabase-js 2.117.2, MapLibre 6.11.2…) : elles ne
+  // changent jamais, on garde la copie. Grâce à ça, l'appli s'ouvre même sans réseau.
+  if (url.origin === 'https://cdn.jsdelivr.net' && /^\/npm\/(@[\w.-]+\/)?[\w.-]+@\d+\.\d+\.\d+\//.test(url.pathname)) {
+    e.respondWith(bibliotheque(req));
+    return;
+  }
   if (url.origin !== self.location.origin) return;     // autres sites : le navigateur gère
   if (url.pathname.startsWith('/api/')) return;         // API : jamais en cache
   if (req.cache === 'only-if-cached' && req.mode !== 'same-origin') return; // bug connu de Chrome

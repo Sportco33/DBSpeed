@@ -3,10 +3,29 @@ import {
   supabase, configOk, TYPES, CATEGORIES, messageErreur, erreurDansAdresse, typeRetenu,
 } from '/app/supabase.js';
 import { lancerTuto } from '/app/tuto.js';
-import { afficherCompetition } from '/app/competitions/vue.js';
-import { afficherEntrainement } from '/app/entrainement/vue.js';
-import { afficherAmis } from '/app/entrainement/amis.js';
-import { afficherLieux } from '/app/lieux.js';
+import { idValide } from '/app/lieux-osm.js';
+
+// Chaque onglet a son code à part, chargé seulement la première fois qu'on l'ouvre
+// (l'appli démarre plus vite : on ne télécharge pas la carte ou les compétitions pour rien).
+const modules = {
+  manches: () => import('/app/manches/vue.js'),
+  competition: () => import('/app/competitions/vue.js'),
+  entrainement: () => import('/app/entrainement/vue.js'),
+  amis: () => import('/app/entrainement/amis.js'),
+  lieux: () => import('/app/lieux.js'),
+};
+const charges = {};
+function module(nom) {
+  charges[nom] ||= modules[nom]().catch((err) => {
+    delete charges[nom];   // pas de réseau : on réessaiera la prochaine fois
+    throw err;
+  });
+  return charges[nom];
+}
+function siEchec(err) {
+  console.error(err);
+  afficher($('message'), "Impossible d'ouvrir cet onglet. Vérifie ta connexion et réessaie.");
+}
 import {
   prendrePosition, suivrePosition, oublierPosition, positionConnue, retenirChoix,
 } from '/app/position.js';
@@ -88,18 +107,23 @@ function montrerOnglet() {
     if (lien.dataset.onglet === actuel) lien.setAttribute('aria-current', 'page');
     else lien.removeAttribute('aria-current');
   }
-  if (actuel === 'competition') {
+  if (actuel === 'accueil') {
+    // l'onglet Accueil : mes manches, les courses, une manche, la fiche d'un pilote, importer
+    const sousPage = parties.slice(1);
+    $('accueil-intro').hidden = sousPage.length > 0;
+    module('manches').then((m) => m.afficherManches($('accueil-vue'), sousPage, { supabase, profil })).catch(siEchec);
+  } else if (actuel === 'competition') {
     // l'onglet Compétition a ses propres pages (et gère lui-même le défilement)
-    afficherCompetition($('competition-vue'), parties[0] === 'competition' ? parties.slice(1) : []);
+    module('competition').then((m) => m.afficherCompetition($('competition-vue'), parties[0] === 'competition' ? parties.slice(1) : [])).catch(siEchec);
   } else if (actuel === 'entrainement') {
     // pareil pour l'onglet Entraînement : calendrier, journée, tour, classement
-    afficherEntrainement($('entrainement-vue'), parties[0] === 'entrainement' ? parties.slice(1) : [], { supabase, profil });
+    module('entrainement').then((m) => m.afficherEntrainement($('entrainement-vue'), parties[0] === 'entrainement' ? parties.slice(1) : [], { supabase, profil })).catch(siEchec);
   } else if (actuel === 'lieux') {
     // l'onglet Lieux : la carte (#lieux) ou la fiche d'une piste (#lieux/way-123) ;
     // il remet lui-même la liste à sa place quand on revient d'une fiche
     if (change) window.scrollTo(0, 0);
-    const piste = parties[0] === 'lieux' && /^(node|way|relation|dbs)-[0-9a-z-]{1,40}$/.test(parties[1] || '') ? parties[1] : '';
-    afficherLieux(piste);
+    const piste = parties[0] === 'lieux' && idValide(parties[1] || '') ? parties[1] : '';
+    module('lieux').then((m) => m.afficherLieux(piste)).catch(siEchec);
   } else {
     window.scrollTo(0, 0);
   }
@@ -122,13 +146,10 @@ function remplir() {
   $('titre-accueil').textContent = p ? `Salut ${p}` : 'Salut';
   if (estPilote) {
     $('accueil-sous-titre').textContent = profil.plaque ? `Pilote, plaque ${profil.plaque}.` : 'Pilote.';
-    $('accueil-vide').textContent = 'Tes temps arriveront ici après ta prochaine course.';
   } else if (type === 'organisateur') {
     $('accueil-sous-titre').textContent = 'Organisateur.';
-    $('accueil-vide').textContent = 'Les manches que tu importes apparaîtront ici.';
   } else {
     $('accueil-sous-titre').textContent = 'Spectateur.';
-    $('accueil-vide').textContent = 'Les résultats arriveront ici après la prochaine course.';
   }
   $('accueil-attente').hidden = !(type === 'organisateur' && !profil.organisateur_valide);
 
@@ -342,7 +363,7 @@ function preparerFinInscription() {
 function ouvrirAppli() {
   $('finir-inscription').hidden = true;
   remplir();
-  afficherAmis($('amis-zone'), { supabase });
+  module('amis').then((m) => m.afficherAmis($('amis-zone'), { supabase })).catch(siEchec);
   $('appli').hidden = false;
   $('appli').classList.add('fondu');
   // La position : si la personne a dit oui, on la reprend dès l'ouverture de l'appli
