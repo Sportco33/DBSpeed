@@ -26,7 +26,7 @@
    - [ ] Supabase → adresses du site (Site URL + Redirect URLs)
    - [ ] Supabase → envoi des mails avec Resend (SMTP)
    - [ ] Google Cloud → créer l'accès Google, puis l'activer dans Supabase
-2. [ ] **pushcoco** puis tester en vrai : créer un compte, confirmer le mail, se connecter, Google.
+2. [ ] ~~pushcoco~~ fait le 01/10/2026 (commit `07d9d7e`, mise en ligne Netlify prête) → **tester en vrai** : créer un compte, confirmer le mail, se connecter, Google.
 3. [x] **Onglet Entraînement** : calendrier, journée (piste + tracé + tours), tour (intermédiaires, comparaison record / meilleurs inter / mon meilleur / amis), publier, classement, Mes amis dans le profil ; base Supabase testée (sur `travail`) (01/10/2026)
 3a. [ ] **Importer des séances d'entraînement** (fichier Excel puis transpondeurs) dans `entrainements` + `tours`, et **créer les pistes** (nom, lieu, tracé, lignes).
 3b. [ ] **Compétitions dans Supabase** : la table `competitions` existe déjà (créée pour l'onglet Lieux : lieu, nom, dates, niveau, lien) → la **compléter** plutôt que d'en créer une autre ; ajouter les tables catégories, engagés, équipes, manches, passages + import par les organisateurs ; remplacer les données d'exemple.
