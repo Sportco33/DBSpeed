@@ -114,7 +114,7 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 - Organisateur : importer les temps (une fois validé).
 - Spectateur : suivre les manches et les classements.
 
-### Classements DBSpeed, onglet Compétition (consigne 44)
+### Classements DBSpeed, onglet Compétition (consigne 45)
 
 - Carte **« Classements »** en haut de la liste des compétitions → `#competition/classements` (code : `public/app/competitions/classements.js`, chargé seulement quand on l'ouvre).
 - Choix : **Vrais résultats 2026** ou **Exemple (démo)** ; **Hommes / Femmes** ; **catégorie** (Elite, U23, Junior… celles qui ont des résultats) ; **niveau** : **Monde**, **Pays** (choisir le pays), **Région**, **Département** (France).
