@@ -16,6 +16,10 @@ Lis aussi, avant de travailler :
 - Avancer étape par étape, pas tout d'un coup.
 - **Terminer chaque réponse par une partie « À améliorer »** : les points principaux à améliorer, le plus important en premier (2 ou 3 maximum).
 
+## Ne rien payer (obligatoire)
+
+- Nicolas ne veut **rien payer** : seulement des offres **gratuites**, sans carte bancaire. Avant de proposer un service ou une option, vérifier que c'est gratuit et le dire. Ne jamais faire ajouter une carte bancaire (ex. pas d'« essai gratuit » Google Cloud).
+
 ## Ergonomie et sensations (à appliquer sur chaque écran, sans qu'on le redemande)
 
 - **Retour haptique à chaque appui** (bouton, onglet, carte, lien) + effet visuel d'appui.
