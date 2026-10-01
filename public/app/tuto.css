@@ -354,3 +354,40 @@ html.tuto-ouvert, html.tuto-ouvert body { overflow: hidden; }
   .tuto-pilote, .tuto-pilote .roue, .tuto-pret { animation: none !important; }
   .tuto-pilote { left: auto; right: 0; }
 }
+
+/* ---------- Étape « Ta position » : une épingle dorée avec des ondes ---------- */
+.tuto-position {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  margin: 4px auto 12px;
+}
+.tuto-position svg {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  fill: var(--vert-900);
+  stroke: var(--or-300);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .5));
+  animation: tuto-epingle 1.8s cubic-bezier(.2, .8, .2, 1) infinite;
+}
+.tuto-position svg circle { fill: var(--or-500); stroke: none; }
+.tuto-onde {
+  position: absolute;
+  inset: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--or-500);
+  opacity: 0;
+  animation: tuto-onde 1.8s ease-out infinite;
+}
+.tuto-onde.o2 { animation-delay: .9s; }
+@keyframes tuto-epingle { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-8px); } }
+@keyframes tuto-onde { from { transform: scale(.5); opacity: .8; } to { transform: scale(1.6); opacity: 0; } }
+.tuto-petit { font-size: 14px; opacity: .85; }
+@media (prefers-reduced-motion: reduce) {
+  .tuto-position svg, .tuto-onde { animation: none; }
+}

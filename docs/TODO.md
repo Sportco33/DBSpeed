@@ -15,6 +15,7 @@
 - [x] Base Supabase : table `profils` (type de compte, nom, plaque), sécurité testée (01/10/2026)
 - [x] Vraie page `/app/` : connexion avec 3 types (pilote, organisateur, spectateur), se connecter, créer un compte, Google (sur `travail`, pas encore en ligne)
 - [x] Espace connecté `/app/accueil.html` : onglets en bas (Accueil, Entraînement, Compétition, Mon profil), modifier ses infos, se déconnecter, en marbre et or (sur `travail`)
+- [x] **Localisation** : demandée au tuto, choix enregistré dans le profil, position reprise à chaque connexion, ville dans l'en-tête, réglage dans Mon profil (01/10/2026)
 - [x] **Vrais lieux de Slovaquie** : 68 lieux vérifiés avec sources (4 pistes BMX race + 64 pump tracks), recherche d'un pays entier, fusion des doublons, Coupe de Slovaquie 2026 dans l'onglet Compétition (01/10/2026)
 - [x] **Vraies compétitions 2026** dans l'onglet Compétition (UCI, UEC, FFC…) : calendrier, résultats publiés, sources ; démo gardée derrière un bouton (sur `travail`) (01/10/2026)
 - [x] **Carte des Lieux v2** (01/10/2026) : carte détaillée MapLibre (plan + satellite avec clé MapTiler), épingles or / bordeaux dessinées dans la carte (collées quand elle bouge), groupes en pièce d'or, noms des pistes, épingle choisie qui grossit ; **API de la carte** `/api/carte/*` (fonction Netlify avec cache) ; tracé en or sur photo satellite dans la fiche (sur `travail`)

@@ -116,11 +116,11 @@ function progression(numero, total) {
 
 // ---------- Le tuto ----------
 
-export function lancerTuto({ profil, enregistrer, allerOnglet, depart = 'debut' }) {
+export function lancerTuto({ profil, enregistrer, allerOnglet, demanderPosition, depart = 'debut' }) {
   return new Promise((terminer) => {
     const el = creerCouche();
     let visite = etapesVisite(profil);
-    let total = 2 + visite.length + 1;   // bienvenue + infos + visite + fin
+    let total = 3 + visite.length + 1;   // bienvenue + infos + position + visite + fin
     let indexVisite = 0;
     let fini = false;
     let cibleActuelle = null;
@@ -249,9 +249,62 @@ export function lancerTuto({ profil, enregistrer, allerOnglet, depart = 'debut' 
           if (probleme) return erreur(probleme);
           // le profil vient d'être mis à jour : on recalcule la visite (ex. la plaque)
           visite = etapesVisite(profil);
-          total = 2 + visite.length + 1;
+          total = 3 + visite.length + 1;
           indexVisite = 0;
+          position();
+        });
+      });
+    }
+
+    // ----- la position (demandée une seule fois, le choix est gardé dans le profil) -----
+
+    function position() {
+      montrerCarte(`
+        ${progression(3, total)}
+        <div class="tuto-position" aria-hidden="true">
+          <span class="tuto-onde"></span><span class="tuto-onde o2"></span>
+          <svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+        </div>
+        <h2 class="tuto-titre">Ta position</h2>
+        <p class="tuto-texte">Pour te montrer tout de suite les pistes de BMX et les pump tracks autour de toi, à chaque fois que tu ouvres l'appli.</p>
+        <p class="tuto-texte tuto-petit">Ta position reste sur ton téléphone : DBSpeed garde seulement ton choix. Tu pourras le changer dans Mon profil.</p>
+        <p class="message" role="status" id="tuto-message-position"></p>
+        <div class="tuto-actions">
+          <button type="button" class="bouton bouton-principal bouton-or" data-action="autoriser">Autoriser ma position</button>
+          <button type="button" class="tuto-lien" data-action="plus-tard">Plus tard</button>
+        </div>`, () => {
+        const zone = el.carte.querySelector('#tuto-message-position');
+        const autoriser = el.carte.querySelector('[data-action="autoriser"]');
+        const plusTard = el.carte.querySelector('[data-action="plus-tard"]');
+        autoriser.focus({ preventScroll: true });
+        plusTard.addEventListener('click', () => {
+          enregistrer({ localisation: false });   // pas grave si ça échoue : on redemandera
           lancerVisite();
+        });
+        autoriser.addEventListener('click', async () => {
+          autoriser.disabled = true;
+          autoriser.textContent = 'Le téléphone te demande…';
+          const rep = demanderPosition ? await demanderPosition() : { etat: 'absente' };
+          if (rep.etat === 'ok') {
+            enregistrer({ localisation: true });
+            vibrer('fort');
+            zone.className = 'message ok';
+            zone.textContent = 'Position activée.';
+            await attendre(calme ? 400 : 900);
+            lancerVisite();
+            return;
+          }
+          autoriser.disabled = false;
+          autoriser.textContent = 'Réessayer';
+          zone.className = 'message erreur';
+          vibrer('erreur');
+          if (rep.etat === 'refusee') {
+            enregistrer({ localisation: false });
+            zone.textContent = 'Le téléphone a refusé. Pour changer d’avis : réglages du téléphone → ton navigateur (ou DBSpeed) → Position → Autoriser. Tu peux continuer sans.';
+          } else {
+            zone.textContent = 'Impossible de trouver ta position pour l’instant. Tu peux réessayer, ou continuer sans.';
+          }
+          plusTard.textContent = 'Continuer sans';
         });
       });
     }
@@ -297,7 +350,7 @@ export function lancerTuto({ profil, enregistrer, allerOnglet, depart = 'debut' 
 
     async function montrerVisite() {
       const etape = visite[indexVisite];
-      const numero = 3 + indexVisite;
+      const numero = 4 + indexVisite;
       const derniere = indexVisite === visite.length - 1;
 
       el.bulle.classList.remove('entre');

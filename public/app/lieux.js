@@ -10,6 +10,7 @@
 import { supabase, configOk } from '/app/supabase.js';
 import { creerGrandeCarte, creerCarteTrace, satelliteDispo } from '/app/carte.js';
 import * as osm from '/app/lieux-osm.js';
+import { prendrePosition, positionConnue, choixPosition } from '/app/position.js';
 
 const { sansAccents, distance, idValide } = osm;
 // L'API de la carte DBSpeed (netlify/functions/carte.mts) : elle lit OpenStreetMap et garde
@@ -321,26 +322,37 @@ function dessinerRepereMoi() {
 
 // ---------- Position de l'utilisateur ----------
 
-function demanderPosition() {
-  return new Promise((ok) => {
-    if (!navigator.geolocation) return ok({ erreur: 'absente' });
-    navigator.geolocation.getCurrentPosition(
-      (p) => ok({ lat: p.coords.latitude, lon: p.coords.longitude }),
-      (e) => ok({ erreur: e.code === 1 ? 'refusee' : 'introuvable' }),
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
-    );
-  });
+// La position vient de position.js (partagée par toute l'appli, demandée au tuto)
+async function demanderPosition({ auto }) {
+  // déjà connue et récente (l'appli l'a prise à l'ouverture) : pas besoin de redemander
+  const connue = positionConnue({ fraiche: true });
+  if (auto && connue) return { lat: connue.lat, lon: connue.lon };
+  // la personne a dit non à la localisation : on ne redemande pas tout seul
+  if (auto && choixPosition() === false) return { erreur: 'non' };
+  const rep = await prendrePosition();
+  return rep.etat === 'ok' ? { lat: rep.position.lat, lon: rep.position.lon } : { erreur: rep.etat };
 }
+
+// Quand l'appli reçoit une nouvelle position (ouverture, retour dans l'appli) : le point bouge sur la carte
+window.addEventListener('dbspeed:position', (e) => {
+  if (!e.detail) { etat.position = null; etat.moi?.remove(); etat.moi = null; return; }
+  etat.position = { lat: e.detail.lat, lon: e.detail.lon };
+  dessinerRepereMoi();
+});
 
 async function localiser({ auto = false } = {}) {
   const bouton = $('lieux-ici');
   bouton.classList.add('cherche');
   dire(auto ? 'On cherche où tu es…' : 'On te localise…', 'attente');
-  const rep = await demanderPosition();
+  const rep = await demanderPosition({ auto });
   bouton.classList.remove('cherche');
   if (rep.erreur) {
     const deja = centreRetenu();
-    if (rep.erreur === 'refusee') {
+    if (rep.erreur === 'non') {
+      dire(deja
+        ? 'Ta position est désactivée : voici ta dernière recherche. Touche le bouton viseur pour te localiser.'
+        : 'Ta position est désactivée. Cherche une ville ou une piste, ou touche le bouton viseur pour te localiser.', 'info');
+    } else if (rep.erreur === 'refusee') {
       dire(auto && deja
         ? 'Ta position n’est pas partagée : voici ta dernière recherche. Tu peux aussi chercher une ville.'
         : 'Ta position n’est pas partagée. Cherche une ville ou une piste dans la barre en haut, ou autorise la position pour DBSpeed dans les réglages du téléphone.', auto ? 'info' : 'erreur');

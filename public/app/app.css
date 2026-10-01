@@ -612,3 +612,80 @@ select {
   #appli .entete, #appli .onglets, .glisse-gauche > *, .glisse-droite > *, .onglets svg,
   .plaque::after, .plaque-petite::after { animation: none !important; }
 }
+
+/* ---------- Ma position : en-tête, carte de l'accueil, Mon profil ---------- */
+.entete-droite { display: flex; align-items: center; gap: var(--e1); min-width: 0; }
+.entete-lieu {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  max-width: 150px;
+  padding: 0 12px 0 8px;
+  border: 1px solid var(--or-700);
+  border-radius: 999px;
+  background: var(--verre);
+  color: var(--texte);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  animation: apparaitre .3s ease-out both;
+}
+.entete-lieu span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.entete-lieu svg, .carte-position > svg, .position-icone svg {
+  flex: none;
+  fill: none;
+  stroke: var(--principal);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.entete-lieu svg { width: 18px; height: 18px; }
+
+.carte-position {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px 12px;
+  padding: var(--e2);
+  margin-bottom: var(--e3);
+  background: var(--verre);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--or-700);
+  border-radius: var(--arrondi);
+}
+.carte-position > svg { width: 34px; height: 34px; }
+.carte-position strong { display: block; }
+.carte-position span { color: var(--texte-doux); font-size: 15px; }
+.carte-position .bouton { grid-column: 1 / -1; }
+.lien-discret {
+  grid-column: 1 / -1;
+  justify-self: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  background: none;
+  color: var(--texte-doux);
+  font: 600 15px var(--police-texte);
+  cursor: pointer;
+}
+
+.ligne-position {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.position-icone {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 12px;
+  background: var(--carte-2);
+}
+.position-icone svg { width: 24px; height: 24px; }
+.position-texte { display: grid; gap: 2px; }
+.position-texte small { color: var(--texte-doux); font-size: 14px; }
+@media (prefers-reduced-motion: reduce) { .entete-lieu { animation: none; } }

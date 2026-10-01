@@ -7,6 +7,9 @@ import { afficherCompetition } from '/app/competitions/vue.js';
 import { afficherEntrainement } from '/app/entrainement/vue.js';
 import { afficherAmis } from '/app/entrainement/amis.js';
 import { afficherLieux } from '/app/lieux.js';
+import {
+  prendrePosition, suivrePosition, oublierPosition, positionConnue, retenirChoix,
+} from '/app/position.js';
 
 const CONNEXION = '/app/';
 const ONGLETS = ['accueil', 'entrainement', 'competition', 'lieux', 'profil'];
@@ -35,7 +38,7 @@ function initiales(nom) {
 async function chargerProfil() {
   const { data, error } = await supabase
     .from('profils')
-    .select('id, type_compte, nom, plaque, club, categorie, organisateur_valide, tuto_fini')
+    .select('id, type_compte, nom, plaque, club, categorie, organisateur_valide, tuto_fini, localisation')
     .eq('id', utilisateur.id)
     .single();
   if (error) throw error;
@@ -164,6 +167,7 @@ function remplir() {
   $('profil-label-club').textContent = estPilote ? 'Club'
     : type === 'organisateur' ? 'Club ou structure qui organise' : 'Club que tu suis';
   $('profil-champ-club').value = profil.club || '';
+  majPosition();
 }
 
 // Enregistre des changements du profil. Renvoie un message d'erreur, ou null si tout va bien.
@@ -206,7 +210,87 @@ $('form-profil').addEventListener('submit', async (e) => {
 });
 
 $('revoir-tuto').addEventListener('click', () => {
-  lancerTuto({ profil, enregistrer, allerOnglet, depart: 'visite' });
+  lancerTuto({ profil, enregistrer, allerOnglet, demanderPosition, depart: 'visite' });
+});
+
+// ---------- Ma position ----------
+// Demandée au tuto de la première connexion ; le choix est gardé dans le profil,
+// la position reste sur le téléphone. À chaque connexion, si c'est oui, on la reprend tout de suite.
+
+async function demanderPosition() {
+  const rep = await prendrePosition();
+  if (rep.etat === 'ok') {
+    retenirChoix(true);
+    suivrePosition();
+  } else if (rep.etat === 'refusee') {
+    retenirChoix(false);
+  }
+  return rep;
+}
+
+function majPosition() {
+  const p = positionConnue();
+  const active = profil?.localisation === true;
+  // en-tête : la ville où l'on est
+  $('entete-lieu').hidden = !(active && p);
+  $('entete-ville').textContent = p?.ville || 'Ma position';
+  // accueil : la carte « Active ta position », seulement si on ne l'a jamais demandé
+  $('accueil-position').hidden = !(profil && profil.localisation == null && profil.tuto_fini);
+  // mon profil
+  $('position-etat').textContent = active ? 'Activée' : 'Désactivée';
+  $('position-detail').textContent = active
+    ? (p ? `Dernière position : ${p.ville || 'trouvée'}, ${new Date(p.quand).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}. Elle reste sur ton téléphone.` : 'On cherche où tu es…')
+    : 'L’appli ne connaît pas ta position.';
+  $('position-bouton').textContent = active ? 'Désactiver ma position' : 'Activer ma position';
+}
+window.addEventListener('dbspeed:position', majPosition);
+
+async function activerPosition(zone) {
+  afficher(zone, '');
+  const rep = await demanderPosition();
+  if (rep.etat === 'ok') {
+    const probleme = await enregistrer({ localisation: true });
+    if (probleme) return afficher(zone, probleme);
+    majPosition();
+    return afficher(zone, 'Position activée.', 'ok');
+  }
+  if (rep.etat === 'refusee') {
+    await enregistrer({ localisation: false });
+    majPosition();
+    return afficher(zone, 'Le téléphone a refusé. Pour l’autoriser : réglages du téléphone → ton navigateur (ou DBSpeed) → Position → Autoriser, puis réessaie.');
+  }
+  return afficher(zone, 'Impossible de trouver ta position pour l’instant. Réessaie dans un moment.');
+}
+
+$('position-bouton').addEventListener('click', async (e) => {
+  const bouton = e.currentTarget;
+  bouton.disabled = true;
+  if (profil.localisation === true) {
+    const probleme = await enregistrer({ localisation: false });
+    if (probleme) afficher($('message-position'), probleme);
+    else {
+      retenirChoix(false);
+      oublierPosition();
+      majPosition();
+      afficher($('message-position'), 'Position désactivée : l’appli ne s’en sert plus et l’a effacée de ton téléphone.', 'ok');
+    }
+  } else {
+    await activerPosition($('message-position'));
+  }
+  bouton.disabled = false;
+});
+
+$('accueil-position-oui').addEventListener('click', async (e) => {
+  const bouton = e.currentTarget;
+  bouton.disabled = true;
+  await activerPosition($('message'));
+  bouton.disabled = false;
+  majPosition();
+});
+$('accueil-position-non').addEventListener('click', async () => {
+  await enregistrer({ localisation: false });
+  retenirChoix(false);
+  window.montrer?.($('accueil-position'), false);
 });
 
 $('deconnexion').addEventListener('click', async () => {
@@ -261,10 +345,14 @@ function ouvrirAppli() {
   afficherAmis($('amis-zone'), { supabase });
   $('appli').hidden = false;
   $('appli').classList.add('fondu');
+  // La position : si la personne a dit oui, on la reprend dès l'ouverture de l'appli
+  retenirChoix(profil.localisation ?? null);
+  if (profil.localisation === true) suivrePosition();
+  majPosition();
   montrerOnglet();
-  // Première connexion : le tuto (bienvenue, infos, visite guidée)
+  // Première connexion : le tuto (bienvenue, infos, position, visite guidée)
   if (!profil.tuto_fini) {
-    setTimeout(() => lancerTuto({ profil, enregistrer, allerOnglet }), 350);
+    setTimeout(() => lancerTuto({ profil, enregistrer, allerOnglet, demanderPosition }), 350);
   }
 }
 

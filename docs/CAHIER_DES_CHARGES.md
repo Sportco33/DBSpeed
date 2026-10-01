@@ -47,8 +47,9 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 **Tuto de la première connexion** (une seule fois, puis « Revoir le tuto » dans Mon profil)
 1. **Bienvenue** : prénom, feux de départ, 3 choses que fait l'appli (selon le type de compte).
 2. **Tes infos** : prénom et nom ; pour un pilote, plaque (obligatoire), catégorie (facultatif, en pastilles), club (facultatif) ; pour un organisateur, club ou structure qui organise (obligatoire) ; pour un spectateur, club suivi (facultatif).
-3. **Visite guidée avec un projecteur** : tout l'écran passe dans l'ombre sauf la partie expliquée, éclairée avec un halo doré, et une bulle explique à quoi elle sert. Le projecteur glisse d'une partie à l'autre : la plaque, puis chaque onglet (l'onglet s'ouvre derrière). Boutons « Suivant » et « Passer ».
-4. **Tu es prêt !** : damier d'arrivée, bouton « Commencer ».
+3. **Ta position** : une épingle dorée avec des ondes, « Autoriser ma position » ou « Plus tard ». Le choix est enregistré dans le profil (`profils.localisation`).
+4. **Visite guidée avec un projecteur** : tout l'écran passe dans l'ombre sauf la partie expliquée, éclairée avec un halo doré, et une bulle explique à quoi elle sert. Le projecteur glisse d'une partie à l'autre : la plaque, puis chaque onglet (l'onglet s'ouvre derrière). Boutons « Suivant » et « Passer ».
+5. **Tu es prêt !** : damier d'arrivée, bouton « Commencer ».
 
 **Après connexion** (`/app/accueil.html`), des **onglets en bas de l'écran** :
 - **Accueil** : bonjour + dernières manches.
@@ -85,6 +86,13 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
   - **Vrais lieux de Slovaquie** (01/10/2026) : 68 lieux vérifiés ajoutés dans la table `lieux` (4 pistes de BMX race : Bratislava-Rača, Košice-Furča, Liptovský Mikuláš, Dunajská Lužná ; 64 pump tracks), avec adresse, horaires et accès quand ils sont publiés, description du tracé, club, et **sources** (affichées en bas de la fiche). Seuls les lieux dont une source donne la position sont sur la carte (aucune position devinée). Un lieu DBSpeed à moins de 150 m d'une piste OpenStreetMap du même type est fusionné avec elle (pas de doublon).
   - **D'où viennent les infos** : les pistes, leur forme, et parfois les horaires / l'accès / le revêtement viennent d'**OpenStreetMap** (carte libre et gratuite, via Overpass ; adresse et recherche de ville via Nominatim). Ce que DBSpeed ajoute (horaires, public/privé, description du tracé, photos, club, compétitions) est dans Supabase (tables `lieux` et `competitions`). **Seuls les organisateurs validés** pourront compléter une fiche ou ajouter une compétition (formulaire à faire).
 - **Mon profil** : « ma page » (plaque dorée, nom, type de compte, club et catégorie, email), **Mes amis** (chercher un pilote par plaque ou nom, Ajouter, accepter / refuser une demande, retirer un ami avec confirmation), modifier ses infos (nom, plaque, catégorie, club), revoir le tuto, se déconnecter.
+
+**Ma position** (01/10/2026) :
+- Demandée **une seule fois**, au tuto de la première connexion. Pour les comptes qui ont déjà fini le tuto : une carte « Active ta position » sur l'Accueil (Activer / Non merci).
+- Le **choix** (oui / non) est enregistré dans le profil, donc il suit la personne sur tous ses téléphones. La **position** reste sur le téléphone (jamais envoyée dans la base) : seulement la dernière, avec sa ville.
+- **À chaque connexion**, si c'est oui : l'appli reprend la position tout de suite (et quand on revient dans l'appli après 5 minutes). La ville s'affiche en haut à côté de la plaque (on la touche pour aller aux Lieux), et la carte des Lieux s'ouvre directement autour de soi, sans redemander.
+- Si c'est non : l'appli ne redemande jamais toute seule (la carte des Lieux propose le bouton viseur).
+- **Mon profil → Ma position** : état (activée / désactivée, dernière position et heure), bouton pour activer ou désactiver (désactiver efface la position du téléphone).
 
 **Ce que chaque compte peut voir / faire** (à compléter)
 - Pilote : ses temps, ses manches, toutes les manches.
