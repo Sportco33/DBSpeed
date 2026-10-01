@@ -42,6 +42,68 @@
     window.dispatchEvent(new CustomEvent('dbspeed:logo', { detail: id }));
   }
 
+  // ---------- Écran d'ouverture animé (appli seulement) ----------
+  // À l'ouverture de l'appli : la médaille du style choisi en grand, animée, puis l'appli.
+  // Une fois par ouverture (sessionStorage). Si la page change pendant l'ouverture
+  // (ex. connexion → accueil), la page suivante finit l'ouverture sans la recommencer.
+  // Toucher l'écran la passe. Moins d'animations demandées : plus courte, sans mouvement.
+  const FONDS = {
+    officiel: '#14241F url(/images/marbre-vert.jpg) center / 1024px',
+    tron: 'radial-gradient(circle at 50% 45%, #062433 0%, #000 65%)',
+    marbre: 'radial-gradient(circle at 40% 35%, #FFFFFF 0%, #EFE9DD 70%, #E2D9C6 100%)',
+    feu: 'radial-gradient(circle at 50% 45%, #3A1206 0%, #0C0503 65%)',
+  };
+  const DUREE = 1700;
+
+  function ouverture() {
+    if (!location.pathname.startsWith('/app/')) return;
+    const CLE_O = 'dbspeed_ouverture';
+    let debut = null;
+    try { debut = Number(sessionStorage.getItem(CLE_O)) || null; } catch (_) { return; }
+    const maintenant = Date.now();
+    if (debut && maintenant - debut >= DUREE) return;          // déjà vue pendant cette ouverture
+    const suite = Boolean(debut);                               // on reprend une ouverture commencée
+    if (!debut) { try { sessionStorage.setItem(CLE_O, String(maintenant)); } catch (_) { /* rien */ } }
+    const reste = suite ? DUREE - (maintenant - debut) : DUREE;
+    const calme = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const id = choisi();
+
+    const style = document.createElement('style');
+    style.textContent = `
+      #ouverture{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;
+        background:${FONDS[id]};transition:opacity .45s ease,visibility .45s;cursor:pointer}
+      #ouverture img{width:min(58vw,260px);height:auto;aspect-ratio:1;
+        filter:drop-shadow(0 18px 40px rgba(0,0,0,.45));
+        animation:ouv-arrive .9s cubic-bezier(.16,.9,.25,1.15) both}
+      #ouverture.suite img{animation:none}
+      #ouverture.fin{opacity:0;visibility:hidden}
+      #ouverture.fin img{transform:scale(1.12);transition:transform .45s ease}
+      @keyframes ouv-arrive{0%{opacity:0;transform:scale(.55) rotate(-14deg)}
+        60%{opacity:1}100%{opacity:1;transform:none}}
+      @media (prefers-reduced-motion:reduce){#ouverture img{animation:none}
+        #ouverture.fin img{transform:none}}`;
+    document.head.appendChild(style);
+
+    const ecran = document.createElement('div');
+    ecran.id = 'ouverture';
+    if (suite) ecran.className = 'suite';
+    ecran.setAttribute('aria-hidden', 'true');
+    ecran.innerHTML = `<img src="/logos/${id}.svg" alt="">`;
+    document.documentElement.appendChild(ecran);
+
+    let fini = false;
+    const finir = () => {
+      if (fini) return;
+      fini = true;
+      try { sessionStorage.setItem(CLE_O, '1'); } catch (_) { /* rien */ }
+      ecran.classList.add('fin');
+      setTimeout(() => { ecran.remove(); style.remove(); }, 500);
+    };
+    ecran.addEventListener('click', finir);
+    setTimeout(finir, calme ? Math.min(reste, 700) : Math.max(reste, 250));
+  }
+  ouverture();
+
   window.dbspeedLogo = { LOGOS, choisi, choisir, appliquer };
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => appliquer(choisi()));

@@ -36,6 +36,8 @@
 
 - [x] **Logo officiel + 3 styles animés** (Néon façon Tron, Marbre blanc et or, Feu), lettres en tracés, icônes de l'écran d'accueil pour chaque style, choix dans Mon profil (sur `travail`) (01/10/2026)
 
+- [x] **Écran d'ouverture animé** avec le logo choisi (sur `travail`) (01/10/2026)
+
 ## À faire, dans l'ordre
 1. [ ] **Réglages à faire par Nicolas** (sinon la connexion ne marche pas en ligne) :
    - [ ] Supabase → adresses du site (Site URL + Redirect URLs)
