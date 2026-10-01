@@ -22,6 +22,8 @@
 - [x] **Onglet Lieux** : carte des pistes BMX et pump tracks autour de soi (OpenStreetMap), recherche par nom ou ville, filtres, liste, fiche de chaque piste (adresse, horaires, public/privé, tracé dessiné, photos, club, compétitions à venir, Y aller) ; tables Supabase `lieux` et `competitions` avec sécurité testée ; étape « Lieux » dans le tuto (sur `travail`) (01/10/2026)
 - [x] **Onglet Compétition** complet avec 12 compétitions d'exemple : recherche, accueil compétition, fiche pilote, fiche équipe, temps et classements, détail d'une manche, temps par secteur, arbre 1/16 → finale (sur `travail`) (01/10/2026)
 - [x] Tuto de la première connexion : bienvenue, infos (club, catégorie), visite guidée avec projecteur, « Revoir le tuto » ; base Supabase mise à jour (club, catégorie, tuto_fini) (sur `travail`) (01/10/2026)
+- [x] **Fonction principale : les manches** (01/10/2026) : un organisateur validé importe un fichier **Excel (.xlsx) ou CSV** (lu dans le téléphone, sans bibliothèque), l'appli montre les erreurs ligne par ligne ou un aperçu, puis enregistre la course d'un coup (fonction `importer_course`) ; places, écarts et temps par secteur calculés ; écrans course (chercher un pilote, catégories), manche (arrivée / secteurs / passages), fiche pilote (place à chaque ligne, secteurs), « Mes dernières manches » (par la plaque), toutes les courses ; l'organisateur peut supprimer sa course. Tables `courses`, `manches`, `resultats` avec sécurité testée.
+- [x] **Diagnostic et améliorations** (01/10/2026) : page de test et sa fonction d'envoi de mail supprimées (elles étaient ouvertes à tous) ; API de la carte protégée (arrondis, délais, ids vérifiés, pas d'erreurs détaillées) ; appli hors ligne (service worker + page « Pas de connexion ») ; polices en woff2 (−63 %) ; icône adaptable Android ; en-têtes de sécurité ; onglets chargés seulement quand on les ouvre ; supabase-js à version fixe ; lignes de tableau utilisables au clavier ; tuto au clavier (Tab, Échap) ; petits outils partagés (`public/app/outils.js`) ; pas de mise en ligne quand seuls les docs changent.
 - [x] Animations partout (01/10/2026) : site (arrivée de l'accueil, démo de manche en direct dans le téléphone, titres et classement qui arrivent en défilant, questions qui s'ouvrent en douceur, damier qui défile) ; appli (arrivée de la connexion, pastille qui glisse Se connecter / Créer un compte, champs qui s'ouvrent en douceur, onglets qui glissent du bon côté, reflet sur la plaque) ; tuto (projecteur qui s'allume et balance, points qui arrivent un par un, pilote BMX qui passe la ligne) (sur `travail`)
 
 ## À faire, dans l'ordre
@@ -37,11 +39,10 @@
 3b3. [ ] **Tenir les vraies compétitions à jour** : ajouter les résultats de Pékin (3-4 oct.), Chongli (10-11 oct.), Sarasota (31 oct.-1er nov.), et les résultats manquants (Coupe d'Europe, Coupe de France, Asie) dans `donnees-reelles.js` ; plus tard les mettre dans Supabase. Montrer aussi ces compétitions dans les fiches de l'onglet Lieux.
 3b4. [ ] **Slovaquie, à compléter** : trouver la position des pump tracks connus mais pas placés (Pezinok, Nové Zámky, Senec, Svätý Jur, Slovenský Grob, Čadca, Dolný Kubín, Bytča, Brezno, Lučenec, Bardejov, Gelnica, Rožňava, Trebišov, Rajecké Teplice, Trenčín Západ, Šurianky) ; trouver la piste de BMX de Martin (club Bike Racing Slovakia) ; vérifier si les vieilles pistes existent encore (Oslany, Čierna Voda, Vajnory, Bojnice, Tatranská Lomnica, Bachledova).
 3c. [ ] **Lieux : compléter une fiche** (organisateurs validés) : formulaire horaires, public/privé, tracé, club, **photos (envoi depuis le téléphone, stockage Supabase)**, et **ajouter une compétition** sur la piste. Relier les compétitions de l'onglet Compétition et les `pistes` de l'onglet Entraînement à leur lieu (`lieux.id`).
-4. [ ] **Importer le fichier Excel** (organisateurs validés) : une page où on choisit le fichier, et l'appli le lit.
-5. [ ] **Calculer les résultats** : temps à chaque ligne, temps entre deux lignes, positions, écart avec le premier, pilote qui ne finit pas.
-6. [ ] **Enregistrer les manches dans Supabase** (avec la sécurité de la base activée).
-7. [ ] **Afficher les manches** : les miennes (pilote) et toutes les manches.
-8. [ ] **Rendre le site public** (enlever la protection Netlify).
+4. [x] ~~Importer le fichier Excel~~, 5. ~~Calculer les résultats~~, 6. ~~Enregistrer les manches~~, 7. ~~Afficher les manches~~ : faits le 01/10/2026 (voir « Fait »). **À tester en vrai** après le prochain « pushcoco » avec un compte organisateur validé.
+7a. [ ] **Plaque fiable** : aujourd'hui deux pilotes peuvent avoir la même plaque, et « Mes manches » se base sur la plaque. Choisir avec Nicolas : plaque unique, ou plaque + catégorie, ou le pilote confirme ses manches.
+7b. [ ] Relier une course importée à une **piste de l'onglet Lieux** et à une **compétition**, et montrer les vraies manches dans l'onglet Compétition.
+8. [x] Le site est **déjà public** : la protection Netlify ne couvre que les versions de test (pas le vrai site). Rien à faire.
 9. [ ] **Envoyer les résultats par mail** (Resend) — à confirmer.
 10. [ ] **Adapter au format des transpondeurs** quand on aura un vrai fichier.
 
@@ -58,8 +59,10 @@
 - [ ] Vérifier avec Nicolas la **liste des catégories** BMX proposées (Pré-licencié, Poussin, Pupille, Benjamin, Minime, Cadet, Junior, Senior, Elite, Master, Cruiser).
 - [ ] Mettre les mails de Supabase (confirmation, mot de passe) en français.
 - [ ] Ajouter « Mot de passe oublié ».
-- [ ] Économiser les crédits Netlify : ne pas relancer de mise en ligne quand seuls les fichiers `docs/` changent.
-- [ ] Enlever la page de test (`/test.html`) quand l'appli sera prête.
+- [x] Économiser les crédits Netlify : pas de mise en ligne quand seuls `docs/`, `README.md`, `CLAUDE.md`, `exemples/` ou `outils/` changent (règle `ignore` dans `netlify.toml`) (01/10/2026).
+- [x] Page de test (`/test.html`) enlevée (01/10/2026). La variable Netlify `TEST_EMAIL_TO` ne sert plus : on peut l'effacer.
+- [ ] Supprimer une course : aujourd'hui tout ou rien ; plus tard, corriger une seule manche.
+- [ ] Supabase : activer la protection contre les mots de passe déjà volés (seulement si c'est gratuit).
 - [ ] Ajouter de vraies captures d'écran de l'appli sur le site quand elle existera.
 - [ ] Vérifier les textes du site si les choix changent (gratuit, compte avec numéro de plaque).
 - [ ] Donner un nom plus propre au site (ex. `dbspeed-bmx.netlify.app`).

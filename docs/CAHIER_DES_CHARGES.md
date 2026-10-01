@@ -52,7 +52,15 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 5. **Tu es prêt !** : damier d'arrivée, bouton « Commencer ».
 
 **Après connexion** (`/app/accueil.html`), des **onglets en bas de l'écran** :
-- **Accueil** : bonjour + dernières manches.
+- **Accueil** (fait le 01/10/2026, la fonction principale) : bonjour, puis :
+  - **Mes dernières manches** (pilote) : retrouvées avec sa **plaque** ; grosse place, course, manche, temps et écart.
+  - **Dernières courses** (tout le monde) et **Toutes les courses** (recherche par nom ou lieu).
+  - **Importer un fichier de temps** (bouton en haut, **organisateurs validés** seulement) : on choisit un fichier **.xlsx ou .csv**. L'appli le lit dans le téléphone : colonnes reconnues par leur titre (Manche, Plaque, Pilote ou Prénom + Nom, Couloir, Catégorie, Départ, Inter 1…, Arrivée ; aussi Dossard, Lane, Finish…), temps en `36.254`, `36,254` ou `0:36.254`, case vide / DNF / chute = pas passé. Si « Départ » est une heure (transpondeurs), les temps partent de là. Les erreurs sont listées **ligne par ligne** (plaque manquante, temps illisible, temps qui recule, plaque en double, plus de 8 pilotes) et **rien n'est enregistré** tant qu'il y en a. Sinon : aperçu (manches, pilotes, lignes, non finis, classement de chaque manche), nom de la course, jour, lieu, puis **Enregistrer la course** (tout ou rien).
+  - **Une course** : chiffres (manches, pilotes, lignes, non finis), **chercher un pilote** (plaque ou nom), bouton « Mes manches », filtre par catégorie, chaque manche avec son arrivée. L'organisateur de la course peut la **supprimer** (avec confirmation).
+  - **Une manche** : le vainqueur, puis 3 vues : **Arrivée** (place, couloir, pilote, temps, écart), **Secteurs** (S1 départ → Inter 1… ; le plus rapide en or), **Passages** (temps et place à chaque ligne).
+  - **Fiche d'un pilote dans une manche** : place, temps, écart au 1er, secteurs les plus rapides, **place à chaque ligne**, tableau ligne par ligne (temps, place, écart), temps et rang de chaque secteur ; pilote qui n'a pas fini expliqué (« dernier passage à Inter 2 ») ; pilote précédent / suivant.
+  - **Calcul** : place à l'arrivée par le temps final ; égalité = même place ; ceux qui ne finissent pas sont classés après (le plus loin d'abord). Les places, écarts et secteurs ne sont **pas enregistrés** : ils sont recalculés à partir des temps (impossible d'avoir une place fausse).
+  - Code : `public/app/manches/` (`excel.js` = lire le fichier, `calcul.js` = places et écarts, `vue.js` = écrans, `manches.css`). Base : tables `courses`, `manches`, `resultats` + fonction `importer_course` (migration `20261001160000_courses_manches_resultats.sql`).
 - **Entraînement** (fait le 01/10/2026, base Supabase en place) :
   - **Calendrier** (pilote) : mois par mois, flèches ou glisser le doigt pour changer de mois, touche le titre pour choisir un mois / une année. Les **jours avec des données sont dorés** et montrent le nombre de tours ; petit point bordeaux = séance publiée ; résumé du mois (séances, tours).
   - **Une journée** : la **piste** (nom, lieu), son **tracé** dessiné avec le départ (D), les intermédiaires (I1, I2…) et l'arrivée (A, damier) ; chiffres (tours, meilleur, moyenne, chutes) ; **liste des tours** (temps, écart avec le meilleur, chute) ; **Publier cette séance** (avec confirmation) / Retirer du classement ; Supprimer la séance.
@@ -107,7 +115,7 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 - **Fond en marbre** (comme des colonnes de palais) : marbre **vert** veiné de blanc pour le fond de page, marbre **bordeaux** pour les blocs. Images : `public/images/marbre-vert.jpg` et `marbre-bordeaux.jpg` (fabriquées par `outils/fabriquer-marbre.py`, elles se répètent sans raccord visible).
 - **Or qui brille comme de l'or** : dégradé métallique avec des reflets qui bougent doucement, et un éclat de lumière qui passe sur les boutons. Cadre doré autour des blocs. Classes prêtes : `.or-brillant` (texte), `.bouton-or`, `.cadre-or`, `.marbre-vert`, `.marbre-bordeaux`.
 - Si le téléphone est réglé sur « réduire les animations », l'or reste doré mais ne bouge plus.
-- Appliqué sur : page d'accueil (sections en marbre bordeaux avec filets dorés, cartes en verre fumé à liseré doré, titres et pastilles en or), page appli (`/app/`), page de test (`/test.html`).
+- Appliqué sur : page d'accueil (sections en marbre bordeaux avec filets dorés, cartes en verre fumé à liseré doré, titres et pastilles en or), page appli (`/app/`), page « Pas de connexion » (`/offline.html`).
 - Les pages utilisent des noms de rôle (`--fond`, `--principal`, `--texte`…), jamais les codes couleur directement : pour changer une couleur partout, on la change dans ce fichier.
 
 ### Ergonomie et sensations (site + appli) — à respecter sur chaque écran

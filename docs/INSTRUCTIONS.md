@@ -66,3 +66,4 @@
 32. Chercher des données pour montrer les **vrais lieux qui existent** : voir **tous les lieux en Slovaquie**.
 33. Ajouter la **localisation** dans l'appli : la **demander dès la première connexion**, puis **l'enregistrer**, et **dès qu'il se connecte, mettre la localisation** tout de suite.
 34. **Ne rien payer** : tous les services utilisés doivent rester gratuits (pas de carte bancaire, pas d'offre payante, pas d'essai gratuit qui demande une carte).
+35. Faire un **diagnostic complet** de l'appli avec un **score sur 100**, puis **l'améliorer le plus possible**.
