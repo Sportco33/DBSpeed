@@ -250,6 +250,12 @@
 .t tbody tr:first-child td, .t tbody tr:first-child th { border-top: 0; }
 .t tr.touchable { cursor: pointer; }
 .t tr.touchable:active { background: color-mix(in srgb, var(--carte-2) 70%, transparent); }
+/* ligne choisie au clavier (Tab) : cadre doré à l'intérieur (le tableau défile, il ne serait pas visible dehors) */
+.t tr[data-lien]:focus-visible {
+  outline: 3px solid var(--or-300);
+  outline-offset: -3px;
+  background: color-mix(in srgb, var(--carte-2) 55%, transparent);
+}
 .t .cel-num { text-align: right; }
 .t .cel-droite { text-align: right; }
 .t .cel-droite small { display: block; color: var(--texte-doux); font-size: 12px; }

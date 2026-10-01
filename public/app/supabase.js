@@ -1,5 +1,7 @@
 // Connexion à Supabase + petits outils partagés par les pages de l'appli.
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+// Version exacte de supabase-js (pas « @2 ») : une mise à jour ne peut pas casser l'appli sans qu'on le sache.
+// Pour changer de version : remplacer le numéro ici (et vérifier la connexion avant « pushcoco »).
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
 
 const config = window.DBSPEED_CONFIG || {};
 
@@ -48,6 +50,8 @@ export async function googleActive() {
 // Traduit les erreurs de Supabase en phrases simples
 export function messageErreur(erreur) {
   if (!erreur) return '';
+  // erreur lue dans l'adresse : déjà traduite par erreurDansAdresse
+  if (erreur.depuisAdresse) return erreur.message;
   const code = erreur.code || erreur.error_code || '';
   const texte = String(erreur.message || erreur.error_description || erreur || '');
   const contient = (morceau) => texte.toLowerCase().includes(morceau.toLowerCase());
@@ -75,14 +79,31 @@ export function messageErreur(erreur) {
   return `Il y a eu un problème : ${texte}`;
 }
 
-// Lit une erreur renvoyée dans l'adresse (#error=...), par exemple un lien de mail expiré
+// Erreurs connues renvoyées dans l'adresse par Supabase (lien de mail, Google…)
+const ERREURS_ADRESSE = {
+  otp_expired: 'Le lien du mail a expiré. Connecte-toi, ou crée ton compte à nouveau.',
+  flow_state_expired: 'Le lien a expiré. Réessaie de te connecter.',
+  access_denied: 'La connexion a été annulée. Réessaie quand tu veux.',
+  email_not_confirmed: "Ton email n'est pas encore confirmé. Clique sur le lien reçu par mail.",
+  provider_disabled: "La connexion Google n'est pas encore activée.",
+  signup_disabled: 'Les inscriptions sont fermées pour l’instant.',
+  over_request_rate_limit: "Trop d'essais d'affilée. Réessaie dans quelques minutes.",
+  over_email_send_rate_limit: "Trop d'essais d'affilée. Réessaie dans quelques minutes.",
+};
+
+// Lit une erreur renvoyée dans l'adresse (#error=...), par exemple un lien de mail expiré.
+// On n'affiche jamais le texte de l'adresse tel quel (n'importe qui peut écrire un lien) :
+// seulement nos propres phrases.
 export function erreurDansAdresse() {
   const brut = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
   const params = new URLSearchParams(brut);
   if (!params.get('error') && !params.get('error_code')) return null;
+  const code = params.get('error_code') || params.get('error') || '';
   return {
-    code: params.get('error_code') || params.get('error'),
-    message: params.get('error_description') || params.get('error') || '',
+    code,
+    message: ERREURS_ADRESSE[code] || ERREURS_ADRESSE[params.get('error')]
+      || "Le lien n'a pas marché. Réessaie de te connecter.",
+    depuisAdresse: true,
   };
 }
 

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#14241F">
+  <title>Pas de connexion – DBSpeed</title>
+  <link rel="stylesheet" href="/couleurs.css">
+  <script src="/sensations.js" defer></script>
+  <style>
+    /* Page montrée par le service worker quand il n'y a pas de réseau
+       et que la page demandée n'a jamais été gardée. */
+    @font-face {
+      font-family: 'Big Shoulders Display';
+      src: url('/app/polices/BigShouldersDisplay-Variable.woff2') format('woff2');
+      font-weight: 100 900;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Barlow';
+      src: url('/app/polices/Barlow-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-display: swap;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      min-height: 100vh; min-height: 100dvh;
+      display: grid; place-items: center;
+      padding: 24px 16px;
+      color: var(--texte);
+      font-family: 'Barlow', system-ui, sans-serif;
+      text-align: center;
+    }
+    main { max-width: 380px; }
+    h1 {
+      margin: 0 0 12px;
+      font-family: 'Big Shoulders Display', 'Barlow', system-ui, sans-serif;
+      font-weight: 800; font-size: 44px; line-height: 1;
+      text-transform: uppercase; letter-spacing: .02em;
+    }
+    p { margin: 0 0 28px; color: var(--texte-doux); font-size: 17px; line-height: 1.45; }
+    button {
+      font: inherit; font-weight: 600; font-size: 17px;
+      min-height: 52px; padding: 0 32px; border-radius: 999px; cursor: pointer;
+    }
+  </style>
+</head>
+<body class="marbre-vert">
+  <main>
+    <h1 class="or-brillant">Pas de connexion</h1>
+    <p>Ton téléphone n'est pas connecté à Internet.<br>Vérifie le réseau, puis réessaie.</p>
+    <button type="button" class="bouton-or" id="reessayer">Réessayer</button>
+  </main>
+  <script>
+    document.getElementById('reessayer').addEventListener('click', () => location.reload());
+  </script>
+</body>
+</html>

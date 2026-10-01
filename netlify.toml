@@ -2,6 +2,10 @@
   # Écrit public/config.js à partir des variables Netlify (adresse + clé publique Supabase)
   command = "node scripts/ecrire-config.mjs"
   publish = "public"
+  # Pas de mise en ligne (donc pas de crédits dépensés) si seuls les docs,
+  # le README, CLAUDE.md, les exemples ou les outils ont changé.
+  # (git diff --quiet répond « 0 » = rien d'autre n'a changé = on saute la mise en ligne)
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)docs' ':(exclude)README.md' ':(exclude)CLAUDE.md' ':(exclude)exemples' ':(exclude)outils'"
 
 [build.environment]
   # config.js contient seulement la clé publique Supabase, faite pour le navigateur
@@ -9,3 +13,34 @@
 
 [functions]
   directory = "netlify/functions"
+
+# Protections de base pour toutes les pages
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "DENY"
+    Permissions-Policy = "geolocation=(self), camera=(), microphone=()"
+
+# Le service worker doit toujours être vérifié (sinon les mises à jour arrivent en retard)
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# Polices, images et icônes changent rarement : le téléphone les garde 7 jours
+[[headers]]
+  for = "/app/polices/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/icones/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"

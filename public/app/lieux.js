@@ -11,6 +11,7 @@ import { supabase, configOk } from '/app/supabase.js';
 import { creerGrandeCarte, creerCarteTrace, satelliteDispo } from '/app/carte.js';
 import * as osm from '/app/lieux-osm.js';
 import { prendrePosition, positionConnue, choixPosition } from '/app/position.js';
+import { esc, animer as animerEcran } from '/app/outils.js';
 
 const { sansAccents, distance, idValide } = osm;
 // L'API de la carte DBSpeed (netlify/functions/carte.mts) : elle lit OpenStreetMap et garde
@@ -42,12 +43,6 @@ const etat = {
 };
 
 // ---------- Petits outils ----------
-
-function esc(texte) {
-  return String(texte ?? '').replace(/[&<>"']/g, (c) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-  }[c]));
-}
 
 // Garde seulement les vraies adresses web (jamais « javascript: »…)
 function lienSur(url) {
@@ -97,11 +92,8 @@ async function demanderApi(action, params) {
   return rep.json();
 }
 
-// On arrondit le point (≈ 1 km) : deux personnes proches reçoivent la même réponse, déjà en cache
-const arrondir = (x) => Math.round(x * 100) / 100;
-
-// Toute une zone [sud, ouest, nord, est] : un pays, une région
-const arrondirZone = (z) => z.map((x) => Math.round(x * 100) / 100);
+// Toute une zone [sud, ouest, nord, est] : un pays, une région (arrondie comme l'API)
+const arrondirZone = (zone) => zone.map((x) => osm.arrondir(x, osm.DECIMALES_ZONE));
 async function pistesDansZone(zone) {
   const z = arrondirZone(zone);
   try {
@@ -111,12 +103,15 @@ async function pistesDansZone(zone) {
   }
 }
 
+// On arrondit le point (≈ 1 km) et le rayon comme l'API : deux personnes proches reçoivent
+// la même réponse, déjà en cache (sinon l'API renverrait vers l'adresse arrondie).
 async function pistesAutour(lat, lon, rayon) {
-  const point = { lat: arrondir(lat), lon: arrondir(lon) };
+  const point = { lat: osm.arrondir(lat, osm.DECIMALES_ZONE), lon: osm.arrondir(lon, osm.DECIMALES_ZONE) };
+  const r = osm.rayonPermis(rayon);
   try {
-    return (await demanderApi('lieux', { ...point, rayon })).lieux;
+    return (await demanderApi('lieux', { ...point, rayon: r })).lieux;
   } catch {
-    return osm.pistesAutour(point.lat, point.lon, rayon);
+    return osm.pistesAutour(point.lat, point.lon, r);
   }
 }
 
@@ -137,11 +132,12 @@ async function chercherEndroit(texte) {
 }
 
 async function adresseDuPoint(lat, lon) {
-  const point = { lat: lat.toFixed(5), lon: lon.toFixed(5) };
+  // ≈ 10 m, comme l'API (sinon elle renverrait vers l'adresse arrondie)
+  const point = { lat: osm.arrondir(lat, osm.DECIMALES_ADRESSE), lon: osm.arrondir(lon, osm.DECIMALES_ADRESSE) };
   try {
     return await demanderApi('adresse', point);
   } catch {
-    return osm.adresseDuPoint(Number(point.lat), Number(point.lon));
+    return osm.adresseDuPoint(point.lat, point.lon);
   }
 }
 
@@ -251,7 +247,6 @@ function accesDe(piste, complement) {
   if (['yes', 'permissive', 'public', 'designated'].includes(a)) return 'public';
   if (['private', 'no'].includes(a)) return 'prive';
   if (['members', 'customers', 'permit'].includes(a)) return 'club';
-  if (!a && piste.genre === 'pump' && !piste.tags.fee) return null;
   return null;
 }
 
@@ -909,10 +904,7 @@ function retourCarte() {
 }
 
 function animer(el, classe) {
-  if (calme) return;
-  el.classList.remove('glisse-gauche', 'glisse-droite');
-  void el.offsetWidth;
-  el.classList.add(classe);
+  if (!calme) animerEcran(el, classe);
 }
 
 function fermerFiche() {

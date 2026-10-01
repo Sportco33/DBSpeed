@@ -2,8 +2,7 @@
 // Chercher un pilote (plaque ou nom), lui demander d'être ami, accepter / refuser une demande, retirer un ami.
 // Les amis voient les meilleurs tours des uns et des autres dans l'onglet Entraînement.
 import { messageErreur } from '/app/supabase.js';
-
-const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+import { esc } from '/app/outils.js';
 const LOUPE = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>';
 const CROIX = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
 
@@ -13,7 +12,7 @@ function plaque(p) {
     : '<span class="plaque-petite vide-plaque">?</span>';
 }
 
-export function afficherAmis(zone, { supabase, quandChange }) {
+export function afficherAmis(zone, { supabase }) {
   zone.innerHTML = `
     <h2>Mes amis</h2>
     <p class="astuce">Tes amis voient tes meilleurs tours d'entraînement, et toi les leurs, pour comparer vos intermédiaires.</p>
@@ -66,7 +65,6 @@ export function afficherAmis(zone, { supabase, quandChange }) {
       const { error: err } = await appel();
       if (err) { bouton.disabled = false; dire(messageErreur(err)); return; }
       dire(texte, 'ok');
-      quandChange?.();
       await chargerMes();
       if (champ.value.trim()) chercher();
     };
@@ -114,7 +112,6 @@ export function afficherAmis(zone, { supabase, quandChange }) {
       const { data: rep, error: err } = await supabase.rpc('demander_ami', { p_pilote: b.dataset.demander });
       if (err) { b.disabled = false; dire(messageErreur(err)); return; }
       dire(rep === 'ami' ? 'C\'est fait, vous êtes amis !' : 'Demande envoyée. Il doit l\'accepter dans son profil.', 'ok');
-      quandChange?.();
       await chargerMes();
       chercher();
     }));

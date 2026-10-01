@@ -2,16 +2,11 @@
 //   1. Bienvenue  2. Tes infos  3. Visite guidée avec un projecteur sur chaque partie de l'appli  4. C'est prêt
 // Utilisé par accueil.js : lancerTuto({ profil, enregistrer, allerOnglet, depart })
 import { CATEGORIES } from '/app/supabase.js';
+import { esc as echapper } from '/app/outils.js';
 
 const calme = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const attendre = (ms) => new Promise((ok) => setTimeout(ok, calme ? 0 : ms));
 const vibrer = (type) => window.vibrer?.(type);
-
-function echapper(texte) {
-  const div = document.createElement('div');
-  div.textContent = texte ?? '';
-  return div.innerHTML;
-}
 
 function prenom(nom) {
   return (nom || '').trim().split(/\s+/)[0] || '';
@@ -124,8 +119,15 @@ export function lancerTuto({ profil, enregistrer, allerOnglet, demanderPosition,
     let indexVisite = 0;
     let fini = false;
     let cibleActuelle = null;
+    // l'élément qui avait le focus avant le tuto : il le retrouve à la fin
+    const focusAvant = document.activeElement;
 
     document.documentElement.classList.add('tuto-ouvert');
+
+    // Met le focus sur le bouton utile de l'étape (sans faire défiler l'écran)
+    function focusSur(bouton) {
+      bouton?.focus({ preventScroll: true });
+    }
 
     // ----- cartes (bienvenue, infos, fin) -----
 
@@ -146,6 +148,11 @@ export function lancerTuto({ profil, enregistrer, allerOnglet, demanderPosition,
       el.carte.classList.add('entre');
       el.carte.scrollTop = 0;
       apresAffichage?.();
+      // rien n'a pris le focus (ex. le formulaire) : on le met sur le bouton principal
+      // (pas sur un champ : le clavier du téléphone s'ouvrirait tout seul)
+      if (!el.carte.contains(document.activeElement)) {
+        focusSur(el.carte.querySelector('.bouton-principal') || focusables(el.carte)[0]);
+      }
     }
 
     function bienvenue() {
@@ -164,7 +171,7 @@ export function lancerTuto({ profil, enregistrer, allerOnglet, demanderPosition,
           <button type="button" class="bouton bouton-principal bouton-or" data-action="suivant">C'est parti</button>
         </div>`, () => {
         el.carte.querySelector('[data-action="suivant"]').addEventListener('click', infos);
-        el.carte.querySelector('[data-action="suivant"]').focus({ preventScroll: true });
+        focusSur(el.carte.querySelector('[data-action="suivant"]'));
       });
     }
 
@@ -376,7 +383,7 @@ export function lancerTuto({ profil, enregistrer, allerOnglet, demanderPosition,
       el.bulle.classList.add('entre');
       el.bulle.querySelector('[data-action="suivant"]').addEventListener('click', suivantVisite);
       el.bulle.querySelector('[data-action="passer"]').addEventListener('click', finir);
-      el.bulle.querySelector('[data-action="suivant"]').focus({ preventScroll: true });
+      focusSur(el.bulle.querySelector('[data-action="suivant"]'));
     }
 
     function suivantVisite() {
@@ -417,7 +424,7 @@ export function lancerTuto({ profil, enregistrer, allerOnglet, demanderPosition,
           <button type="button" class="bouton bouton-principal bouton-or" data-action="fin">Commencer</button>
         </div>`, () => {
         el.carte.querySelector('[data-action="fin"]').addEventListener('click', finir);
-        el.carte.querySelector('[data-action="fin"]').focus({ preventScroll: true });
+        focusSur(el.carte.querySelector('[data-action="fin"]'));
       });
     }
 
@@ -432,11 +439,41 @@ export function lancerTuto({ profil, enregistrer, allerOnglet, demanderPosition,
       if (!profil.tuto_fini) enregistrer({ tuto_fini: true });   // pas grave si ça échoue : il reviendra la prochaine fois
       await attendre(260);
       el.couche.remove();
+      // le focus revient où il était avant le tuto (s'il existe encore)
+      if (focusAvant?.isConnected && focusAvant !== document.body) focusAvant.focus?.({ preventScroll: true });
       terminer();
     }
 
+    // Ce qu'on peut atteindre avec Tab dans la partie visible du tuto (carte ou bulle)
+    function focusables(boite) {
+      if (!boite || boite.hidden) return [];
+      return [...boite.querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+        .filter((x) => !x.disabled && !x.closest('[hidden]') && x.getClientRects().length);
+    }
+
     function clavier(e) {
-      if (e.key === 'Escape' && el.couche.classList.contains('mode-visite')) finir();
+      if (fini) return;
+      // Échap : on passe le tuto (comme « Passer »), à toutes les étapes
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        finir();
+        return;
+      }
+      // Tab reste dans le tuto (fenêtre « modale ») : du dernier bouton on revient au premier, et inversement
+      if (e.key !== 'Tab') return;
+      const boite = el.bulle.hidden ? el.carte : el.bulle;
+      const liste = focusables(boite);
+      if (!liste.length) { e.preventDefault(); return; }
+      const premier = liste[0];
+      const dernier = liste[liste.length - 1];
+      const dedans = boite.contains(document.activeElement);
+      if (e.shiftKey && (!dedans || document.activeElement === premier)) {
+        e.preventDefault();
+        dernier.focus({ preventScroll: true });
+      } else if (!e.shiftKey && (!dedans || document.activeElement === dernier)) {
+        e.preventDefault();
+        premier.focus({ preventScroll: true });
+      }
     }
 
     window.addEventListener('resize', placer);

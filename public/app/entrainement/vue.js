@@ -6,6 +6,7 @@
 //   /classement[/PISTE]  → classement d'une piste (meilleur tour publié de chaque pilote)
 // Un compte organisateur ou spectateur arrive directement sur le classement.
 import { messageErreur } from '/app/supabase.js';
+import { esc, lienRetour, vide, puces, surChoix, animer, secteurs, brancherLiens } from '/app/outils.js';
 
 // ---------------------------------------------------------------------------
 // Mémoire de l'onglet (pour retrouver le même mois en revenant en arrière)
@@ -25,15 +26,10 @@ let retourDemande = false;
 let jeton = 0;
 let ctx = null; // { supabase, profil }
 
-export function oublierEntrainement() {
-  cache.seances = null;
-}
-
 // ---------------------------------------------------------------------------
 // Petits outils
 // ---------------------------------------------------------------------------
 const calme = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const nombre = (v) => (v == null || v === '' ? null : Number(v));
 const temps = (t) => (t == null ? '—' : Number(t).toFixed(3));
 const ecartTexte = (d) => (d == null ? '—' : Math.abs(d) < 0.0005 ? '0.000' : `${d > 0 ? '+' : '−'}${Math.abs(d).toFixed(3)}`);
@@ -59,10 +55,6 @@ function dateCourte(texte) {
   return `${d.j} ${MOIS_COURT[d.m]}${d.a !== aujourdHui.getFullYear() ? ` ${d.a}` : ''}`;
 }
 
-// temps de chaque secteur à partir des temps cumulés (secteur 1 = départ → Inter 1)
-function secteurs(cumul) {
-  return cumul.map((t, i) => (t == null ? null : i === 0 ? t : cumul[i - 1] == null ? null : Math.round((t - cumul[i - 1]) * 1000) / 1000));
-}
 // noms des lignes après le départ (Inter 1, Inter 2…, Arrivée)
 function nomsLignes(piste, n) {
   const noms = (piste?.lignes || []).slice(1).map((l) => l.nom);
@@ -89,27 +81,6 @@ const ICONES = {
   amis: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.3-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16 14.6c2.8-.3 5 1.4 5.6 4.4"/></svg>',
 };
 
-function lienRetour(href, texte) {
-  return `<a class="retour" href="${href}" data-retour>${ICONES.retour}<span>${esc(texte)}</span></a>`;
-}
-function vide(titre, texte) {
-  return `<div class="vide"><strong>${esc(titre)}</strong>${esc(texte)}</div>`;
-}
-function puces(nom, options, actif, classe = '') {
-  return `<div class="puces ${classe}" role="group" aria-label="${esc(nom)}">${options.map(([valeur, texte]) =>
-    `<button type="button" class="puce" data-valeur="${esc(valeur)}" aria-pressed="${valeur === actif}">${esc(texte)}</button>`).join('')}</div>`;
-}
-function surChoix(conteneur, quand) {
-  conteneur?.querySelectorAll('button[data-valeur]').forEach((b) => b.addEventListener('click', () => {
-    conteneur.querySelectorAll('button[data-valeur]').forEach((x) => x.setAttribute('aria-pressed', x === b));
-    quand(b.dataset.valeur);
-  }));
-}
-function animer(zone, classe) {
-  zone.classList.remove('glisse', 'glisse-gauche', 'glisse-droite');
-  void zone.offsetWidth;
-  zone.classList.add(classe);
-}
 function erreurEcran(zone, err, retour = true) {
   zone.innerHTML = `${retour ? lienRetour('#entrainement', 'Calendrier') : ''}
     <div class="vide"><strong>Impossible de charger.</strong>${esc(messageErreur(err))}</div>`;
@@ -340,7 +311,7 @@ export async function afficherEntrainement(zone, chemin, contexte) {
     retourDemande = true;
     history.back();
   }));
-  zone.querySelectorAll('[data-lien]').forEach((el) => el.addEventListener('click', () => { location.hash = el.dataset.lien; }));
+  brancherLiens(zone);   // éléments cliquables avec data-lien (au doigt et au clavier)
 
   animer(zone, revenir ? 'glisse-droite' : 'glisse-gauche');
   window.scrollTo(0, revenir ? positions.get(ecran) || 0 : 0);

@@ -6,19 +6,19 @@
 
 @font-face {
   font-family: 'Big Shoulders Display';
-  src: url('/app/polices/BigShouldersDisplay-Variable.ttf') format('truetype');
+  src: url('/app/polices/BigShouldersDisplay-Variable.woff2') format('woff2');
   font-weight: 100 900;
   font-display: swap;
 }
 @font-face {
   font-family: 'Barlow';
-  src: url('/app/polices/Barlow-Regular.ttf') format('truetype');
+  src: url('/app/polices/Barlow-Regular.woff2') format('woff2');
   font-weight: 400;
   font-display: swap;
 }
 @font-face {
   font-family: 'Barlow';
-  src: url('/app/polices/Barlow-SemiBold.ttf') format('truetype');
+  src: url('/app/polices/Barlow-SemiBold.woff2') format('woff2');
   font-weight: 600;
   font-display: swap;
 }

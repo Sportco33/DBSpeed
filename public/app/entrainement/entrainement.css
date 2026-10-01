@@ -5,6 +5,9 @@
 
 #entrainement-vue { min-width: 0; }
 #entrainement-vue > * { min-width: 0; }
+/* élément cliquable qui n'est ni un lien ni un bouton (data-lien), choisi au clavier : cadre doré */
+#entrainement-vue [data-lien] { cursor: pointer; }
+#entrainement-vue [data-lien]:focus-visible { outline: 3px solid var(--or-300); outline-offset: -3px; }
 
 .titre-ecran {
   font-family: var(--police-titre); font-weight: 800; font-size: 38px; line-height: 1;

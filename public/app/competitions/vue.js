@@ -9,6 +9,7 @@
 //   /ID/tableau           → arbre du tableau final (1/16, 1/8, 1/4, 1/2, finale)
 import { listerCompetitions as listerExemples, chargerCompetition as chargerExemple, PAYS } from '/app/competitions/donnees-exemple.js';
 import { COMPETITIONS_REELLES, PAYS_EN_PLUS } from '/app/competitions/donnees-reelles.js';
+import { esc, lienRetour, vide, puces, surChoix, animer, secteurs, brancherLiens } from '/app/outils.js';
 
 Object.assign(PAYS, PAYS_EN_PLUS);
 
@@ -77,7 +78,6 @@ let jeton = 0;
 // ---------------------------------------------------------------------------
 // Petits outils d'affichage
 // ---------------------------------------------------------------------------
-const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const temps = (t) => (t == null ? '—' : t.toFixed(3));
 const ecart = (d) => (d == null ? '—' : d < 0.0005 ? '—' : `+${d.toFixed(3)}`);
 const place = (n) => (n == null ? '—' : n === 1 ? '1er' : `${n}e`);
@@ -106,16 +106,10 @@ const STATUTS = {
 };
 const badgeStatut = (s) => `<span class="badge-statut ${STATUTS[s].classe}">${STATUTS[s].texte}</span>`;
 
-// temps de chaque secteur à partir des temps de passage cumulés
-function secteurs(passages) {
-  return passages.map((t, i) => (t == null ? null : i === 0 ? t : passages[i - 1] == null ? null : Math.round((t - passages[i - 1]) * 1000) / 1000));
-}
-
 const ICONES = {
   loupe: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>',
   croix: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   fleche: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
-  retour: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>',
   lieu: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
   calendrier: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
   drapeau: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V3.5"/><path d="M5 4h13l-2.5 4.5L18 13H5"/></svg>',
@@ -207,40 +201,17 @@ export async function afficherCompetition(zone, chemin) {
     retourDemande = true;
     history.back();
   }));
-  // lignes de tableau cliquables
-  zone.querySelectorAll('tr[data-lien]').forEach((tr) => tr.addEventListener('click', () => { location.hash = tr.dataset.lien; }));
+  // lignes de tableau cliquables (au doigt et au clavier)
+  brancherLiens(zone);
 
   animer(zone, revenir ? 'glisse-droite' : 'glisse-gauche');
   window.scrollTo(0, revenir ? positions.get(ecran) || 0 : 0);
   dernierEcran = ecran;
 }
 
-// glisse-gauche : on avance (la page vient de la droite) ; glisse-droite : on revient en arrière
-function animer(zone, classe = 'glisse') {
-  zone.classList.remove('glisse', 'glisse-gauche', 'glisse-droite');
-  void zone.offsetWidth;
-  zone.classList.add(classe);
-}
-
-function lienRetour(href, texte) {
-  return `<a class="retour" href="${href}" data-retour>${ICONES.retour}<span>${esc(texte)}</span></a>`;
-}
-function vide(titre, texte) {
-  return `<div class="vide"><strong>${esc(titre)}</strong>${esc(texte)}</div>`;
-}
-function puces(nom, options, actif, classe = '') {
-  return `<div class="puces ${classe}" role="group" aria-label="${esc(nom)}">${options.map(([valeur, texte]) =>
-    `<button type="button" class="puce" data-valeur="${esc(valeur)}" aria-pressed="${valeur === actif}">${esc(texte)}</button>`).join('')}</div>`;
-}
 function segments(nom, options, actif) {
   return `<div class="segments" role="group" aria-label="${esc(nom)}">${options.map(([valeur, texte]) =>
     `<button type="button" data-valeur="${esc(valeur)}" aria-pressed="${valeur === actif}">${esc(texte)}</button>`).join('')}</div>`;
-}
-function surChoix(conteneur, quand) {
-  conteneur?.querySelectorAll('button[data-valeur]').forEach((b) => b.addEventListener('click', () => {
-    conteneur.querySelectorAll('button[data-valeur]').forEach((x) => x.setAttribute('aria-pressed', x === b));
-    quand(b.dataset.valeur);
-  }));
 }
 function plaquePetite(p) { return `<span class="plaque-petite">${esc(p.plaque)}</span>`; }
 
@@ -637,7 +608,7 @@ function ecranResultats(zone, c) {
     if (r.vue === 'classement') contenu.innerHTML = vueClassement(c, cat, ix);
     else if (r.vue === 'qualifs') contenu.innerHTML = vueQualifs(c, cat, ix);
     else contenu.innerHTML = vueManches(c, cat, ix, r);
-    contenu.querySelectorAll('tr[data-lien]').forEach((tr) => tr.addEventListener('click', () => { location.hash = tr.dataset.lien; }));
+    brancherLiens(contenu);
     if (r.vue === 'manches') {
       surChoix(contenu.querySelector('.puces-phase'), (v) => { r.phase = v; maj(); });
       surChoix(contenu.querySelector('.segments-affichage'), (v) => { r.affichage = v; maj(); });
