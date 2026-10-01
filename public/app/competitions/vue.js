@@ -7,12 +7,59 @@
 //   /ID/resultats         → temps et classements (classement final, qualifs, toutes les manches)
 //   /ID/manche/MID        → une manche en détail (arrivée, secteurs, passages)
 //   /ID/tableau           → arbre du tableau final (1/16, 1/8, 1/4, 1/2, finale)
-import { listerCompetitions, chargerCompetition, PAYS } from '/app/competitions/donnees-exemple.js';
+import { listerCompetitions as listerExemples, chargerCompetition as chargerExemple, PAYS } from '/app/competitions/donnees-exemple.js';
+import { COMPETITIONS_REELLES, PAYS_EN_PLUS } from '/app/competitions/donnees-reelles.js';
+
+Object.assign(PAYS, PAYS_EN_PLUS);
+
+// ---------------------------------------------------------------------------
+// Les vraies compétitions (UCI, UEC, FFC…) + les compétitions d'exemple (démo, sur demande)
+// ---------------------------------------------------------------------------
+const aujourdhui = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+const statutReel = (c) => (aujourdhui() < c.debut ? 'a-venir' : aujourdhui() > c.fin ? 'terminee' : 'en-cours');
+const ORGA_COURT = (o) => String(o || '').split(' (')[0];
+const idPilote = (nom) => nom.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+function preparerReelle(base) {
+  const pilotes = {};
+  const categories = Object.entries(base.resultats || {}).map(([nom, places]) => ({
+    nom,
+    classement: places.map(([place, complet, pays, temps = null]) => {
+      const id = idPilote(complet);
+      const [prenom, ...reste] = complet.split(' ');
+      pilotes[id] ||= { id, prenom, nom: reste.join(' '), pays, resultats: [] };
+      pilotes[id].resultats.push({ categorie: nom, place, temps });
+      return { pilote: id, place, temps };
+    }),
+  }));
+  return {
+    ...base, reelle: true, statut: statutReel(base),
+    nomPays: PAYS[base.pays]?.nom || base.pays, drapeau: PAYS[base.pays]?.drapeau || '',
+    categories, pilotes,
+  };
+}
+const REELLES = COMPETITIONS_REELLES.map(preparerReelle);
+
+async function listerCompetitions() {
+  const reelles = REELLES.map((c) => ({
+    id: c.id, nom: c.nom, type: c.type, niveau: c.niveau, ville: c.ville, pays: c.pays, nomPays: c.nomPays,
+    debut: c.debut, fin: c.fin, statut: c.statut, reelle: true, organisateur: c.organisateur,
+    categoriesNoms: c.categories.map((k) => k.nom),
+    gagnants: c.categories.flatMap((k) => k.classement.map((x) => `${c.pilotes[x.pilote].prenom} ${c.pilotes[x.pilote].nom}`)),
+  }));
+  return memoire.demo ? [...reelles, ...await listerExemples()] : reelles;
+}
+async function chargerCompetition(id) {
+  return REELLES.find((c) => c.id === id) || chargerExemple(id);
+}
 
 // ---------------------------------------------------------------------------
 // Mémoire de l'écran (filtres choisis), pour la retrouver en revenant en arrière
 // ---------------------------------------------------------------------------
-const memoire = { recherche: '', filtre: 'toutes', compets: {} };
+const memoire = { recherche: '', filtre: 'toutes', compets: {}, demo: false };
 function reglages(id) {
   if (!memoire.compets[id]) {
     memoire.compets[id] = {
@@ -142,6 +189,8 @@ export async function afficherCompetition(zone, chemin) {
 
   if (!id) await ecranListe(zone);
   else if (!c) zone.innerHTML = vide('Compétition introuvable', 'Elle a peut-être été supprimée.') + lienRetour('#competition', 'Compétitions');
+  else if (c.reelle && type === 'pilote') ecranPiloteReel(zone, c, cible);
+  else if (c.reelle) ecranCompetitionReelle(zone, c);
   else if (!type) ecranCompetition(zone, c);
   else if (type === 'pilote') ecranPilote(zone, c, cible);
   else if (type === 'equipe') ecranEquipe(zone, c, cible);
@@ -215,7 +264,8 @@ async function ecranListe(zone) {
     ${puces('Filtrer', [['toutes', 'Toutes'], ['en-cours', 'En direct'], ['a-venir', 'À venir'], ['terminee', 'Terminées']], memoire.filtre, 'puces-defile puces-filtre')}
     <p class="compte" id="c-compte" aria-live="polite"></p>
     <div id="c-liste" class="liste-compets"></div>
-    <p class="note">Ce sont des <strong>compétitions d'exemple</strong> (noms et temps inventés) pour tester l'appli. Les vraies arriveront quand les organisateurs importeront leurs courses.</p>`;
+    <p class="note">Ce sont les <strong>vraies compétitions 2026</strong> (UCI, UEC, Fédération française…), avec les résultats publiés. Le détail des manches et les temps à chaque ligne arriveront quand les organisateurs importeront leurs fichiers.</p>
+    <button type="button" class="bouton bouton-secondaire" id="c-demo">${memoire.demo ? 'Cacher les compétitions d’exemple' : 'Voir aussi des compétitions d’exemple (démo des temps détaillés)'}</button>`;
 
   const champ = zone.querySelector('#c-recherche');
   const effacer = zone.querySelector('#c-effacer');
@@ -226,7 +276,7 @@ async function ecranListe(zone) {
     const mots = sansAccent(memoire.recherche).split(/\s+/).filter(Boolean);
     const trouvees = toutes.filter((c) => {
       if (memoire.filtre !== 'toutes' && c.statut !== memoire.filtre) return false;
-      const texte = sansAccent([c.nom, c.ville, c.nomPays, c.pays, c.type, c.niveau, ...c.categoriesNoms].join(' '));
+      const texte = sansAccent([c.nom, c.ville, c.nomPays, c.pays, c.type, c.niveau, c.organisateur, ...c.categoriesNoms, ...(c.gagnants || [])].join(' '));
       return mots.every((m) => texte.includes(m));
     });
     compte.textContent = trouvees.length === 0 ? '' : trouvees.length === 1 ? '1 compétition' : `${trouvees.length} compétitions`;
@@ -237,7 +287,7 @@ async function ecranListe(zone) {
         <span class="c-corps">
           <strong class="c-nom-liste">${esc(c.nom)}</strong>
           <span class="c-lieu">${drapeau(c.pays)} ${esc(c.ville)}, ${esc(c.nomPays)}</span>
-          <span class="c-meta">${esc(c.type)} · ${c.nbPilotes} pilotes</span>
+          <span class="c-meta">${c.reelle ? `${esc(ORGA_COURT(c.organisateur))} · ${esc(c.niveau)}` : `${esc(c.type)} · ${c.nbPilotes} pilotes · exemple`}</span>
         </span>
         ${badgeStatut(c.statut)}
       </a>`;
@@ -254,6 +304,11 @@ async function ecranListe(zone) {
     memoire.recherche = ''; champ.value = ''; effacer.hidden = true; majListe(); champ.focus();
   });
   surChoix(zone.querySelector('.puces-filtre'), (v) => { memoire.filtre = v; majListe(); });
+  zone.querySelector('#c-demo').addEventListener('click', async () => {
+    memoire.demo = !memoire.demo;
+    await ecranListe(zone);
+    animer(zone, 'glisse');
+  });
   majListe();
 }
 
@@ -835,4 +890,85 @@ function tracerLiens(contenu) {
     });
   }
   svg.innerHTML = chemins;
+}
+
+// ===========================================================================
+// Vraies compétitions (UCI, UEC, FFC…) : infos, classements publiés, sources
+// ===========================================================================
+function ligneClassement(c, x, cat) {
+  const p = c.pilotes[x.pilote];
+  return `<li><a class="ligne" href="#competition/${c.id}/pilote/${p.id}">
+    <span class="medaille ${x.place <= 3 ? `m${x.place}` : 'mx'}">${x.place}</span>
+    <span class="ligne-texte"><strong>${esc(p.prenom)} ${esc(p.nom)}</strong><small>${drapeau(p.pays)} ${esc(nomPays(p.pays))}${x.temps != null ? ` · ${temps(x.temps)} s` : ''}</small></span>
+    ${ICONES.fleche}</a></li>`;
+}
+
+function ecranCompetitionReelle(zone, c) {
+  const nbCats = c.categories.length;
+  const classements = c.categories.map((k) => {
+    const trous = k.classement.some((x, i) => i > 0 && x.place !== k.classement[i - 1].place + 1);
+    return `<div class="podium">
+      <h3>${esc(k.nom)}</h3>
+      <ol class="lignes">${k.classement.map((x) => ligneClassement(c, x, k)).join('')}</ol>
+      ${trous ? '<p class="doux petit">Les autres places n’ont pas été publiées.</p>' : ''}
+    </div>`;
+  }).join('');
+
+  const attente = c.statut === 'a-venir'
+    ? `Les courses commencent le ${esc(dateCourte(c.debut))} : les résultats arriveront ici après la compétition.`
+    : c.statut === 'en-cours'
+      ? 'La compétition est en cours : les résultats arriveront ici dès qu’ils seront publiés.'
+      : 'Les résultats de cette compétition n’ont pas encore été ajoutés dans DBSpeed.';
+
+  zone.innerHTML = `
+    ${lienRetour('#competition', 'Compétitions')}
+    <div class="c-hero marbre-bordeaux cadre-or">
+      <div class="c-hero-haut">${badgeStatut(c.statut)}<span class="etiquette">${esc(c.type)}</span></div>
+      <h1 class="c-titre">${esc(c.nom)}</h1>
+      <p class="c-hero-ligne">${ICONES.lieu}<span>${drapeau(c.pays)} ${esc(c.ville)}, ${esc(c.nomPays)}</span></p>
+      <p class="c-hero-ligne">${ICONES.calendrier}<span>${esc(periode(c))}</span></p>
+    </div>
+    <p class="c-description">${esc(c.description)}</p>
+
+    <section class="bloc">
+      <h2>Infos</h2>
+      <dl class="infos-liste">
+        <div>${ICONES.lieu}<dt>Lieu</dt><dd>${c.piste ? `${esc(c.piste)}<br>` : ''}${esc(c.ville)}, ${drapeau(c.pays)} ${esc(c.nomPays)}</dd></div>
+        <div>${ICONES.calendrier}<dt>Dates</dt><dd>${esc(periode(c))}</dd></div>
+        <div>${ICONES.drapeau}<dt>Type de course</dt><dd>${esc(c.type)} · niveau ${esc(c.niveau.toLowerCase())}</dd></div>
+        <div>${ICONES.orga}<dt>Organisateur</dt><dd>${esc(c.organisateur)}</dd></div>
+      </dl>
+    </section>
+
+    <section class="bloc">
+      <h2>Résultats</h2>
+      ${nbCats ? `<div class="podiums">${classements}</div>` : vide('Pas encore de résultats', attente)}
+      <p class="note">Le détail des manches (temps à chaque ligne, secteurs, tableau final) n’est pas publié en données ouvertes. Il arrivera quand l’organisateur importera son fichier de chronométrage dans DBSpeed.</p>
+    </section>
+
+    <section class="bloc">
+      <h2>Sources</h2>
+      <ul class="sources">${c.sources.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.nom)}</a></li>`).join('')}</ul>
+    </section>`;
+}
+
+function ecranPiloteReel(zone, c, id) {
+  const p = c.pilotes[id];
+  if (!p) { zone.innerHTML = lienRetour(`#competition/${c.id}`, c.nom) + vide('Pilote introuvable', ''); return; }
+  const meilleure = Math.min(...p.resultats.map((r) => r.place));
+  zone.innerHTML = `
+    ${lienRetour(`#competition/${c.id}`, c.nom)}
+    <div class="fiche-hero marbre-bordeaux cadre-or">
+      <span class="place-grosse">${placeF(meilleure, /Femmes/.test(p.resultats[0].categorie))}</span>
+      <h1 class="c-titre">${esc(p.prenom)} ${esc(p.nom)}</h1>
+      <p class="c-hero-ligne">${drapeau(p.pays)} <span>${esc(nomPays(p.pays))}</span></p>
+    </div>
+    <section class="bloc">
+      <h2>Ses résultats ici</h2>
+      <ul class="lignes">${p.resultats.map((r) => `<li><div class="ligne">
+        <span class="medaille ${r.place <= 3 ? `m${r.place}` : 'mx'}">${r.place}</span>
+        <span class="ligne-texte"><strong>${esc(r.categorie)}</strong><small>${r.place === 1 ? 'Victoire' : `${placeF(r.place, /Femmes/.test(r.categorie))} place`}${r.temps != null ? ` · ${temps(r.temps)} s` : ''}</small></span>
+      </div></li>`).join('')}</ul>
+      <p class="note">Les temps de ses manches et à chaque ligne ne sont pas publiés pour cette compétition.</p>
+    </section>`;
 }
