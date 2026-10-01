@@ -6,14 +6,14 @@
 //   en arrière-plan.
 // - On ne touche JAMAIS à /api/* ni aux autres sites (Supabase, cartes, CDN…).
 // Pour forcer tout le monde à repartir de zéro : changer le numéro ci-dessous.
-const CACHE = 'dbspeed-v4';
+const CACHE = 'dbspeed-v5';
 
 // Le strict minimum gardé dès l'installation.
 const COQUILLE = [
   '/', '/app/', '/app/accueil.html', '/offline.html',
   '/couleurs.css', '/sensations.js', '/app/app.css', '/manifest.webmanifest',
   '/icones/icone-180.png', '/icones/icone-192.png', '/icones/icone-512.png',
-  '/icones/icone-maskable-512.png',
+  '/icones/icone-maskable-512.png', '/logo.js', '/logos/officiel.svg', '/logos/officiel-icone.svg',
   '/images/marbre-vert.jpg', '/images/marbre-bordeaux.jpg',
   '/app/polices/Barlow-Regular.woff2', '/app/polices/Barlow-SemiBold.woff2',
   '/app/polices/BigShouldersDisplay-Variable.woff2',

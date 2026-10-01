@@ -99,6 +99,18 @@ a { color: var(--principal); }
 
 /* ---------- Marque + feux de la grille de départ ---------- */
 
+/* Médaille DBSpeed (le style choisi dans Mon profil, voir /logo.js) */
+.medaille {
+  display: block;
+  width: 132px;
+  height: 132px;
+  margin: 0 0 var(--e3, 16px);
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, .45));
+  animation: medaille-arrive .7s cubic-bezier(.2, .8, .2, 1) both;
+}
+@keyframes medaille-arrive { from { opacity: 0; transform: scale(.85) rotate(-8deg); } }
+@media (prefers-reduced-motion: reduce) { .medaille { animation: none; } }
+
 .marque {
   font-family: var(--police-titre);
   font-weight: 800;
@@ -721,3 +733,22 @@ select {
 .zone-compte .petit { font-size: 15px; color: var(--texte-doux); }
 .zone-compte a { color: var(--principal); }
 .zone-compte .bouton { margin-bottom: var(--e2); }
+
+/* ---------- Mon profil : choix du logo ---------- */
+.choix-logo {
+  border: 0; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px;
+}
+.choix-logo legend { grid-column: 1 / -1; margin-bottom: 12px; padding: 0; }
+.logo-choix {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  min-height: 44px; padding: 10px 4px 8px; border-radius: 14px; cursor: pointer;
+  background: var(--carte); border: 1.5px solid transparent;
+  font-size: 13px; font-weight: 600; text-align: center; color: var(--texte-doux);
+  transition: border-color .2s, background-color .2s, transform .2s;
+}
+.logo-choix img { width: 100%; max-width: 64px; height: auto; aspect-ratio: 1; }
+.logo-choix input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.logo-choix:has(input:checked) { border-color: var(--principal); background: var(--carte-2); color: var(--texte); }
+.logo-choix:has(input:focus-visible) { outline: 2px solid var(--principal); outline-offset: 2px; }
+@media (max-width: 360px) { .choix-logo { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

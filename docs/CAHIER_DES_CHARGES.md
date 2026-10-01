@@ -138,6 +138,14 @@ Chaque piste de BMX et chaque pump track de France a une **note DBSpeed sur 20**
 - Appliqué sur : page d'accueil (sections en marbre bordeaux avec filets dorés, cartes en verre fumé à liseré doré, titres et pastilles en or), page appli (`/app/`), page « Pas de connexion » (`/offline.html`).
 - Les pages utilisent des noms de rôle (`--fond`, `--principal`, `--texte`…), jamais les codes couleur directement : pour changer une couleur partout, on la change dans ce fichier.
 
+### Logo (site + appli)
+- **Logo officiel** : une médaille d'or (anneau doré, disque vert, « DB » en or métallique, 3 traits de vitesse bordeaux, « CHRONOMÉTRAGE » en haut et « BMX RACE » en bas, graduations de chrono).
+- **4 styles** : **Officiel** (or et vert), **Néon** (noir et néon bleu, façon Tron : une lumière fait le tour, grille au sol), **Marbre blanc** (marbre blanc veiné, traits en or, étincelles), **Feu** (médaille en flammes, braises qui montent).
+- **Animés** : graduations qui tournent doucement, reflet de lumière sur l'or, traits de vitesse qui filent ; s'arrêtent si le téléphone demande moins d'animations.
+- Lettres transformées en **tracés** (le logo est le même partout, sans police à charger). Deux versions par style : `public/logos/<style>.svg` (médaille complète) et `<style>-icone.svg` (simple, pour les petites tailles).
+- **Choix du logo** dans **Mon profil → Logo de l'appli** : change la médaille de la page de connexion, le logo du site, l'icône de l'onglet et l'icône « Ajouter à l'écran d'accueil » (un manifeste par style). Le choix reste sur le téléphone. Une appli **déjà installée** garde son icône : il faut la supprimer puis la réinstaller (le téléphone ne permet pas de la changer tout seul).
+- Fabrication : `outils/fabriquer-logos.py` (SVG) puis `outils/fabriquer-icones.mjs` (PNG 180, 192, 512 et 512 « maskable » pour chaque style).
+
 ### Ergonomie et sensations (site + appli) — à respecter sur chaque écran
 - **Retour haptique à chaque appui** : une petite vibration quand on touche un bouton, un onglet, une carte, un lien. Un peu plus marquée pour une action importante (valider, envoyer), différente pour une erreur.
   - Sur Android : ça marche dans le navigateur. Sur iPhone, le navigateur ne laisse pas vibrer une page web : on remplace par un **effet visuel d'appui** (le bouton s'enfonce légèrement), et ce sera une vraie vibration si on fait plus tard une vraie appli.

@@ -240,6 +240,25 @@ $('form-profil').addEventListener('submit', async (e) => {
   afficher(zone, 'Infos enregistrées.', 'ok');
 });
 
+// ---------- Logo de l'appli ----------
+// Le choix reste sur le téléphone (voir /logo.js). L'icône de l'écran d'accueil d'une appli
+// déjà installée ne change pas toute seule : il faut la réinstaller (le téléphone garde l'ancienne).
+(function brancherLogo() {
+  const L = window.dbspeedLogo;
+  const zone = $('choix-logo');
+  if (!L || !zone) return;
+  const cocher = () => { const r = zone.querySelector(`input[value="${L.choisi()}"]`); if (r) r.checked = true; };
+  cocher();
+  zone.addEventListener('change', (e) => {
+    const id = e.target.value;
+    L.choisir(id);
+    const installee = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    afficher($('message-logo'), installee
+      ? `Logo « ${L.LOGOS[id].nom} » choisi. Pour changer aussi l'icône sur l'écran d'accueil : supprime l'icône DBSpeed, puis réinstalle l'appli depuis le site.`
+      : `Logo « ${L.LOGOS[id].nom} » choisi. Si tu installes l'appli maintenant, ton téléphone prendra cette icône.`, 'ok');
+  });
+})();
+
 $('revoir-tuto').addEventListener('click', () => {
   lancerTuto({ profil, enregistrer, allerOnglet, demanderPosition, depart: 'visite' });
 });

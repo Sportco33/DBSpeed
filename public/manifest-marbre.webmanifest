@@ -1,0 +1,32 @@
+{
+  "name": "DBSpeed – Chrono BMX race",
+  "short_name": "DBSpeed",
+  "description": "Tes temps, tes positions et ton écart avec le premier, à la fin de chaque manche de BMX race.",
+  "lang": "fr",
+  "id": "/app/",
+  "start_url": "/app/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#14241F",
+  "theme_color": "#14241F",
+  "icons": [
+    {
+      "src": "/icones/icone-marbre-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icones/icone-marbre-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icones/icone-marbre-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

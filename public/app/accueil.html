@@ -7,6 +7,7 @@
   <title>DBSpeed</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/icones/icone-180.png">
+  <script src="/logo.js"></script>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="DBSpeed">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -195,6 +196,18 @@
             <span class="position-texte"><strong id="position-etat">Désactivée</strong><small id="position-detail">L'appli ne connaît pas ta position.</small></span>
           </div>
           <button type="button" id="position-bouton" class="bouton bouton-secondaire">Activer ma position</button>
+        </div>
+
+        <div class="bloc">
+          <h2>Logo de l'appli</h2>
+          <fieldset class="choix-logo" id="choix-logo">
+            <legend class="petit">Choisis ton style. Il change le logo dans l'appli et l'icône sur ton téléphone.</legend>
+            <label class="logo-choix touchable"><input type="radio" name="logo" value="officiel"><img src="/logos/officiel-icone.svg" alt="" width="64" height="64"><span>Officiel</span></label>
+            <label class="logo-choix touchable"><input type="radio" name="logo" value="tron"><img src="/logos/tron-icone.svg" alt="" width="64" height="64"><span>Néon</span></label>
+            <label class="logo-choix touchable"><input type="radio" name="logo" value="marbre"><img src="/logos/marbre-icone.svg" alt="" width="64" height="64"><span>Marbre blanc</span></label>
+            <label class="logo-choix touchable"><input type="radio" name="logo" value="feu"><img src="/logos/feu-icone.svg" alt="" width="64" height="64"><span>Feu</span></label>
+          </fieldset>
+          <p id="message-logo" class="message" role="status"></p>
         </div>
 
         <div class="boutons-profil">

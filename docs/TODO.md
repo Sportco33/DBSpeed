@@ -34,6 +34,8 @@
 - [x] **Diagnostic et améliorations** (01/10/2026) : page de test et sa fonction d'envoi de mail supprimées (elles étaient ouvertes à tous) ; API de la carte protégée (arrondis, délais, ids vérifiés, pas d'erreurs détaillées) ; appli hors ligne (service worker + page « Pas de connexion ») ; polices en woff2 (−63 %) ; icône adaptable Android ; en-têtes de sécurité ; onglets chargés seulement quand on les ouvre ; supabase-js à version fixe ; lignes de tableau utilisables au clavier ; tuto au clavier (Tab, Échap) ; petits outils partagés (`public/app/outils.js`) ; pas de mise en ligne quand seuls les docs changent.
 - [x] Animations partout (01/10/2026) : site (arrivée de l'accueil, démo de manche en direct dans le téléphone, titres et classement qui arrivent en défilant, questions qui s'ouvrent en douceur, damier qui défile) ; appli (arrivée de la connexion, pastille qui glisse Se connecter / Créer un compte, champs qui s'ouvrent en douceur, onglets qui glissent du bon côté, reflet sur la plaque) ; tuto (projecteur qui s'allume et balance, points qui arrivent un par un, pilote BMX qui passe la ligne) (sur `travail`)
 
+- [x] **Logo officiel + 3 styles animés** (Néon façon Tron, Marbre blanc et or, Feu), lettres en tracés, icônes de l'écran d'accueil pour chaque style, choix dans Mon profil (sur `travail`) (01/10/2026)
+
 ## À faire, dans l'ordre
 1. [ ] **Réglages à faire par Nicolas** (sinon la connexion ne marche pas en ligne) :
    - [ ] Supabase → adresses du site (Site URL + Redirect URLs)
