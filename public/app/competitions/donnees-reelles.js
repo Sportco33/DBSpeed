@@ -219,6 +219,21 @@ export const COMPETITIONS_REELLES = [
     sources: [{ nom: 'FFC – note aux clubs BMX Racing 2026', url: FFC_NOTE }],
   },
 
+  // ------------------------------------------------------------------ Slovaquie
+  ...[
+    ['kosice', 'Manches 1 et 2', 'Košice', 'SVK', 'BMX dráha Furča', '2026-05-30', '2026-05-31', ''],
+    ['liptovsky-mikulas', 'Manches 3 et 4', 'Liptovský Mikuláš', 'SVK', 'BMX dráha BMX TEAM LIPTOV', '2026-06-06', '2026-06-07', ''],
+    ['bratislava', 'Manche 5 et championnats de Slovaquie', 'Bratislava-Rača', 'SVK', 'BMX dráha BMX klub Rača', '2026-07-04', '2026-07-05', ' 110 pilotes de 18 clubs.'],
+    ['brno', 'Manches 6 et 7', 'Brno', 'CZE', null, '2026-09-12', '2026-09-13', ' Une étape courue en Tchéquie.'],
+    ['dunajska-luzna', 'Manches 8 et 9', 'Dunajská Lužná', 'SVK', 'BMX dráha Dunajská Lužná (Bike centrum HENKY Riders)', '2026-10-03', '2026-10-04', ''],
+  ].map(([cle, manches, ville, pays, piste, debut, fin, plus]) => ({
+    id: `svk-pohar-2026-${cle}`, nom: `Coupe de Slovaquie – ${manches}`, type: 'Coupe de Slovaquie (Slovenský pohár)', niveau: 'National',
+    ville, pays, piste, debut, fin, organisateur: 'Slovenský zväz cyklistiky (fédération slovaque)',
+    description: `Une étape de la Coupe de Slovaquie de BMX Racing 2026.${plus}`,
+    resultats: {},
+    sources: [{ nom: 'BMX Klub Košický šarkaň – saison 2026', url: 'https://www.kosickysarkan.sk/sezona' }, { nom: 'BMX klub Rača', url: 'https://bmx-raca.sk/new/' }],
+  })),
+
   // ------------------------------------------------------------------ Autres pays
   {
     id: 'usa-elite-2026-rock-hill', nom: 'Championnats des États-Unis Elite', type: 'Championnat national', niveau: 'National',
@@ -239,4 +254,5 @@ export const PAYS_EN_PLUS = {
   NOR: { nom: 'Norvège', drapeau: '🇳🇴' },
   MAS: { nom: 'Malaisie', drapeau: '🇲🇾' },
   CHN: { nom: 'Chine', drapeau: '🇨🇳' },
+  SVK: { nom: 'Slovaquie', drapeau: '🇸🇰' },
 };

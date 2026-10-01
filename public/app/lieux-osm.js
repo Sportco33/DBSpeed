@@ -180,6 +180,21 @@ export async function pistesAutour(lat, lon, rayon, options) {
   return regrouper(await demanderOverpass(requeteAutour(lat, lon, rayon), options));
 }
 
+// Toute une zone (un pays, une région) : [sud, ouest, nord, est]
+export const ZONE_MAX = { lat: 6, lon: 9 }; // pas plus grand qu'un pays moyen (la Slovaquie, la Suisse…)
+export function zoneValide(z) {
+  if (!Array.isArray(z) || z.length !== 4 || !z.every(Number.isFinite)) return false;
+  const [s, o, n, e] = z;
+  return s >= -90 && n <= 90 && o >= -180 && e <= 180 && n > s && e > o
+    && n - s <= ZONE_MAX.lat && e - o <= ZONE_MAX.lon;
+}
+export async function pistesDansZone(zone, options) {
+  if (!zoneValide(zone)) throw new Error('Zone trop grande');
+  const z = `(${zone.map((x) => x.toFixed(4)).join(',')})`;
+  const requete = `[out:json][timeout:60];(nwr["sport"~"bmx"]${z};nwr["cycling"="pump_track"]${z};);out body geom;`;
+  return regrouper(await demanderOverpass(requete, options));
+}
+
 // Une piste par son id (ex. « way-123 »), avec les morceaux qui l'entourent
 export async function pisteParId(id, options) {
   if (!idValide(id) || id.startsWith('dbs-')) return null;
@@ -199,11 +214,15 @@ export async function chercherEndroit(texte, { entetes = {} } = {}) {
   if (!rep.ok) throw new Error(`Nominatim ${rep.status}`);
   const r = (await rep.json())[0];
   if (!r) return null;
+  // boundingbox de Nominatim : [sud, nord, ouest, est] → [sud, ouest, nord, est]
+  const b = (r.boundingbox || []).map(Number);
+  const zone = b.length === 4 ? [b[0], b[2], b[1], b[3]] : null;
   return {
     lat: Number(r.lat),
     lon: Number(r.lon),
     nom: String(r.name || r.display_name || texte).split(',')[0],
     id: r.osm_type && r.osm_id ? `${r.osm_type}-${r.osm_id}` : null,
+    zone: zone && zone.every(Number.isFinite) ? zone : null,
   };
 }
 

@@ -1,12 +1,14 @@
 import type { Config } from "@netlify/functions";
 // @ts-ignore : fichier JavaScript partagé avec l'appli (public/app/lieux-osm.js)
-import { pistesAutour, pisteParId, chercherEndroit, adresseDuPoint, idValide } from "../../public/app/lieux-osm.js";
+import { pistesAutour, pistesDansZone, zoneValide, pisteParId, chercherEndroit, adresseDuPoint, idValide } from "../../public/app/lieux-osm.js";
 
 // =====================================================================
 // API de la carte DBSpeed (onglet Lieux)
 //
 //   GET /api/carte/lieux?lat=44.84&lon=-0.58&rayon=35000
 //       → les pistes de BMX et pump tracks autour d'un point, déjà regroupées et allégées
+//   GET /api/carte/lieux?zone=47.7,16.8,49.6,22.6   (sud,ouest,nord,est : un pays ou une région)
+//       → toutes les pistes de la zone
 //   GET /api/carte/lieu?id=way-123
 //       → une seule piste (pour une fiche ouverte par un lien)
 //   GET /api/carte/recherche?q=Sarrians
@@ -50,6 +52,13 @@ export default async (req: Request) => {
   const p = url.searchParams;
 
   try {
+    if (action === "lieux" && p.get("zone")) {
+      const zone = String(p.get("zone")).split(",").map((x) => Math.round(Number(x) * 100) / 100);
+      if (!zoneValide(zone)) return erreur("Zone invalide ou trop grande (6° × 9° au maximum).");
+      const lieux = await pistesDansZone(zone, { entetes: QUI });
+      return reponse({ lieux, zone, source: "OpenStreetMap" });
+    }
+
     if (action === "lieux") {
       const lat = nombre(p.get("lat"), -90, 90);
       const lon = nombre(p.get("lon"), -180, 180);

@@ -63,3 +63,4 @@
     - **dès que la carte bouge, les icônes bougent avec elle** ;
     - des icônes **belles** et **bien adaptées à la carte**.
 31. Mettre des **vraies données** (compétitions) : chercher sur le **site de l'UCI**.
+32. Chercher des données pour montrer les **vrais lieux qui existent** : voir **tous les lieux en Slovaquie**.

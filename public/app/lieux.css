@@ -675,3 +675,6 @@
   #onglet-lieux .banniere-dessin path:first-child { stroke-dashoffset: 0; }
   #onglet-lieux .filtres::before { transition: none; }
 }
+
+#onglet-lieux .fiche-sources { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 15px; }
+#onglet-lieux .fiche-sources a { color: var(--principal); overflow-wrap: anywhere; }

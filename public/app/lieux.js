@@ -17,7 +17,8 @@ const { sansAccents, distance, idValide } = osm;
 const API = '/api/carte';
 const FRANCE = { lat: 46.6, lon: 2.4, zoom: 5 };
 const RAYON = 35000;          // on cherche à 35 km autour du point choisi
-const MAX_LISTE = 40;         // nombre de pistes dans la liste sous la carte
+const MAX_LISTE = 80;         // nombre de pistes dans la liste sous la carte
+const GRANDE_ZONE = 0.6;      // au-delà (en degrés), une recherche de ville devient une recherche de toute la zone (pays, région)
 const MEMOIRE_CENTRE = 'dbspeed_lieux_centre';
 
 const calme = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -63,7 +64,9 @@ function texteDistance(m) {
 }
 
 function pointDeDepart() {
-  return etat.position || etat.centre;
+  // recherche d'un pays entier sans ma position : la distance depuis le milieu du pays ne veut rien dire
+  if (etat.position) return etat.position;
+  return etat.centre?.zone ? null : etat.centre;
 }
 
 function retenirCentre(centre) {
@@ -95,6 +98,17 @@ async function demanderApi(action, params) {
 
 // On arrondit le point (≈ 1 km) : deux personnes proches reçoivent la même réponse, déjà en cache
 const arrondir = (x) => Math.round(x * 100) / 100;
+
+// Toute une zone [sud, ouest, nord, est] : un pays, une région
+const arrondirZone = (z) => z.map((x) => Math.round(x * 100) / 100);
+async function pistesDansZone(zone) {
+  const z = arrondirZone(zone);
+  try {
+    return (await demanderApi('lieux', { zone: z.join(',') })).lieux;
+  } catch {
+    return osm.pistesDansZone(z);
+  }
+}
 
 async function pistesAutour(lat, lon, rayon) {
   const point = { lat: arrondir(lat), lon: arrondir(lon) };
@@ -132,14 +146,18 @@ async function adresseDuPoint(lat, lon) {
 
 // ---------- Ce que DBSpeed ajoute (Supabase) ----------
 
-async function complementsDansZone(lat, lon, rayon) {
-  if (!configOk) return [];
+function zoneAutour(lat, lon, rayon) {
   const dLat = rayon / 111000;
   const dLon = rayon / (111000 * Math.cos((lat * Math.PI) / 180));
+  return [lat - dLat, lon - dLon, lat + dLat, lon + dLon];
+}
+
+async function complementsDansZone([sud, ouest, nord, est]) {
+  if (!configOk) return [];
   const { data, error } = await supabase.from('lieux').select('*')
-    .gte('latitude', lat - dLat).lte('latitude', lat + dLat)
-    .gte('longitude', lon - dLon).lte('longitude', lon + dLon)
-    .limit(300);
+    .gte('latitude', sud).lte('latitude', nord)
+    .gte('longitude', ouest).lte('longitude', est)
+    .limit(1000);
   if (error) throw error;
   return data || [];
 }
@@ -281,7 +299,9 @@ async function preparerCarte() {
       bouge: (auto) => {
         if (auto) return;
         const loin = !etat.centre || distance(etat.centre, etat.carte.centre()) > RAYON * 0.4;
-        window.montrer($('lieux-zone'), loin && etat.carte.zoom() >= 8);
+        // on a dézoomé pour voir plus large qu'une recherche de 35 km : on propose aussi de chercher
+        const plusLarge = etat.centre && !etat.centre.zone && etat.carte.zoom() < 9;
+        window.montrer($('lieux-zone'), (loin || plusLarge) && etat.carte.zoom() >= 5.5);
       },
     },
   });
@@ -353,47 +373,53 @@ function dire(texte, genre = 'info', reessayer = null) {
   if (genre === 'erreur') window.vibrer?.('erreur');
 }
 
-async function chercherIci(lat, lon, nomLieu, idAOuvrir = null) {
+// zone (facultative) = [sud, ouest, nord, est] : on cherche dans toute la zone (pays, région, carte visible)
+async function chercherIci(lat, lon, nomLieu, idAOuvrir = null, zone = null) {
   const numero = ++etat.chargement;
-  etat.centre = { lat, lon, nom: nomLieu };
+  etat.centre = { lat, lon, nom: nomLieu, zone };
   window.montrer($('lieux-zone'), false);
   etat.carte.fermerBulle();
-  etat.carte.allerA(lon, lat, 11);
-  dire(nomLieu ? `On cherche les pistes autour de ${nomLieu}…` : 'On cherche les pistes autour de toi…', 'attente');
+  if (zone) etat.carte.cadrer([[zone[1], zone[0]], [zone[3], zone[2]]], 13);
+  else etat.carte.allerA(lon, lat, 11);
+  const ou = nomLieu ? `${zone ? 'en' : 'autour de'} ${nomLieu}` : 'autour de toi';
+  dire(`On cherche les pistes ${ou}…`, 'attente');
   $('lieux-liste').classList.add('en-charge');
 
   let pistes;
   try {
-    pistes = await pistesAutour(lat, lon, RAYON);
+    pistes = zone ? await pistesDansZone(zone) : await pistesAutour(lat, lon, RAYON);
   } catch {
     if (numero !== etat.chargement) return;
     $('lieux-liste').classList.remove('en-charge');
     dire('Impossible de charger les pistes pour l’instant. Vérifie ta connexion.', 'erreur',
-      () => chercherIci(lat, lon, nomLieu, idAOuvrir));
+      () => chercherIci(lat, lon, nomLieu, idAOuvrir, zone));
     return;
   }
-  // Les compléments DBSpeed : s'ils ne viennent pas, la carte marche quand même
+  // Les lieux complétés ou ajoutés par DBSpeed : s'ils ne viennent pas, la carte marche quand même
   let complements = [];
-  try { complements = await complementsDansZone(lat, lon, RAYON); } catch { /* rien */ }
+  try { complements = await complementsDansZone(zone || zoneAutour(lat, lon, RAYON)); } catch { /* rien */ }
   if (numero !== etat.chargement) return;
 
   for (const c of complements) etat.complements.set(c.id, c);
   const connus = new Set(pistes.flatMap((p) => p.ids));
   for (const c of complements) {
-    if (!connus.has(c.id) && Number.isFinite(c.latitude) && Number.isFinite(c.longitude)) {
-      pistes.push(pisteDepuisComplement(c));
-    }
+    if (connus.has(c.id) || !Number.isFinite(c.latitude) || !Number.isFinite(c.longitude)) continue;
+    // une piste ajoutée par DBSpeed qui est déjà sur la carte (à moins de 150 m) : on la fusionne
+    const point = { lat: c.latitude, lon: c.longitude };
+    const meme = pistes.find((p) => p.genre === (c.genre || 'bmx') && distance(p, point) < 150);
+    if (meme) meme.ids.push(c.id);
+    else pistes.push(pisteDepuisComplement(c));
   }
   for (const p of pistes) etat.groupes.set(p.id, p);
   etat.resultats = pistes.map((p) => p.id);
-  retenirCentre({ lat, lon, nom: nomLieu, zoom: 11 });
+  if (!zone) retenirCentre({ lat, lon, nom: nomLieu, zoom: 11 });
   $('lieux-liste').classList.remove('en-charge');
   afficherResultats();
 
   const trouvee = idAOuvrir && pistes.find((p) => p.ids.includes(idAOuvrir));
   if (trouvee) {
     ouvrirRepere(trouvee.id);
-  } else {
+  } else if (!zone) {
     // on cadre la carte sur le point de départ et les pistes les plus proches
     const proches = pistesVisibles().slice(0, 6).map(({ piste }) => [piste.lon, piste.lat]);
     if (proches.length) etat.carte.cadrer([[lon, lat], ...proches], 13);
@@ -409,7 +435,9 @@ function pistesVisibles() {
     .filter((p) => etat.filtre === 'tout' || p.genre === etat.filtre)
     .filter((p) => !texte || sansAccents(`${nomDe(p)} ${villeDe(p)} ${p.tags.operator || ''}`).includes(texte))
     .map((p) => ({ piste: p, metres: depart ? distance(depart, p) : null }))
-    .sort((a, b) => (a.metres ?? 0) - (b.metres ?? 0));
+    .sort((a, b) => (a.metres == null || b.metres == null
+      ? nomDe(a.piste).localeCompare(nomDe(b.piste), 'fr')
+      : a.metres - b.metres));
 }
 
 function afficherResultats() {
@@ -443,12 +471,12 @@ function afficherResultats() {
 
   // Le message au-dessus de la liste
   const total = visibles.length;
-  const ou = etat.centre?.nom ? `autour de ${etat.centre.nom}` : 'autour de toi';
+  const ou = etat.centre?.nom ? `${etat.centre.zone ? 'en' : 'autour de'} ${etat.centre.nom}` : 'autour de toi';
   if (etat.texte && !total) {
     dire(`Aucune piste « ${etat.texte} » ici. Appuie sur Rechercher pour chercher ce nom ou cette ville ailleurs.`, 'info');
   } else if (!total) {
     const quoi = etat.filtre === 'pump' ? 'pump track' : etat.filtre === 'bmx' ? 'piste de BMX' : 'piste';
-    dire(`Aucune ${quoi} trouvée ${ou} (35 km). Déplace la carte ou cherche une autre ville.`, 'info');
+    dire(`Aucune ${quoi} trouvée ${ou}${etat.centre?.zone ? '' : ' (35 km)'}. Déplace la carte ou cherche une autre ville.`, 'info');
   } else {
     const quoi = total > 1 ? 'lieux' : 'lieu';
     dire(`${total} ${quoi} ${etat.texte ? `pour « ${etat.texte} »` : ou}.`, 'ok');
@@ -491,7 +519,9 @@ async function chercherAilleurs(texte) {
   etat.texte = '';
   $('lieux-champ').value = '';
   window.montrer($('lieux-effacer'), false);
-  await chercherIci(resultat.lat, resultat.lon, resultat.nom, resultat.id);
+  const z = resultat.zone;
+  const grande = z && (z[2] - z[0] > GRANDE_ZONE || z[3] - z[1] > GRANDE_ZONE) && osm.zoneValide(arrondirZone(z));
+  await chercherIci(resultat.lat, resultat.lon, resultat.nom, resultat.id, grande ? z : null);
 }
 
 function preparerRecherche() {
@@ -548,7 +578,13 @@ function preparerRecherche() {
 
   $('lieux-zone').addEventListener('click', () => {
     const c = etat.carte.centre();
-    chercherIci(c.lat, c.lon, 'cette zone');
+    const b = etat.carte.bornes();
+    const large = b[2] - b[0] > GRANDE_ZONE || b[3] - b[1] > GRANDE_ZONE;
+    if (large && !osm.zoneValide(arrondirZone(b))) {
+      dire('La carte montre une zone trop grande : rapproche-toi un peu (un pays au maximum).', 'erreur');
+      return;
+    }
+    chercherIci(c.lat, c.lon, 'cette zone', null, large ? b : null);
   });
 
   // Plan ↔ satellite (seulement avec la clé MapTiler)
@@ -719,6 +755,14 @@ function htmlFiche(piste, complement) {
       <h2 id="fiche-t-compet">Compétitions à venir</h2>
       <div id="fiche-competitions"><p class="pas-encore"><span class="roue" aria-hidden="true"></span>Chargement…</p></div>
     </section>
+
+    ${complement?.sources?.length ? `<section class="fiche-bloc" aria-labelledby="fiche-t-sources">
+      <h2 id="fiche-t-sources">Sources</h2>
+      <ul class="fiche-sources">${complement.sources.map((x) => {
+        const url = lienSur(x.url);
+        return url ? `<li><a href="${esc(url)}" target="_blank" rel="noopener">${esc(x.nom || new URL(url).hostname)}</a></li>` : '';
+      }).join('')}</ul>
+    </section>` : ''}
 
     <p class="fiche-source">Carte et infos de base : les contributeurs OpenStreetMap${complement ? ', complétées par DBSpeed' : ''}.</p>`;
 }

@@ -214,6 +214,8 @@ export async function creerGrandeCarte(conteneur, { centre, zoom, quand }) {
       carte.fitBounds(zone, { padding: { top: 70, bottom: 60, left: 50, right: 70 }, maxZoom, duration: 800, essential: false }, { auto: true });
     },
     centre() { const c = carte.getCenter(); return { lat: c.lat, lon: c.lng }; },
+    // ce que montre la carte : [sud, ouest, nord, est]
+    bornes() { const b = carte.getBounds(); return [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()]; },
     zoom() { return carte.getZoom(); },
     taille() { carte.resize(); },
   };
