@@ -15,6 +15,8 @@
   <link rel="stylesheet" href="/app/tuto.css">
   <link rel="stylesheet" href="/app/competitions/competitions.css">
   <link rel="stylesheet" href="/app/entrainement/entrainement.css">
+  <link rel="stylesheet" href="/app/leaflet/leaflet.css">
+  <link rel="stylesheet" href="/app/lieux.css">
   <script src="/sensations.js" defer></script>
   <script src="/config.js"></script>
   <script type="module" src="/app/accueil.js"></script>
@@ -98,6 +100,40 @@
         <div id="competition-vue"></div>
       </section>
 
+      <section id="onglet-lieux" aria-labelledby="titre-lieux" hidden>
+        <div id="lieux-vue-carte">
+          <h1 id="titre-lieux" class="salut or-brillant">Lieux</h1>
+          <p class="sous-titre">Les pistes de BMX et les pump tracks autour de toi.</p>
+
+          <form id="lieux-recherche" class="l-recherche" role="search" novalidate>
+            <svg class="l-recherche-loupe" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+            <label for="lieux-champ" class="cache">Chercher une piste ou une ville</label>
+            <input type="search" id="lieux-champ" placeholder="Une piste, une ville…" enterkeyhint="search" autocomplete="off" autocapitalize="words" maxlength="80">
+            <button type="button" id="lieux-effacer" class="l-recherche-effacer" aria-label="Effacer" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+          </form>
+
+          <div id="lieux-filtres" class="filtres" role="group" aria-label="Type de lieu" data-choix="tout">
+            <button type="button" data-filtre="tout" aria-pressed="true">Tout</button>
+            <button type="button" data-filtre="bmx" aria-pressed="false"><span class="pastille pastille-bmx" aria-hidden="true"></span>Pistes BMX</button>
+            <button type="button" data-filtre="pump" aria-pressed="false"><span class="pastille pastille-pump" aria-hidden="true"></span>Pump tracks</button>
+          </div>
+
+          <div class="carte-cadre cadre-or">
+            <div id="lieux-carte" class="carte" aria-label="Carte des pistes"></div>
+            <button type="button" id="lieux-ici" class="carte-bouton" aria-label="Me localiser">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>
+            </button>
+            <button type="button" id="lieux-zone" class="carte-zone" hidden>Chercher dans cette zone</button>
+          </div>
+
+          <p id="lieux-etat" class="lieux-etat" role="status" aria-live="polite"></p>
+          <ul id="lieux-liste" class="lieux-liste" aria-label="Pistes trouvées"></ul>
+        </div>
+        <div id="lieux-fiche" class="fiche" hidden></div>
+      </section>
+
       <section id="onglet-profil" aria-labelledby="titre-profil" hidden>
         <h1 id="titre-profil" class="salut or-brillant">Mon profil</h1>
 
@@ -153,6 +189,10 @@
         <a href="#competition" data-onglet="competition">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V3.5"/><path d="M5 4h13l-2.5 4.5L18 13H5"/></svg>
           Compétition
+        </a>
+        <a href="#lieux" data-onglet="lieux">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+          Lieux
         </a>
         <a href="#profil" data-onglet="profil">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1.2-3.8 4-5.5 7.5-5.5s6.3 1.7 7.5 5.5"/></svg>

@@ -15,6 +15,7 @@
 - [x] Base Supabase : table `profils` (type de compte, nom, plaque), sécurité testée (01/10/2026)
 - [x] Vraie page `/app/` : connexion avec 3 types (pilote, organisateur, spectateur), se connecter, créer un compte, Google (sur `travail`, pas encore en ligne)
 - [x] Espace connecté `/app/accueil.html` : onglets en bas (Accueil, Entraînement, Compétition, Mon profil), modifier ses infos, se déconnecter, en marbre et or (sur `travail`)
+- [x] **Onglet Lieux** : carte des pistes BMX et pump tracks autour de soi (OpenStreetMap), recherche par nom ou ville, filtres, liste, fiche de chaque piste (adresse, horaires, public/privé, tracé dessiné, photos, club, compétitions à venir, Y aller) ; tables Supabase `lieux` et `competitions` avec sécurité testée ; étape « Lieux » dans le tuto (sur `travail`) (01/10/2026)
 - [x] **Onglet Compétition** complet avec 12 compétitions d'exemple : recherche, accueil compétition, fiche pilote, fiche équipe, temps et classements, détail d'une manche, temps par secteur, arbre 1/16 → finale (sur `travail`) (01/10/2026)
 - [x] Tuto de la première connexion : bienvenue, infos (club, catégorie), visite guidée avec projecteur, « Revoir le tuto » ; base Supabase mise à jour (club, catégorie, tuto_fini) (sur `travail`) (01/10/2026)
 - [x] Animations partout (01/10/2026) : site (arrivée de l'accueil, démo de manche en direct dans le téléphone, titres et classement qui arrivent en défilant, questions qui s'ouvrent en douceur, damier qui défile) ; appli (arrivée de la connexion, pastille qui glisse Se connecter / Créer un compte, champs qui s'ouvrent en douceur, onglets qui glissent du bon côté, reflet sur la plaque) ; tuto (projecteur qui s'allume et balance, points qui arrivent un par un, pilote BMX qui passe la ligne) (sur `travail`)
@@ -27,7 +28,8 @@
 2. [ ] **pushcoco** puis tester en vrai : créer un compte, confirmer le mail, se connecter, Google.
 3. [x] **Onglet Entraînement** : calendrier, journée (piste + tracé + tours), tour (intermédiaires, comparaison record / meilleurs inter / mon meilleur / amis), publier, classement, Mes amis dans le profil ; base Supabase testée (sur `travail`) (01/10/2026)
 3a. [ ] **Importer des séances d'entraînement** (fichier Excel puis transpondeurs) dans `entrainements` + `tours`, et **créer les pistes** (nom, lieu, tracé, lignes).
-3b. [ ] **Compétitions dans Supabase** : tables compétitions, catégories, engagés, équipes, manches, passages + import par les organisateurs ; remplacer les données d'exemple.
+3b. [ ] **Compétitions dans Supabase** : la table `competitions` existe déjà (créée pour l'onglet Lieux : lieu, nom, dates, niveau, lien) → la **compléter** plutôt que d'en créer une autre ; ajouter les tables catégories, engagés, équipes, manches, passages + import par les organisateurs ; remplacer les données d'exemple.
+3c. [ ] **Lieux : compléter une fiche** (organisateurs validés) : formulaire horaires, public/privé, tracé, club, **photos (envoi depuis le téléphone, stockage Supabase)**, et **ajouter une compétition** sur la piste. Relier les compétitions de l'onglet Compétition et les `pistes` de l'onglet Entraînement à leur lieu (`lieux.id`).
 4. [ ] **Importer le fichier Excel** (organisateurs validés) : une page où on choisit le fichier, et l'appli le lit.
 5. [ ] **Calculer les résultats** : temps à chaque ligne, temps entre deux lignes, positions, écart avec le premier, pilote qui ne finit pas.
 6. [ ] **Enregistrer les manches dans Supabase** (avec la sécurité de la base activée).
@@ -42,6 +44,8 @@
 - [ ] **Vérifier chaque écran** : gros boutons, un seul bouton principal, espaces réguliers, bien équilibré.
 
 ## Petits nettoyages (moins urgent)
+- [ ] Lieux : le fond de carte (CARTO) et la recherche (Nominatim, Overpass) sont gratuits pour un petit usage ; si l'appli grossit ou devient payante, prendre un fournisseur de carte avec une offre adaptée.
+- [ ] Lieux : permettre d'**ajouter une piste qui n'est pas sur la carte** (id `dbs-…`, déjà prévu dans la table `lieux`).
 - [ ] Compétition : mettre en avant **ses propres compétitions** (pilote connecté) et un bouton « Suivre » une compétition.
 - [ ] Compétition : vérifier avec Nicolas le **format** (qualifs aux points, 4 premiers qui passent) et les **noms des catégories**.
 - [ ] Vérifier avec Nicolas la **liste des catégories** BMX proposées (Pré-licencié, Poussin, Pupille, Benjamin, Minime, Cadet, Junior, Senior, Elite, Master, Cruiser).

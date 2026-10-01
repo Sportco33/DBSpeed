@@ -53,3 +53,7 @@
     - il voit **chaque tour** ; en touchant un tour, il a **tous les intermédiaires calculés** ;
     - il peut voir les **intermédiaires de ses amis** (qu'il a dans l'appli) et les **intermédiaires record de la piste** ;
     - il peut **publier ses données** : tous les utilisateurs voient alors ses temps, et il y a un **classement**.
+29. **Onglet Lieux** :
+    - une **barre de recherche** et une **carte** pour voir les **pistes de BMX** et les **pump tracks** autour de l'utilisateur ;
+    - on peut **chercher une piste** ;
+    - en cliquant sur une piste : sa **page d'accueil** avec toutes les infos : **lieu**, **horaires d'ouverture**, **public ou privé**, **comment est le tracé**, **photos**, **nom du club qui s'entraîne ici**, **compétitions qui auront lieu ici**.

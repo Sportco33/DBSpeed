@@ -72,6 +72,11 @@ function etapesVisite(profil) {
     texte: 'Toutes les manches des courses, avec le classement et les positions à chaque intermédiaire.',
   });
   liste.push({
+    // pas d'onglet ouvert derrière : la carte demanderait la position en plein tuto
+    cible: '.onglets a[data-onglet="lieux"]', titre: 'Lieux',
+    texte: 'La carte des pistes de BMX et des pump tracks autour de toi. Touche une piste pour voir ses horaires, son tracé, son club et ses compétitions.',
+  });
+  liste.push({
     cible: '.onglets a[data-onglet="profil"]', onglet: 'profil', titre: 'Mon profil',
     texte: 'Ta page et tes infos. Tu peux les modifier, et revoir ce tuto quand tu veux.',
   });

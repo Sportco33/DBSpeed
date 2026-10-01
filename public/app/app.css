@@ -373,7 +373,7 @@ input:focus-visible {
   bottom: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   max-width: 480px;
   margin: 0 auto;
   padding-bottom: env(safe-area-inset-bottom);
@@ -390,8 +390,11 @@ input:focus-visible {
   justify-content: center;
   gap: 3px;
   min-height: var(--barre-onglets);
+  padding: 0 2px;
   color: var(--texte-doux);
-  font-size: 13px;
+  font-size: 12px;
+  letter-spacing: -0.1px;
+  white-space: nowrap;
   font-weight: 600;
   text-decoration: none;
 }

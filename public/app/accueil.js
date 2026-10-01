@@ -6,9 +6,10 @@ import { lancerTuto } from '/app/tuto.js';
 import { afficherCompetition } from '/app/competitions/vue.js';
 import { afficherEntrainement } from '/app/entrainement/vue.js';
 import { afficherAmis } from '/app/entrainement/amis.js';
+import { afficherLieux } from '/app/lieux.js';
 
 const CONNEXION = '/app/';
-const ONGLETS = ['accueil', 'entrainement', 'competition', 'profil'];
+const ONGLETS = ['accueil', 'entrainement', 'competition', 'lieux', 'profil'];
 
 const $ = (id) => document.getElementById(id);
 let utilisateur = null;
@@ -90,6 +91,12 @@ function montrerOnglet() {
   } else if (actuel === 'entrainement') {
     // pareil pour l'onglet Entraînement : calendrier, journée, tour, classement
     afficherEntrainement($('entrainement-vue'), parties[0] === 'entrainement' ? parties.slice(1) : [], { supabase, profil });
+  } else if (actuel === 'lieux') {
+    // l'onglet Lieux : la carte (#lieux) ou la fiche d'une piste (#lieux/way-123) ;
+    // il remet lui-même la liste à sa place quand on revient d'une fiche
+    if (change) window.scrollTo(0, 0);
+    const piste = parties[0] === 'lieux' && /^(node|way|relation|dbs)-[0-9a-z-]{1,40}$/.test(parties[1] || '') ? parties[1] : '';
+    afficherLieux(piste);
   } else {
     window.scrollTo(0, 0);
   }

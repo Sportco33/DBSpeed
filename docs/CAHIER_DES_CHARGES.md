@@ -72,6 +72,13 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
   - Format de course utilisé : 3 manches de qualifs par groupes de 8 max (1re place = 1 point…), les 4 premiers de chaque groupe vont au tableau final, puis les 4 premiers de chaque manche passent au tour suivant. 8 pilotes ou moins : classement aux points.
   - **Secteurs** : S1 départ → Inter 1, S2 Inter 1 → Inter 2, S3 Inter 2 → Inter 3, S4 Inter 3 → arrivée.
   - Code : `public/app/competitions/` (`donnees-exemple.js` = les données, `vue.js` = les écrans). Pour passer aux vraies données, il suffit de réécrire `listerCompetitions()` et `chargerCompetition(id)` pour lire Supabase.
+- **Lieux** (fait le 01/10/2026) : les pistes de BMX et les pump tracks autour de soi.
+  - **Carte** (fond sombre) avec un repère **doré** pour une piste de BMX et **bordeaux** pour une pump track, et un point pour **ma position**. Au premier passage, l'appli demande la position et cherche à **35 km** autour. Si la position est refusée : la dernière recherche, sinon la France entière + un message pour chercher une ville.
+  - **Barre de recherche** : en tapant, la liste se filtre par **nom de piste, ville ou gestionnaire** ; avec « Rechercher », si rien ne correspond ici, on cherche le **nom ou la ville ailleurs** (ex. « Sarrians ») et la carte y va.
+  - **Filtres** Tout / Pistes BMX / Pump tracks, bouton **Me localiser**, bouton **Chercher dans cette zone** quand on déplace la carte.
+  - **Liste** des pistes sous la carte, de la plus proche à la plus loin (nom, type, distance, ville). Toucher un repère ouvre une bulle « Voir la piste ».
+  - **Fiche d'une piste** (`#lieux/way-123`) : photos (ou un dessin « Pas encore de photo »), nom, type, public/privé, distance, bouton **Y aller** (itinéraire Google Maps), **adresse**, **horaires d'ouverture**, **public ou privé**, **le tracé** (petite carte avec la piste dessinée en or, description, longueur, revêtement, éclairage), **le club** qui s'entraîne ici (+ site), **compétitions à venir**.
+  - **D'où viennent les infos** : les pistes, leur forme, et parfois les horaires / l'accès / le revêtement viennent d'**OpenStreetMap** (carte libre et gratuite, via Overpass ; adresse et recherche de ville via Nominatim). Ce que DBSpeed ajoute (horaires, public/privé, description du tracé, photos, club, compétitions) est dans Supabase (tables `lieux` et `competitions`). **Seuls les organisateurs validés** pourront compléter une fiche ou ajouter une compétition (formulaire à faire).
 - **Mon profil** : « ma page » (plaque dorée, nom, type de compte, club et catégorie, email), **Mes amis** (chercher un pilote par plaque ou nom, Ajouter, accepter / refuser une demande, retirer un ami avec confirmation), modifier ses infos (nom, plaque, catégorie, club), revoir le tuto, se déconnecter.
 
 **Ce que chaque compte peut voir / faire** (à compléter)
@@ -149,3 +156,4 @@ Onglet `Temps`, une ligne par pilote dans une manche :
 10. **Entraînement** : comment arrivent les séances d'entraînement (le pilote importe son fichier ? le club ? les transpondeurs directement) ? Qui crée les **pistes** (nom, lieu, tracé, place des lignes) ?
 11. **Record de la piste** : seulement avec les séances publiées (choix actuel) ou aussi les temps de compétition ?
 9. **« Voir sa page »** : seulement pour soi, ou une page publique que les autres peuvent voir ?
+10. **Lieux** : qui complète les fiches des pistes (organisateurs validés seulement, ou aussi les clubs / les pilotes avec validation) ? Faut-il un compte « club » ?

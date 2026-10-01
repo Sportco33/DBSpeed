@@ -1,0 +1,679 @@
+/* DBSpeed — onglet Lieux : recherche, carte, liste des pistes, fiche d'une piste.
+   Couleurs : uniquement les noms de /couleurs.css (sauf le tracé doré dessiné par la carte).
+   Les animations respectent « réduire les animations » (en bas du fichier). */
+
+#onglet-lieux .cache {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Barre de recherche ---------- */
+
+#onglet-lieux .l-recherche {
+  position: relative;
+  margin-bottom: 12px;
+}
+#onglet-lieux .l-recherche input[type='search'] {
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 48px 10px 46px;
+  border: 2px solid var(--bord);
+  border-radius: 999px;
+  background: var(--verre);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--texte);
+  font: 400 17px var(--police-texte);
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color var(--duree) ease, box-shadow var(--duree) ease;
+}
+#onglet-lieux .l-recherche input::placeholder { color: var(--texte-doux); opacity: 0.85; }
+#onglet-lieux .l-recherche input::-webkit-search-cancel-button { display: none; }
+#onglet-lieux .l-recherche input:focus-visible {
+  outline: none;
+  border-color: var(--principal);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--principal) 22%, transparent);
+}
+#onglet-lieux .l-recherche-loupe {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: var(--principal);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+#onglet-lieux .l-recherche-effacer {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  margin-top: -20px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--carte-2);
+  color: var(--texte);
+  cursor: pointer;
+}
+#onglet-lieux .l-recherche-effacer svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+/* ---------- Filtres (une pastille glisse sous le choix) ---------- */
+
+#onglet-lieux .filtres {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: var(--e2);
+  background: var(--verre);
+  border-radius: var(--arrondi);
+}
+#onglet-lieux .filtres::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 16px) / 3);
+  border-radius: 10px;
+  background: var(--carte-2);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--vert-900) 60%, transparent);
+  transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+#onglet-lieux .filtres[data-choix='bmx']::before { transform: translateX(calc(100% + 4px)); }
+#onglet-lieux .filtres[data-choix='pump']::before { transform: translateX(calc(200% + 8px)); }
+#onglet-lieux .filtres button {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--texte-doux);
+  font: 600 15px var(--police-texte);
+  white-space: nowrap;
+  cursor: pointer;
+}
+#onglet-lieux .filtres button[aria-pressed='true'] { color: var(--texte); }
+#onglet-lieux .pastille {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+#onglet-lieux .pastille-bmx { background: var(--or-metal); box-shadow: 0 0 0 1px var(--or-700); }
+#onglet-lieux .pastille-pump { background: var(--accent); box-shadow: 0 0 0 1px var(--or-700); }
+
+/* ---------- La carte ---------- */
+
+#onglet-lieux .carte-cadre {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: var(--e2);
+  isolation: isolate;
+}
+#onglet-lieux .carte {
+  height: min(44vh, 380px);
+  min-height: 260px;
+  background: var(--vert-900);
+}
+#onglet-lieux .carte-bouton {
+  position: absolute;
+  right: 10px;
+  bottom: 26px;
+  z-index: 500;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--or-700);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--vert-900) 88%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: var(--principal);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--vert-900) 70%, transparent);
+  cursor: pointer;
+}
+#onglet-lieux .carte-bouton svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+#onglet-lieux .carte-bouton.cherche svg { animation: viser 1s linear infinite; }
+@keyframes viser { to { transform: rotate(360deg); } }
+
+#onglet-lieux .carte-zone {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  z-index: 500;
+  transform: translateX(-50%);
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid var(--or-700);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--vert-900) 90%, transparent);
+  color: var(--texte);
+  font: 600 15px var(--police-texte);
+  white-space: nowrap;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--vert-900) 70%, transparent);
+  cursor: pointer;
+}
+
+/* Leaflet aux couleurs de DBSpeed */
+#onglet-lieux .leaflet-container {
+  font-family: var(--police-texte);
+  background: var(--vert-900);
+}
+#onglet-lieux .leaflet-bar {
+  border: 1px solid var(--or-700) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--vert-900) 70%, transparent) !important;
+}
+#onglet-lieux .leaflet-bar a,
+#onglet-lieux .leaflet-bar a:hover {
+  width: 40px !important;
+  height: 40px !important;
+  line-height: 38px !important;
+  background: color-mix(in srgb, var(--vert-900) 88%, transparent);
+  color: var(--texte);
+  border-bottom-color: var(--bord-doux);
+  font: 600 22px var(--police-texte);
+}
+#onglet-lieux .leaflet-control-attribution {
+  background: color-mix(in srgb, var(--vert-900) 70%, transparent) !important;
+  color: var(--texte-doux) !important;
+  font-size: 10px;
+  border-radius: 8px 0 0 0;
+}
+#onglet-lieux .leaflet-control-attribution a { color: var(--or-300) !important; }
+
+/* Les repères des pistes : une goutte dorée (BMX) ou bordeaux (pump track) */
+#onglet-lieux .repere-boite { background: none; border: 0; }
+#onglet-lieux .repere {
+  position: absolute;
+  left: 2px;
+  top: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50% 50% 50% 4px;
+  transform: rotate(-45deg);
+  border: 2px solid var(--or-100);
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--vert-900) 80%, transparent);
+  animation: repere-tombe 0.4s cubic-bezier(0.2, 0.8, 0.2, 1.3) both;
+}
+#onglet-lieux .repere svg {
+  width: 18px;
+  height: 18px;
+  transform: rotate(45deg);
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#onglet-lieux .repere-bmx { background: var(--or-metal); }
+#onglet-lieux .repere-bmx svg { stroke: var(--vert-900); }
+#onglet-lieux .repere-pump { background: var(--accent-fond); border-color: var(--or-300); }
+#onglet-lieux .repere-pump svg { stroke: var(--or-100); }
+@keyframes repere-tombe {
+  from { opacity: 0; transform: translateY(-14px) rotate(-45deg); }
+  to { opacity: 1; transform: rotate(-45deg); }
+}
+
+/* Ma position : un point qui respire */
+#onglet-lieux .moi-boite { background: none; border: 0; }
+#onglet-lieux .moi {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--or-50);
+  border: 3px solid var(--or-500);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--or-500) 60%, transparent);
+  animation: respire 2s ease-out infinite;
+}
+@keyframes respire {
+  to { box-shadow: 0 0 0 18px color-mix(in srgb, var(--or-500) 0%, transparent); }
+}
+
+/* La bulle qui s'ouvre quand on touche un repère */
+#onglet-lieux .bulle-piste .leaflet-popup-content-wrapper,
+#onglet-lieux .bulle-piste .leaflet-popup-tip {
+  background: var(--carte);
+  color: var(--texte);
+  border: 1px solid var(--or-700);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--vert-900) 80%, transparent);
+}
+#onglet-lieux .bulle-piste .leaflet-popup-content-wrapper { border-radius: var(--arrondi); }
+#onglet-lieux .bulle-piste .leaflet-popup-content { margin: 14px 14px 12px; min-width: 190px; }
+#onglet-lieux .bulle-type {
+  margin: 0;
+  color: var(--texte-doux);
+  font-size: 13px;
+  font-weight: 600;
+}
+#onglet-lieux .bulle-nom {
+  margin: 2px 0 12px !important;
+  font-family: var(--police-titre);
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1.05;
+}
+#onglet-lieux .bulle-piste a.bulle-bouton {
+  min-height: 44px;
+  font-size: 16px;
+  color: var(--sur-principal);
+}
+/* (on anime l'intérieur : Leaflet place la bulle elle-même avec « transform ») */
+#onglet-lieux .bulle-piste .leaflet-popup-content-wrapper { animation: bulle 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) both; transform-origin: 50% 100%; }
+@keyframes bulle { from { opacity: 0; transform: translateY(6px) scale(0.96); } to { opacity: 1; transform: none; } }
+
+/* ---------- Message et liste ---------- */
+
+#onglet-lieux .lieux-etat {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 0 0 12px;
+  color: var(--texte-doux);
+  font-size: 15px;
+  text-shadow: var(--ombre-texte);
+  min-height: 22px;
+}
+#onglet-lieux .lieux-etat:empty { display: none; }
+#onglet-lieux .lieux-etat.ok { color: var(--texte); font-weight: 600; }
+#onglet-lieux .lieux-etat.erreur {
+  padding: 12px 14px;
+  border-radius: var(--arrondi);
+  background: var(--erreur-fond);
+  color: var(--erreur);
+  text-shadow: none;
+  font-weight: 600;
+}
+#onglet-lieux .lien-bouton {
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--principal);
+  font: 600 15px var(--police-texte);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+#onglet-lieux .roue {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: -2px;
+  border: 2px solid var(--carte-2);
+  border-top-color: var(--principal);
+  border-radius: 50%;
+  animation: viser 0.8s linear infinite;
+}
+
+#onglet-lieux .lieux-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--e1);
+  transition: opacity var(--duree) ease;
+}
+#onglet-lieux .lieux-liste.en-charge { opacity: 0.4; }
+#onglet-lieux .lieux-liste li {
+  animation: apparaitre 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 35ms);
+}
+#onglet-lieux .lieu-carte {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 68px;
+  padding: 10px 12px 10px 10px;
+  background: var(--verre);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--bord-doux);
+  border-radius: var(--arrondi);
+  color: var(--texte);
+  text-decoration: none;
+}
+#onglet-lieux .lieu-icone {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+}
+#onglet-lieux .lieu-icone svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#onglet-lieux .lieu-icone-bmx { background: var(--or-metal); }
+#onglet-lieux .lieu-icone-bmx svg { stroke: var(--vert-900); }
+#onglet-lieux .lieu-icone-pump { background: var(--accent-fond); border: 1px solid var(--or-700); }
+#onglet-lieux .lieu-icone-pump svg { stroke: var(--or-100); }
+#onglet-lieux .lieu-textes { min-width: 0; display: grid; gap: 2px; }
+#onglet-lieux .lieu-nom {
+  font-family: var(--police-titre);
+  font-weight: 800;
+  font-size: 21px;
+  line-height: 1.05;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#onglet-lieux .lieu-infos {
+  color: var(--texte-doux);
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#onglet-lieux .lieu-fleche {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--principal);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#onglet-lieux .lieu-plus {
+  padding: var(--e1) 4px;
+  color: var(--texte-doux);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ---------- La fiche d'une piste ---------- */
+
+#onglet-lieux .l-retour {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 0 14px 0 8px;
+  margin: 0 0 var(--e2);
+  border: 1px solid var(--bord-doux);
+  border-radius: 999px;
+  background: var(--verre);
+  color: var(--texte);
+  font: 600 15px var(--police-texte);
+  cursor: pointer;
+}
+#onglet-lieux .l-retour svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--principal);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#onglet-lieux .fiche-photos {
+  position: relative;
+  margin-bottom: var(--e2);
+  border-radius: 18px;
+  overflow: hidden;
+  border: 2px solid var(--or-700);
+  background: var(--carte);
+}
+#onglet-lieux .photos-defile {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+#onglet-lieux .photos-defile::-webkit-scrollbar { display: none; }
+#onglet-lieux .photos-defile img {
+  flex: 0 0 100%;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  scroll-snap-align: center;
+  display: block;
+}
+#onglet-lieux .photos-points {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+#onglet-lieux .photos-points span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--or-50) 50%, transparent);
+  transition: transform var(--duree) ease, background-color var(--duree) ease;
+}
+#onglet-lieux .photos-points span.actif { background: var(--principal); transform: scale(1.3); }
+
+#onglet-lieux .fiche-banniere {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 150px;
+  margin-bottom: var(--e2);
+  border-radius: 18px;
+  overflow: hidden;
+}
+#onglet-lieux .banniere-dessin {
+  position: absolute;
+  inset: auto 0 18px;
+  width: 100%;
+  height: 90px;
+  fill: none;
+  stroke: var(--or-500);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+}
+#onglet-lieux .banniere-dessin path:first-child {
+  stroke-dasharray: 700;
+  stroke-dashoffset: 700;
+  animation: dessiner 1.4s 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+#onglet-lieux .banniere-dessin .drapeau { stroke: var(--accent); stroke-width: 2.5; }
+@keyframes dessiner { to { stroke-dashoffset: 0; } }
+#onglet-lieux .banniere-texte {
+  position: relative;
+  align-self: start;
+  margin-top: 16px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--vert-900) 70%, transparent);
+  color: var(--texte-doux);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#onglet-lieux .fiche-tete { margin-bottom: var(--e2); }
+#onglet-lieux .fiche-nom {
+  margin: 0 0 12px;
+  font-family: var(--police-titre);
+  font-weight: 800;
+  font-size: 40px;
+  line-height: 0.98;
+  text-shadow: var(--ombre-texte);
+  overflow-wrap: anywhere;
+}
+#onglet-lieux .badges { display: flex; flex-wrap: wrap; gap: var(--e1); }
+#onglet-lieux .badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 2px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+}
+#onglet-lieux .badge-bmx { background: var(--or-metal); color: var(--sur-principal); }
+#onglet-lieux .badge-pump { background: var(--accent-fond); color: var(--texte); border: 1px solid var(--or-700); }
+#onglet-lieux .badge-acces { background: var(--carte-2); color: var(--texte); }
+#onglet-lieux .badge-doux { background: var(--verre); color: var(--texte-doux); border: 1px solid var(--bord-doux); }
+
+#onglet-lieux .bouton-icone {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+}
+#onglet-lieux .fiche > .bouton { margin-bottom: var(--e3); }
+
+#onglet-lieux .fiche-bloc {
+  padding: var(--e2);
+  margin-bottom: 12px;
+  background: var(--verre);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--bord-doux);
+  border-radius: 18px;
+}
+#onglet-lieux .fiche-bloc h2 {
+  font-size: 24px;
+  margin-bottom: 12px;
+  color: var(--principal);
+}
+#onglet-lieux .info-ligne {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+#onglet-lieux .info-ligne + .info-ligne { margin-top: 12px; }
+#onglet-lieux .info-icone {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--carte-2);
+}
+#onglet-lieux .info-icone svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--or-300);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#onglet-lieux .info-titre {
+  margin: 0;
+  color: var(--texte-doux);
+  font-size: 13px;
+  font-weight: 600;
+}
+#onglet-lieux .info-valeur {
+  margin: 1px 0 0;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+#onglet-lieux .info-plus { margin: 12px 0 0; color: var(--texte-doux); font-size: 15px; }
+#onglet-lieux .pas-encore { margin: 0; color: var(--texte-doux); font-size: 15px; }
+
+#onglet-lieux .fiche-carte {
+  height: 200px;
+  margin-bottom: var(--e2);
+  border-radius: 14px;
+  overflow: hidden;
+  isolation: isolate;
+}
+#onglet-lieux .trace-texte { margin: 0 0 12px; }
+
+#onglet-lieux .competitions { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+#onglet-lieux .competition {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+#onglet-lieux .competition-date {
+  display: grid;
+  place-items: center;
+  height: 60px;
+  border-radius: 12px;
+  background: var(--or-metal);
+  color: var(--sur-principal);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  line-height: 1;
+}
+#onglet-lieux .competition-date strong {
+  font-family: var(--police-titre);
+  font-weight: 900;
+  font-size: 28px;
+}
+#onglet-lieux .competition-textes { display: grid; gap: 2px; min-width: 0; }
+#onglet-lieux .competition-nom { font-weight: 600; }
+#onglet-lieux .competition-infos { color: var(--texte-doux); font-size: 14px; }
+#onglet-lieux .competition-textes a { font-size: 15px; font-weight: 600; }
+
+#onglet-lieux .fiche-source {
+  margin: var(--e2) 0 0;
+  color: var(--texte-doux);
+  font-size: 13px;
+  text-align: center;
+  text-shadow: var(--ombre-texte);
+}
+
+/* ---------- Moins d'animations si le téléphone le demande ---------- */
+@media (prefers-reduced-motion: reduce) {
+  #onglet-lieux .repere,
+#onglet-lieux .moi,
+#onglet-lieux .bulle-piste .leaflet-popup-content-wrapper,
+#onglet-lieux .lieux-liste li,
+#onglet-lieux .banniere-dessin path,
+#onglet-lieux .carte-bouton.cherche svg,
+#onglet-lieux .roue { animation: none !important; }
+  #onglet-lieux .banniere-dessin path:first-child { stroke-dashoffset: 0; }
+  #onglet-lieux .filtres::before { transition: none; }
+}
