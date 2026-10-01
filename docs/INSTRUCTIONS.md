@@ -47,3 +47,9 @@
     - en cliquant sur un **pilote** ou une **équipe** : toutes ses infos **pour cette compétition** (place, temps dans chaque manche) ;
     - sur la page d'accueil de la compétition, un **bouton pour voir les temps et le classement de toutes les manches** et un **arbre** pour voir les **1/16, 1/8, 1/4, 1/2, finale** ;
     - ça doit être **complet** : tous les temps de tous les pilotes, leurs places, et les **temps par secteur**.
+28. **Onglet Entraînement** :
+    - un **calendrier** (jours, mois, années) pour retrouver les données du pilote ; on voit **les jours où il a enregistré des données** ;
+    - en touchant un jour : **tout ce qu'il a enregistré** : **nombre de tours**, **où** il s'est entraîné, **sur quelle piste**, et un **tracé** qui montre la piste ;
+    - il voit **chaque tour** ; en touchant un tour, il a **tous les intermédiaires calculés** ;
+    - il peut voir les **intermédiaires de ses amis** (qu'il a dans l'appli) et les **intermédiaires record de la piste** ;
+    - il peut **publier ses données** : tous les utilisateurs voient alors ses temps, et il y a un **classement**.

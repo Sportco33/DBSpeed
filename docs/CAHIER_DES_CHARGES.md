@@ -52,7 +52,15 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 
 **Après connexion** (`/app/accueil.html`), des **onglets en bas de l'écran** :
 - **Accueil** : bonjour + dernières manches.
-- **Entraînement** : les temps des tours d'entraînement (contenu à préciser).
+- **Entraînement** (fait le 01/10/2026, base Supabase en place) :
+  - **Calendrier** (pilote) : mois par mois, flèches ou glisser le doigt pour changer de mois, touche le titre pour choisir un mois / une année. Les **jours avec des données sont dorés** et montrent le nombre de tours ; petit point bordeaux = séance publiée ; résumé du mois (séances, tours).
+  - **Une journée** : la **piste** (nom, lieu), son **tracé** dessiné avec le départ (D), les intermédiaires (I1, I2…) et l'arrivée (A, damier) ; chiffres (tours, meilleur, moyenne, chutes) ; **liste des tours** (temps, écart avec le meilleur, chute) ; **Publier cette séance** (avec confirmation) / Retirer du classement ; Supprimer la séance.
+  - **Un tour** : temps final, tracé où un pilote **rejoue le tour** au rythme des vrais temps, **tous les intermédiaires** (temps depuis la grille + temps de chaque secteur), et **Comparer** avec : **record de la piste**, **meilleurs intermédiaires de la piste** (meilleur temps publié à chaque ligne), **mon meilleur tour**, **chacun de mes amis**. Écart à chaque ligne et par secteur (vert = plus rapide, bordeaux = plus lent), secteurs colorés sur le tracé, tableau « tout le monde, ligne par ligne ». Boutons tour précédent / suivant.
+  - **Classement** par piste : record de la piste avec ses intermédiaires, puis le **meilleur tour publié de chaque pilote** (place, plaque, nom, club, catégorie, temps, écart). Un organisateur ou un spectateur arrive directement sur ce classement.
+  - **Qui voit quoi** : le pilote voit toutes ses séances ; ses **amis** voient son meilleur tour sur chaque piste (publié ou non) ; une séance **publiée** est vue par **tout le monde** et compte au classement et au record.
+  - **Données d'exemple** : bouton « Essayer avec des exemples » (≈ 2 mois de séances sur 2 pistes d'exemple), visibles seulement par le pilote, jamais publiables, « Effacer les exemples ».
+  - Les vraies séances arriveront par l'**import** (fichier Excel puis transpondeurs) : à faire.
+  - Code : `public/app/entrainement/` (`vue.js` = les écrans, `amis.js` = Mes amis, `entrainement.css`). Base : tables `pistes`, `entrainements`, `tours`, `amis` (migration `20261001200000_entrainements_amis_classement.sql`).
 - **Compétition** (fait le 01/10/2026, avec des données d'exemple) :
   - **Recherche** des compétitions du monde entier (nom, ville, pays, type, catégorie) + filtres En direct / À venir / Terminées.
   - **Page d'accueil d'une compétition** : statut, lieu, dates, type de course, format, piste (longueur, 3 inters + arrivée, secteurs), organisateur, chiffres (pilotes, équipes, catégories, manches), **horaires** jour par jour, **podiums**, **engagés** (pilotes ou équipes, filtre par catégorie, recherche).
@@ -64,7 +72,7 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
   - Format de course utilisé : 3 manches de qualifs par groupes de 8 max (1re place = 1 point…), les 4 premiers de chaque groupe vont au tableau final, puis les 4 premiers de chaque manche passent au tour suivant. 8 pilotes ou moins : classement aux points.
   - **Secteurs** : S1 départ → Inter 1, S2 Inter 1 → Inter 2, S3 Inter 2 → Inter 3, S4 Inter 3 → arrivée.
   - Code : `public/app/competitions/` (`donnees-exemple.js` = les données, `vue.js` = les écrans). Pour passer aux vraies données, il suffit de réécrire `listerCompetitions()` et `chargerCompetition(id)` pour lire Supabase.
-- **Mon profil** : « ma page » (plaque dorée, nom, type de compte, club et catégorie, email), modifier ses infos (nom, plaque, catégorie, club), revoir le tuto, se déconnecter.
+- **Mon profil** : « ma page » (plaque dorée, nom, type de compte, club et catégorie, email), **Mes amis** (chercher un pilote par plaque ou nom, Ajouter, accepter / refuser une demande, retirer un ami avec confirmation), modifier ses infos (nom, plaque, catégorie, club), revoir le tuto, se déconnecter.
 
 **Ce que chaque compte peut voir / faire** (à compléter)
 - Pilote : ses temps, ses manches, toutes les manches.
@@ -137,5 +145,7 @@ Onglet `Temps`, une ligne par pilote dans une manche :
 5. **Faut-il garder l'historique** des courses (pour voir sa progression) ?
 6. **Combien d'intermédiaires** sur une vraie piste ? (l'exemple en a 3)
 7. **Format exact des transpondeurs** : temps depuis le départ, ou heure exacte du passage ?
-8. **Que mettre dans les onglets Entraînement et Compétition ?**
+8. ~~Que mettre dans les onglets Entraînement et Compétition ?~~ → fait le 01/10/2026.
+10. **Entraînement** : comment arrivent les séances d'entraînement (le pilote importe son fichier ? le club ? les transpondeurs directement) ? Qui crée les **pistes** (nom, lieu, tracé, place des lignes) ?
+11. **Record de la piste** : seulement avec les séances publiées (choix actuel) ou aussi les temps de compétition ?
 9. **« Voir sa page »** : seulement pour soi, ou une page publique que les autres peuvent voir ?

@@ -4,6 +4,8 @@ import {
 } from '/app/supabase.js';
 import { lancerTuto } from '/app/tuto.js';
 import { afficherCompetition } from '/app/competitions/vue.js';
+import { afficherEntrainement } from '/app/entrainement/vue.js';
+import { afficherAmis } from '/app/entrainement/amis.js';
 
 const CONNEXION = '/app/';
 const ONGLETS = ['accueil', 'entrainement', 'competition', 'profil'];
@@ -85,6 +87,9 @@ function montrerOnglet() {
   if (actuel === 'competition') {
     // l'onglet Compétition a ses propres pages (et gère lui-même le défilement)
     afficherCompetition($('competition-vue'), parties[0] === 'competition' ? parties.slice(1) : []);
+  } else if (actuel === 'entrainement') {
+    // pareil pour l'onglet Entraînement : calendrier, journée, tour, classement
+    afficherEntrainement($('entrainement-vue'), parties[0] === 'entrainement' ? parties.slice(1) : [], { supabase, profil });
   } else {
     window.scrollTo(0, 0);
   }
@@ -246,6 +251,7 @@ function preparerFinInscription() {
 function ouvrirAppli() {
   $('finir-inscription').hidden = true;
   remplir();
+  afficherAmis($('amis-zone'), { supabase });
   $('appli').hidden = false;
   $('appli').classList.add('fondu');
   montrerOnglet();
