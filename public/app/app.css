@@ -259,7 +259,8 @@ h2 {
 }
 input[type='text'],
 input[type='email'],
-input[type='password'] {
+input[type='password'],
+select {
   width: 100%;
   min-height: 52px;
   padding: 10px 14px;
@@ -525,3 +526,14 @@ input:focus-visible {
 .panneau .types { margin-bottom: var(--e2); }
 .accroche, .sous-titre, .chargement, .entete .marque, .marque { text-shadow: var(--ombre-texte); }
 .or-brillant { text-shadow: none; }
+
+.boutons-profil { display: grid; gap: var(--e1); }
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--texte-doux) 50%),
+                    linear-gradient(135deg, var(--texte-doux) 50%, transparent 50%);
+  background-position: calc(100% - 22px) 50%, calc(100% - 16px) 50%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}

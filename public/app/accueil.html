@@ -12,6 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="stylesheet" href="/couleurs.css">
   <link rel="stylesheet" href="/app/app.css">
+  <link rel="stylesheet" href="/app/tuto.css">
   <script src="/sensations.js" defer></script>
   <script src="/config.js"></script>
   <script type="module" src="/app/accueil.js"></script>
@@ -110,6 +111,7 @@
           <span id="profil-plaque" class="plaque"></span>
           <p id="profil-nom" class="nom"></p>
           <span id="profil-type" class="etiquette"></span>
+          <p id="profil-club" class="infos" hidden></p>
           <p id="profil-email" class="infos"></p>
         </div>
 
@@ -125,11 +127,22 @@
               <label for="profil-champ-plaque">Numéro de plaque</label>
               <input type="text" id="profil-champ-plaque" inputmode="numeric" maxlength="10" autocomplete="off">
             </div>
+            <div class="champ" id="profil-bloc-categorie" hidden>
+              <label for="profil-champ-categorie">Catégorie</label>
+              <select id="profil-champ-categorie"></select>
+            </div>
+            <div class="champ">
+              <label for="profil-champ-club" id="profil-label-club">Club</label>
+              <input type="text" id="profil-champ-club" maxlength="80" autocomplete="organization">
+            </div>
             <button type="submit" class="bouton bouton-principal bouton-or">Enregistrer</button>
           </form>
         </div>
 
-        <button type="button" id="deconnexion" class="bouton bouton-secondaire">Se déconnecter</button>
+        <div class="boutons-profil">
+          <button type="button" id="revoir-tuto" class="bouton bouton-secondaire">Revoir le tuto</button>
+          <button type="button" id="deconnexion" class="bouton bouton-secondaire">Se déconnecter</button>
+        </div>
       </section>
 
       <nav class="onglets" aria-label="Onglets">

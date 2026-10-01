@@ -44,11 +44,17 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 - **Continuer avec Google**. Après la première connexion Google, une « dernière étape » demande le type de compte, le nom et la plaque.
 - Un compte **organisateur doit être validé** par l'équipe DBSpeed avant de pouvoir importer des temps (proposition de Claude, à confirmer).
 
+**Tuto de la première connexion** (une seule fois, puis « Revoir le tuto » dans Mon profil)
+1. **Bienvenue** : prénom, feux de départ, 3 choses que fait l'appli (selon le type de compte).
+2. **Tes infos** : prénom et nom ; pour un pilote, plaque (obligatoire), catégorie (facultatif, en pastilles), club (facultatif) ; pour un organisateur, club ou structure qui organise (obligatoire) ; pour un spectateur, club suivi (facultatif).
+3. **Visite guidée avec un projecteur** : tout l'écran passe dans l'ombre sauf la partie expliquée, éclairée avec un halo doré, et une bulle explique à quoi elle sert. Le projecteur glisse d'une partie à l'autre : la plaque, puis chaque onglet (l'onglet s'ouvre derrière). Boutons « Suivant » et « Passer ».
+4. **Tu es prêt !** : damier d'arrivée, bouton « Commencer ».
+
 **Après connexion** (`/app/accueil.html`), des **onglets en bas de l'écran** :
 - **Accueil** : bonjour + dernières manches.
 - **Entraînement** : les temps des tours d'entraînement (contenu à préciser).
 - **Compétition** : les manches des courses et leurs classements (contenu à préciser).
-- **Mon profil** : « ma page » (plaque dorée, nom, type de compte, email), modifier ses infos, se déconnecter.
+- **Mon profil** : « ma page » (plaque dorée, nom, type de compte, club et catégorie, email), modifier ses infos (nom, plaque, catégorie, club), revoir le tuto, se déconnecter.
 
 **Ce que chaque compte peut voir / faire** (à compléter)
 - Pilote : ses temps, ses manches, toutes les manches.

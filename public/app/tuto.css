@@ -1,0 +1,279 @@
+/* DBSpeed — tuto de la première connexion (bienvenue, infos, visite avec projecteur)
+   Couleurs : uniquement les variables de /couleurs.css et /app/app.css. */
+
+html.tuto-ouvert, html.tuto-ouvert body { overflow: hidden; }
+
+.tuto {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  animation: fondu var(--duree) ease-out both;
+}
+.tuto.ferme { opacity: 0; transition: opacity 0.25s ease-in; }
+
+/* Voile sombre derrière les cartes */
+.tuto-voile {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--vert-900) 78%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.tuto-voile.allume { opacity: 1; }
+
+/* ---------- Le projecteur ----------
+   Un trou éclairé autour de la partie expliquée, tout le reste est dans l'ombre.
+   Il glisse en douceur d'une partie à l'autre. */
+.tuto-projecteur {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 2px var(--or-300),
+    0 0 26px 6px color-mix(in srgb, var(--or-300) 45%, transparent),
+    0 0 0 200vmax color-mix(in srgb, var(--vert-900) 84%, transparent);
+  opacity: 0;
+  cursor: pointer;
+  transition:
+    left 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
+    top 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.3s ease;
+}
+.tuto-projecteur.allume { opacity: 1; }
+/* halo doré qui « respire » pour attirer l'œil */
+.tuto-projecteur::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 20px;
+  border: 2px solid var(--or-500);
+  animation: respire 1.6s ease-in-out infinite;
+}
+@keyframes respire {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 0.2; transform: scale(1.06); }
+}
+/* le faisceau de lumière qui descend sur la cible */
+.tuto-projecteur::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 180%;
+  height: 46vh;
+  transform: translateX(-50%);
+  background: linear-gradient(to top, color-mix(in srgb, var(--or-100) 16%, transparent), transparent);
+  clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+  pointer-events: none;
+}
+
+/* ---------- Les cartes (bienvenue, infos, fin) ---------- */
+.tuto-carte {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: 480px;
+  max-height: 92dvh;
+  margin: 0 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--e3) var(--e2) calc(var(--e3) + env(safe-area-inset-bottom));
+  background: var(--fond);
+  border-top: 2px solid var(--or-700);
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -12px 40px color-mix(in srgb, var(--vert-900) 80%, transparent);
+}
+.tuto-carte.entre { animation: monte 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.tuto-carte.sort { opacity: 0; transform: translateY(16px); transition: opacity 0.16s ease-in, transform 0.16s ease-in; }
+@keyframes monte {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: none; }
+}
+/* les éléments de la carte arrivent les uns après les autres */
+.tuto-carte.entre > * { animation: apparaitre 0.3s ease-out both; }
+.tuto-carte.entre > *:nth-child(2) { animation-delay: 0.04s; }
+.tuto-carte.entre > *:nth-child(3) { animation-delay: 0.08s; }
+.tuto-carte.entre > *:nth-child(4) { animation-delay: 0.12s; }
+.tuto-carte.entre > *:nth-child(5) { animation-delay: 0.16s; }
+.tuto-carte.entre > *:nth-child(n+6) { animation-delay: 0.2s; }
+
+.tuto-titre {
+  font-family: var(--police-titre);
+  font-weight: 800;
+  font-size: 40px;
+  line-height: 0.95;
+  margin: var(--e2) 0 var(--e1);
+}
+.tuto-texte {
+  margin: 0 0 var(--e3);
+  color: var(--texte-doux);
+}
+.tuto-carte .feux { margin: var(--e2) 0 0; }
+
+.tuto-points {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--e3);
+  display: grid;
+  gap: var(--e1);
+}
+.tuto-points li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--carte);
+  border-radius: var(--arrondi);
+  font-weight: 600;
+}
+.tuto-ico {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--accent-fond);
+}
+.tuto-ico svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--or-300);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tuto-actions {
+  display: grid;
+  gap: var(--e1);
+  margin-top: var(--e2);
+}
+.tuto-lien {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  background: none;
+  color: var(--texte-doux);
+  font: 600 16px var(--police-texte);
+  cursor: pointer;
+}
+.facultatif { font-weight: 400; color: var(--texte-doux); }
+
+/* Barre de progression (un trait par étape) */
+.tuto-progression {
+  display: flex;
+  gap: 5px;
+}
+.tuto-progression span {
+  flex: 1;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--carte-2);
+  transition: background-color 0.3s ease;
+}
+.tuto-progression span.fait { background: var(--or-700); }
+.tuto-progression span.actuel { background: var(--or-500); }
+
+/* Catégories en pastilles */
+.puces { border: 0; padding: 0; margin: 0 0 var(--e2); }
+.puces legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
+.puces-liste { display: flex; flex-wrap: wrap; gap: var(--e1); }
+.puce { position: relative; }
+.puce input { position: absolute; opacity: 0; pointer-events: none; }
+.puce span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 2px solid var(--bord);
+  border-radius: 999px;
+  background: var(--carte);
+  font-weight: 600;
+  font-size: 15px;
+  transition: background-color var(--duree), border-color var(--duree), color var(--duree);
+}
+.puce input:checked + span {
+  background: var(--principal);
+  border-color: var(--principal);
+  color: var(--sur-principal);
+}
+.puce input:focus-visible + span { outline: 3px solid var(--principal); outline-offset: 2px; }
+
+/* Damier d'arrivée sur la dernière carte */
+.tuto-damier {
+  height: 16px;
+  margin-top: var(--e2);
+  border-radius: 4px;
+  background: conic-gradient(var(--or-500) 25%, transparent 0 50%, var(--or-500) 0 75%, transparent 0) 0 0 / 16px 16px;
+}
+
+/* ---------- La bulle d'explication (pendant la visite) ---------- */
+.tuto-bulle {
+  position: fixed;
+  padding: var(--e2);
+  background: var(--fond);
+  border: 2px solid var(--or-700);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--vert-900) 80%, transparent);
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+  transition: opacity 0.24s ease-out, transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.tuto-bulle.entre { opacity: 1; transform: none; }
+.tuto-bulle[data-cote='dessous'] { transform-origin: var(--fleche) 0; }
+.tuto-bulle[data-cote='dessus'] { transform-origin: var(--fleche) 100%; }
+/* petite flèche vers la partie éclairée */
+.tuto-bulle::after {
+  content: '';
+  position: absolute;
+  left: var(--fleche, 50%);
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  background: var(--fond);
+  border: 2px solid var(--or-700);
+  transform: rotate(45deg);
+}
+.tuto-bulle[data-cote='dessus']::after { bottom: -9px; border-top: 0; border-left: 0; }
+.tuto-bulle[data-cote='dessous']::after { top: -9px; border-bottom: 0; border-right: 0; }
+
+.tuto-bulle-titre {
+  font-family: var(--police-titre);
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 1;
+  margin: 12px 0 6px;
+  color: var(--principal);
+}
+.tuto-bulle-texte { margin: 0 0 var(--e2); }
+.tuto-bulle-actions {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--e1);
+  align-items: center;
+}
+.tuto-bulle .bouton { min-height: 48px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tuto, .tuto-carte.entre, .tuto-carte.entre > *, .tuto-projecteur::after { animation: none; }
+  .tuto-projecteur, .tuto-bulle, .tuto-voile, .tuto-carte.sort { transition: none; }
+}
+
+/* Le bouton « Continuer » du formulaire reste toujours visible en bas, sous le pouce */
+#tuto-form .tuto-actions {
+  position: sticky;
+  bottom: calc(-1 * (var(--e3) + env(safe-area-inset-bottom)));
+  margin: var(--e2) calc(-1 * var(--e2)) calc(-1 * (var(--e3) + env(safe-area-inset-bottom)));
+  padding: var(--e2) var(--e2) calc(var(--e2) + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, transparent, var(--fond) 18%);
+}

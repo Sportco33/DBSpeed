@@ -1,7 +1,8 @@
 // Espace connecté : onglets Accueil, Entraînement, Compétition, Mon profil (en bas de l'écran).
 import {
-  supabase, configOk, TYPES, messageErreur, erreurDansAdresse, typeRetenu,
+  supabase, configOk, TYPES, CATEGORIES, messageErreur, erreurDansAdresse, typeRetenu,
 } from '/app/supabase.js';
+import { lancerTuto } from '/app/tuto.js';
 
 const CONNEXION = '/app/';
 const ONGLETS = ['accueil', 'entrainement', 'competition', 'profil'];
@@ -30,7 +31,7 @@ function initiales(nom) {
 async function chargerProfil() {
   const { data, error } = await supabase
     .from('profils')
-    .select('id, type_compte, nom, plaque, organisateur_valide')
+    .select('id, type_compte, nom, plaque, club, categorie, organisateur_valide, tuto_fini')
     .eq('id', utilisateur.id)
     .single();
   if (error) throw error;
@@ -110,12 +111,40 @@ function remplir() {
   let etiquette = TYPES[type] || '';
   if (type === 'organisateur') etiquette += profil.organisateur_valide ? ' validé' : ' (en attente de validation)';
   $('profil-type').textContent = etiquette;
+  const details = [profil.club, estPilote ? profil.categorie : null].filter(Boolean).join(' · ');
+  $('profil-club').hidden = !details;
+  $('profil-club').textContent = details;
   $('profil-email').textContent = utilisateur.email || '';
 
   // Mon profil : formulaire
   $('profil-champ-nom').value = profil.nom || '';
   $('profil-bloc-plaque').hidden = !estPilote;
   $('profil-champ-plaque').value = profil.plaque || '';
+  $('profil-bloc-categorie').hidden = !estPilote;
+  const choix = $('profil-champ-categorie');
+  choix.innerHTML = '';
+  for (const c of ['', ...CATEGORIES]) {
+    const option = new Option(c || 'Je ne sais pas', c);
+    option.selected = c === (profil.categorie || '');
+    choix.append(option);
+  }
+  $('profil-label-club').textContent = estPilote ? 'Club'
+    : type === 'organisateur' ? 'Club ou structure qui organise' : 'Club que tu suis';
+  $('profil-champ-club').value = profil.club || '';
+}
+
+// Enregistre des changements du profil. Renvoie un message d'erreur, ou null si tout va bien.
+async function enregistrer(changements) {
+  const { error } = await supabase.from('profils').update(changements).eq('id', utilisateur.id);
+  if (error) return messageErreur(error);
+  Object.assign(profil, changements);
+  remplir();
+  return null;
+}
+
+function allerOnglet(nom) {
+  if (window.location.hash !== `#${nom}`) window.location.hash = nom;
+  else montrerOnglet();
 }
 
 // ---------- Mon profil : enregistrer ----------
@@ -126,20 +155,25 @@ $('form-profil').addEventListener('submit', async (e) => {
   afficher(zone, '');
   const nom = $('profil-champ-nom').value.trim();
   const plaque = $('profil-champ-plaque').value.trim();
+  const club = $('profil-champ-club').value.trim();
   if (!nom) return afficher(zone, 'Écris ton prénom et ton nom.');
-  const changements = { nom };
+  const changements = { nom, club: club || null };
   if (profil.type_compte === 'pilote') {
     if (!plaque) return afficher(zone, 'Écris ton numéro de plaque.');
     changements.plaque = plaque;
+    changements.categorie = $('profil-champ-categorie').value || null;
   }
+  if (profil.type_compte === 'organisateur' && !club) return afficher(zone, 'Écris le nom du club ou de la structure.');
   const bouton = e.submitter;
   if (bouton) bouton.disabled = true;
-  const { error } = await supabase.from('profils').update(changements).eq('id', utilisateur.id);
+  const probleme = await enregistrer(changements);
   if (bouton) bouton.disabled = false;
-  if (error) return afficher(zone, messageErreur(error));
-  Object.assign(profil, changements);
-  remplir();
+  if (probleme) return afficher(zone, probleme);
   afficher(zone, 'Infos enregistrées.', 'ok');
+});
+
+$('revoir-tuto').addEventListener('click', () => {
+  lancerTuto({ profil, enregistrer, allerOnglet, depart: 'visite' });
 });
 
 $('deconnexion').addEventListener('click', async () => {
@@ -194,6 +228,10 @@ function ouvrirAppli() {
   $('appli').hidden = false;
   $('appli').classList.add('fondu');
   montrerOnglet();
+  // Première connexion : le tuto (bienvenue, infos, visite guidée)
+  if (!profil.tuto_fini) {
+    setTimeout(() => lancerTuto({ profil, enregistrer, allerOnglet }), 350);
+  }
 }
 
 // ---------- Démarrage ----------

@@ -24,6 +24,12 @@ export const TYPES = {
   spectateur: 'Spectateur',
 };
 
+// Catégories BMX proposées aux pilotes (facultatif)
+export const CATEGORIES = [
+  'Pré-licencié', 'Poussin', 'Pupille', 'Benjamin', 'Minime', 'Cadet',
+  'Junior', 'Senior', 'Elite', 'Master', 'Cruiser',
+];
+
 // La connexion Google est-elle activée dans Supabase ?
 export async function googleActive() {
   if (!configOk) return false;

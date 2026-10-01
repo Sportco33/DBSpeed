@@ -15,6 +15,7 @@
 - [x] Base Supabase : table `profils` (type de compte, nom, plaque), sécurité testée (01/10/2026)
 - [x] Vraie page `/app/` : connexion avec 3 types (pilote, organisateur, spectateur), se connecter, créer un compte, Google (sur `travail`, pas encore en ligne)
 - [x] Espace connecté `/app/accueil.html` : onglets en bas (Accueil, Entraînement, Compétition, Mon profil), modifier ses infos, se déconnecter, en marbre et or (sur `travail`)
+- [x] Tuto de la première connexion : bienvenue, infos (club, catégorie), visite guidée avec projecteur, « Revoir le tuto » ; base Supabase mise à jour (club, catégorie, tuto_fini) (sur `travail`) (01/10/2026)
 
 ## À faire, dans l'ordre
 1. [ ] **Réglages à faire par Nicolas** (sinon la connexion ne marche pas en ligne) :
@@ -37,6 +38,7 @@
 - [ ] **Vérifier chaque écran** : gros boutons, un seul bouton principal, espaces réguliers, bien équilibré.
 
 ## Petits nettoyages (moins urgent)
+- [ ] Vérifier avec Nicolas la **liste des catégories** BMX proposées (Pré-licencié, Poussin, Pupille, Benjamin, Minime, Cadet, Junior, Senior, Elite, Master, Cruiser).
 - [ ] Mettre les mails de Supabase (confirmation, mot de passe) en français.
 - [ ] Ajouter « Mot de passe oublié ».
 - [ ] Économiser les crédits Netlify : ne pas relancer de mise en ligne quand seuls les fichiers `docs/` changent.
