@@ -12,6 +12,7 @@
 import { listerCompetitions as listerExemples, chargerCompetition as chargerExemple, PAYS } from '/app/competitions/donnees-exemple.js';
 import { COMPETITIONS_REELLES, PAYS_EN_PLUS } from '/app/competitions/donnees-reelles.js';
 import { DN1_2026 } from '/app/competitions/dn1-2026.js';
+import { RANGS } from '/app/competitions/pilotes-elite.js';
 import { esc, lienRetour, vide, puces, surChoix, animer, secteurs, brancherLiens } from '/app/outils.js';
 
 Object.assign(PAYS, PAYS_EN_PLUS);
@@ -34,7 +35,10 @@ function preparerReelle(base) {
     classement: places.map(([place, complet, pays, temps = null]) => {
       const id = idPilote(complet);
       const [prenom, ...reste] = complet.split(' ');
-      pilotes[id] ||= { id, prenom, nom: reste.join(' '), pays, resultats: [] };
+      pilotes[id] ||= {
+        id, prenom, nom: reste.join(' '), pays, resultats: [],
+        rangUCI: RANGS.pilotes[id]?.uci ?? null, rangFFC: RANGS.pilotes[id]?.ffc ?? null,
+      };
       pilotes[id].resultats.push({ categorie: nom, place, temps });
       return { pilote: id, place, temps };
     }),
@@ -222,6 +226,40 @@ function segments(nom, options, actif) {
 }
 function plaquePetite(p) { return `<span class="plaque-petite">${esc(p.plaque)}</span>`; }
 
+// ---------------------------------------------------------------------------
+// Rang UCI (classement mondial) et rang FFC (classement national français) d'un pilote,
+// pour savoir contre qui on a couru. Course internationale ou hors de France : UCI d'abord ;
+// course française : FFC d'abord. Si le pilote n'a pas le premier, on montre l'autre.
+// ---------------------------------------------------------------------------
+const ordreRangs = (c) => (c.niveau === 'International' || c.pays !== 'FRA' ? ['UCI', 'FFC'] : ['FFC', 'UCI']);
+const valeurRang = (p, org) => (org === 'UCI' ? p.rangUCI : p.rangFFC) || null;
+function rangPrincipal(c, p) {
+  for (const org of ordreRangs(c)) { const n = valeurRang(p, org); if (n) return { org, n }; }
+  return null;
+}
+// Pour trier : les mieux classés d'abord (rang principal, puis l'autre rang, puis les non classés)
+function cleRang(c, p) {
+  const [un, deux] = ordreRangs(c);
+  return valeurRang(p, un) ?? (valeurRang(p, deux) != null ? 10000 + valeurRang(p, deux) : 99999);
+}
+// Petite pastille « UCI 12 » / « FFC 5 » / « NC » (non classé). Vraies compétitions : rien si on ne sait pas.
+function badgeRang(c, p) {
+  const r = rangPrincipal(c, p);
+  if (r) return `<span class="rang rang-${r.org.toLowerCase()}" title="${r.n}${r.n === 1 ? 'er' : 'e'} au classement ${r.org}">${r.org}&nbsp;${r.n}</span>`;
+  return c.reelle ? '' : '<span class="rang rang-nc" title="Pas de rang UCI ni FFC">NC</span>';
+}
+const legendeRangs = (c) => `<p class="astuce legende-rangs">${ordreRangs(c).map((org) => (org === 'UCI'
+  ? '<span class="rang rang-uci">UCI&nbsp;12</span> 12e au classement mondial UCI'
+  : '<span class="rang rang-ffc">FFC&nbsp;5</span> 5e au classement national FFC')).join(' · ')} · <span class="rang rang-nc">NC</span> pas classé.</p>`;
+// Les deux rangs, en grand, sur la fiche du pilote
+function blocRangs(c, p) {
+  const cases = ['UCI', 'FFC'].map((org) => {
+    const n = valeurRang(p, org);
+    return `<div class="${n && n <= 10 ? 'or' : ''}"><strong>${n ? place(n) : 'NC'}</strong><span>${org === 'UCI' ? 'rang mondial UCI' : 'rang national FFC'}</span></div>`;
+  });
+  return `<div class="chiffres chiffres-2 rangs-pilote">${cases.join('')}</div>`;
+}
+
 // ===========================================================================
 // 1. Recherche des compétitions
 // ===========================================================================
@@ -323,7 +361,7 @@ function ecranCompetition(zone, c) {
         const p = ix.pilotes[x.pilote];
         return `<li><a href="#competition/${c.id}/pilote/${p.id}" class="podium-ligne">
           <span class="medaille m${i + 1}">${i + 1}</span>
-          <span class="podium-nom"><strong>${esc(p.prenom)} ${esc(p.nom)}</strong><small>${drapeau(p.pays)} ${esc(ix.equipes[p.equipe].nom)}</small></span>
+          <span class="podium-nom"><strong>${esc(p.prenom)} ${esc(p.nom)}</strong><small>${badgeRang(c, p)} ${drapeau(p.pays)} ${esc(ix.equipes[p.equipe].nom)}</small></span>
           ${ICONES.fleche}</a></li>`;
       }).join('')}</ol>
     </div>`).join('');
@@ -396,13 +434,14 @@ function ecranCompetition(zone, c) {
         if (r.catEngages !== 'toutes' && p.categorie !== r.catEngages) return false;
         const t = sansAccent(`${p.prenom} ${p.nom} ${p.plaque} ${ix.equipes[p.equipe].nom} ${nomPays(p.pays)} ${p.pays} ${p.categorie}`);
         return mots.every((m) => t.includes(m));
-      }).sort((a, b) => (ix.final[a.id]?.place ?? 999) - (ix.final[b.id]?.place ?? 999) || a.nom.localeCompare(b.nom));
+      }).sort((a, b) => (ix.final[a.id]?.place ?? 999) - (ix.final[b.id]?.place ?? 999)
+        || cleRang(c, a) - cleRang(c, b) || a.nom.localeCompare(b.nom));
       lignes = choisis.map((p) => {
         const f = ix.final[p.id];
         const cat = ix.cats[p.categorie];
         return `<li><a class="ligne" href="#competition/${c.id}/pilote/${p.id}">
           ${plaquePetite(p)}
-          <span class="ligne-texte"><strong>${esc(p.prenom)} ${esc(p.nom)}</strong><small>${drapeau(p.pays)} ${esc(ix.equipes[p.equipe].nom)} · ${esc(p.categorie)}</small></span>
+          <span class="ligne-texte"><strong>${esc(p.prenom)} ${esc(p.nom)}</strong><small>${badgeRang(c, p)} ${drapeau(p.pays)} ${esc(ix.equipes[p.equipe].nom)} · ${esc(p.categorie)}</small></span>
           ${f ? `<span class="ligne-place ${f.place <= 3 && cat.termine ? 'top' : ''}">${place(f.place)}</span>` : ''}
           ${ICONES.fleche}</a></li>`;
       });
@@ -458,6 +497,22 @@ function tableauPassages(m, res, ix) {
     <tbody>${lignes}</tbody></table></div>`;
 }
 
+// Les pilotes de la manche, avec leur rang UCI / FFC : on voit contre qui il a couru
+function listeAdversaires(c, m, p, ix) {
+  const lignes = (m.resultats || m.pilotes.map((id) => ({ pilote: id }))).map((x) => {
+    const a = ix.pilotes[x.pilote];
+    const moi = a.id === p.id;
+    const fin = x.passages ? (x.abandon ? '<span class="chute">Chute</span>' : temps(x.passages[3])) : '';
+    return `<li class="${moi ? 'moi' : ''}"><a href="#competition/${c.id}/pilote/${a.id}"${moi ? ' aria-current="page"' : ''}>
+      <span class="adv-place">${x.place ?? ''}</span>
+      ${plaquePetite(a)}
+      <span class="adv-nom"><strong>${esc(a.prenom[0])}. ${esc(a.nom)}</strong><small>${badgeRang(c, a)} ${drapeau(a.pays)} ${esc(ix.equipes[a.equipe].nom)}</small></span>
+      <span class="adv-temps">${fin}</span>
+    </a></li>`;
+  }).join('');
+  return `<div class="adversaires"><h3>${m.resultats ? 'Contre qui il a couru' : 'Contre qui il va courir'}</h3><ol>${lignes}</ol></div>`;
+}
+
 function ecranPilote(zone, c, id) {
   const ix = indexer(c);
   const p = ix.pilotes[id];
@@ -500,7 +555,8 @@ function ecranPilote(zone, c, id) {
     const tete = `<header class="mp-tete"><strong>${esc(nomManche(m))}</strong><span>${esc(dateCourte(m.date))} · ${esc(m.heure)}</span></header>`;
     if (!res) {
       return `<article class="carte-manche a-venir">${tete}<p class="doux">À venir : ${m.pilotes.length} pilotes dans cette manche.</p>
-        <a class="lien-fleche" href="#competition/${c.id}/manche/${m.id}">Voir les pilotes de la manche ${ICONES.fleche}</a></article>`;
+        ${listeAdversaires(c, m, p, ix)}
+        <a class="lien-fleche" href="#competition/${c.id}/manche/${m.id}">Voir toute la manche ${ICONES.fleche}</a></article>`;
     }
     const premier = m.resultats[0].passages[3];
     const qualifiePour = m.tour !== 'qualif' && m.phase !== 'Finale' && res.place <= 4;
@@ -513,6 +569,7 @@ function ecranPilote(zone, c, id) {
         ${m.tour === 'qualif' ? `<span class="mp-pts">${res.points} pt${res.points > 1 ? 's' : ''}</span>` : qualifiePour ? '<span class="mp-pts ok">Qualifié</span>' : ''}
       </div>
       ${tableauPassages(m, res, ix)}
+      ${listeAdversaires(c, m, p, ix)}
       <a class="lien-fleche" href="#competition/${c.id}/manche/${m.id}">Voir toute la manche ${ICONES.fleche}</a>
     </article>`;
   }).join('');
@@ -525,6 +582,7 @@ function ecranPilote(zone, c, id) {
       <p class="infos">${drapeau(p.pays)} ${esc(nomPays(p.pays))} · ${esc(p.categorie)}</p>
       <a class="etiquette lien-equipe" href="#competition/${c.id}/equipe/${equipe.id}">${esc(equipe.nom)} ${ICONES.fleche}</a>
     </div>
+    ${blocRangs(c, p)}
 
     <div class="chiffres">
       <div class="${f && f.place <= 3 && cat.termine ? 'or' : ''}"><strong>${f ? place(f.place) : '—'}</strong><span>${cat.termine ? 'place finale' : 'place provisoire'}</span></div>
@@ -570,7 +628,7 @@ function ecranEquipe(zone, c, id) {
     return `<article class="carte-membre">
       <a class="ligne" href="#competition/${c.id}/pilote/${p.id}">
         ${plaquePetite(p)}
-        <span class="ligne-texte"><strong>${esc(p.prenom)} ${esc(p.nom)}</strong><small>${esc(p.categorie)}${f ? ` · ${esc(f.phaseAtteinte)}` : ''}</small></span>
+        <span class="ligne-texte"><strong>${esc(p.prenom)} ${esc(p.nom)}</strong><small>${badgeRang(c, p)} ${esc(p.categorie)}${f ? ` · ${esc(f.phaseAtteinte)}` : ''}</small></span>
         ${f ? `<span class="ligne-place ${f.place <= 3 && ix.cats[p.categorie].termine ? 'top' : ''}">${place(f.place)}</span>` : ''}
         ${ICONES.fleche}
       </a>
@@ -612,6 +670,7 @@ function ecranResultats(zone, c) {
     <p class="sous-titre">${esc(c.nom)}</p>
     ${puces('Catégorie', c.categories.map((k) => [k.nom, k.nom]), r.cat, 'puces-defile puces-cat')}
     ${segments('Que voir', [['classement', 'Classement'], ['qualifs', 'Qualifs'], ['manches', 'Manches']], r.vue)}
+    ${legendeRangs(c)}
     <div id="res-contenu"></div>`;
 
   const contenu = zone.querySelector('#res-contenu');
@@ -633,7 +692,7 @@ function ecranResultats(zone, c) {
 }
 
 function cellPilote(c, p, ix, avecEquipe = true, avecPlaque = true) {
-  return `<td class="cel-pilote"><span class="cp">${avecPlaque ? plaquePetite(p) : ''}<span><strong>${esc(p.prenom[0])}. ${esc(p.nom)}</strong>${avecEquipe ? `<small>${drapeau(p.pays)} ${esc(ix.equipes[p.equipe].nom)}</small>` : ''}</span></span></td>`;
+  return `<td class="cel-pilote"><span class="cp">${avecPlaque ? plaquePetite(p) : ''}<span><strong>${esc(p.prenom[0])}. ${esc(p.nom)}</strong><small>${badgeRang(c, p)}${avecEquipe ? ` ${drapeau(p.pays)} ${esc(ix.equipes[p.equipe].nom)}` : ` ${drapeau(p.pays)}`}</small></span></span></td>`;
 }
 
 function vueClassement(c, cat, ix) {
@@ -685,7 +744,7 @@ function vueQualifs(c, cat, ix) {
 function tableManche(c, m, ix, affichage) {
   if (!m.pilotes) return `<p class="doux petit">Les pilotes seront connus après le tour précédent.</p>`;
   if (!m.resultats) {
-    return `<ul class="mini-liste">${m.pilotes.map((id) => { const p = ix.pilotes[id]; return `<li><a href="#competition/${c.id}/pilote/${p.id}">${plaquePetite(p)} ${esc(p.prenom)} ${esc(p.nom)}</a></li>`; }).join('')}</ul>`;
+    return `<ul class="mini-liste">${m.pilotes.map((id) => { const p = ix.pilotes[id]; return `<li><a href="#competition/${c.id}/pilote/${p.id}">${plaquePetite(p)} <span>${esc(p.prenom)} ${esc(p.nom)}</span> ${badgeRang(c, p)}</a></li>`; }).join('')}</ul>`;
   }
   const premier = m.resultats[0].passages;
   const tousSecteurs = m.resultats.map((x) => secteurs(x.passages));
@@ -765,6 +824,7 @@ function ecranManche(zone, c, id) {
     ${lienRetour(`#competition/${c.id}/resultats`, 'Temps et classements')}
     <h1 class="salut or-brillant">${esc(nomManche(m))}</h1>
     <p class="sous-titre">${esc(m.categorie)} · ${esc(dateJour(m.date))} à ${esc(m.heure)}<br>${esc(c.nom)}</p>
+    ${legendeRangs(c)}
     ${!m.resultats ? `<section class="bloc"><h2>Pilotes</h2>${tableManche(c, m, ix, 'arrivee')}<p class="note">Cette manche n'a pas encore été courue.</p></section>` : `
     <section class="bloc"><h2>Arrivée</h2>${tableManche(c, m, ix, 'arrivee')}</section>
     <section class="bloc"><h2>Temps par secteur</h2>
@@ -834,12 +894,12 @@ function carteArbre(c, m, ix, k) {
   if (!m.pilotes) {
     corps = `<li class="attente">À déterminer</li>`.repeat(1);
   } else if (!m.resultats) {
-    corps = m.pilotes.map((id) => { const p = ix.pilotes[id]; return `<li><span class="pl"></span><span class="nm">${esc(p.prenom[0])}. ${esc(p.nom)}</span><span class="tp doux">${drapeau(p.pays)}</span></li>`; }).join('');
+    corps = m.pilotes.map((id) => { const p = ix.pilotes[id]; return `<li><span class="pl"></span><span class="nm">${esc(p.prenom[0])}. ${esc(p.nom)}</span><span class="rg">${badgeRang(c, p)}</span><span class="tp doux">${drapeau(p.pays)}</span></li>`; }).join('');
   } else {
     corps = m.resultats.map((x) => {
       const p = ix.pilotes[x.pilote];
       const classe = finale ? (x.place <= 3 ? `med m${x.place}` : '') : x.place <= 4 ? 'q' : '';
-      return `<li class="${classe}"><span class="pl">${x.place}</span><span class="nm">${esc(p.prenom[0])}. ${esc(p.nom)}</span><span class="tp">${x.abandon ? 'Chute' : temps(x.passages[3])}</span></li>`;
+      return `<li class="${classe}"><span class="pl">${x.place}</span><span class="nm">${esc(p.prenom[0])}. ${esc(p.nom)}</span><span class="rg">${badgeRang(c, p)}</span><span class="tp">${x.abandon ? 'Chute' : temps(x.passages[3])}</span></li>`;
     }).join('');
   }
   return `<a class="arbre-manche ${finale ? 'finale' : ''} ${m.resultats ? '' : 'pas-couru'}" href="#competition/${c.id}/manche/${m.id}" data-k="${k}">
@@ -882,7 +942,7 @@ function ligneClassement(c, x, cat) {
   const p = c.pilotes[x.pilote];
   return `<li><a class="ligne" href="#competition/${c.id}/pilote/${p.id}">
     <span class="medaille ${x.place <= 3 ? `m${x.place}` : 'mx'}">${x.place}</span>
-    <span class="ligne-texte"><strong>${esc(p.prenom)} ${esc(p.nom)}</strong><small>${drapeau(p.pays)} ${esc(nomPays(p.pays))}${x.temps != null ? ` · ${temps(x.temps)} s` : ''}</small></span>
+    <span class="ligne-texte"><strong>${esc(p.prenom)} ${esc(p.nom)}</strong><small>${badgeRang(c, p)} ${drapeau(p.pays)} ${esc(nomPays(p.pays))}${x.temps != null ? ` · ${temps(x.temps)} s` : ''}</small></span>
     ${ICONES.fleche}</a></li>`;
 }
 
@@ -946,6 +1006,7 @@ function ecranPiloteReel(zone, c, id) {
       <h1 class="c-titre">${esc(p.prenom)} ${esc(p.nom)}</h1>
       <p class="c-hero-ligne">${drapeau(p.pays)} <span>${esc(nomPays(p.pays))}</span></p>
     </div>
+    ${p.rangUCI || p.rangFFC ? blocRangs(c, p) : `<p class="note">Son <strong>rang UCI</strong> et son <strong>rang FFC</strong> ne sont pas encore dans DBSpeed : on ne les met que quand on a pu les lire sur le classement officiel.</p>`}
     <section class="bloc">
       <h2>Ses résultats ici</h2>
       <ul class="lignes">${p.resultats.map((r) => `<li><div class="ligne">

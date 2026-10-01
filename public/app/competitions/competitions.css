@@ -355,3 +355,36 @@
 }
 .carte-dn1 > svg { color: var(--texte-doux); }
 .carte-dn1 .ligne-texte small { color: var(--texte); opacity: .85; }
+
+/* ---------- Rang UCI / FFC à côté du nom des pilotes ---------- */
+.rang {
+  display: inline-block; vertical-align: 1px; padding: 0 5px; border-radius: 5px;
+  font-size: 11px; font-weight: 700; line-height: 16px; letter-spacing: .2px;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.rang-uci { color: var(--or-300); box-shadow: inset 0 0 0 1px var(--or-700); }
+.rang-ffc { background: var(--accent-fond); color: var(--bordeaux-50); }
+.rang-nc { background: var(--carte-2); color: var(--texte-doux); font-weight: 600; }
+.cp small .rang, .ligne-texte small .rang, .podium-nom small .rang { margin-right: 2px; }
+.arbre-manche li:not(.attente) { grid-template-columns: 16px minmax(0, 1fr) auto auto; gap: 5px; }
+.arbre-manche li .rg .rang { font-size: 10px; line-height: 14px; padding: 0 4px; }
+.legende-rangs { line-height: 1.9; }
+.chiffres.chiffres-2 { grid-template-columns: repeat(2, 1fr); margin-bottom: var(--e2); }
+.mini-liste a .rang { margin-left: auto; }
+
+/* Fiche pilote : contre qui il a couru dans chaque manche */
+.adversaires { margin-top: 10px; }
+.adversaires h3 { margin: 0 0 6px; font-size: 14px; color: var(--texte-doux); font-weight: 600; letter-spacing: .3px; }
+.adversaires ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.adversaires a {
+  display: grid; grid-template-columns: 20px auto 1fr auto; align-items: center; gap: 8px;
+  min-height: 44px; padding: 2px 6px; border-radius: 10px; color: var(--texte); text-decoration: none;
+}
+.adversaires a:active { background: color-mix(in srgb, var(--carte-2) 70%, transparent); }
+.adversaires li.moi a { background: color-mix(in srgb, var(--or-500) 16%, transparent); box-shadow: inset 0 0 0 1px var(--or-700); }
+.adv-place { font-family: var(--police-titre); font-weight: 800; font-size: 16px; text-align: center; }
+.adversaires .plaque-petite { min-width: 38px; height: 26px; font-size: 18px; padding: 2px 6px 0; border-radius: 8px 8px 4px 4px; }
+.adv-nom { display: grid; min-width: 0; line-height: 1.2; }
+.adv-nom strong, .adv-nom small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adv-nom small { color: var(--texte-doux); font-size: 12px; }
+.adv-temps { font-variant-numeric: tabular-nums; font-size: 14px; text-align: right; }

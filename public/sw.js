@@ -6,7 +6,7 @@
 //   en arrière-plan.
 // - On ne touche JAMAIS à /api/* ni aux autres sites (Supabase, cartes, CDN…).
 // Pour forcer tout le monde à repartir de zéro : changer le numéro ci-dessous.
-const CACHE = 'dbspeed-v3';
+const CACHE = 'dbspeed-v4';
 
 // Le strict minimum gardé dès l'installation.
 const COQUILLE = [

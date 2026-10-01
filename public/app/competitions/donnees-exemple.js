@@ -311,6 +311,33 @@ function fabriquer(base) {
 
   const parId = Object.fromEntries(pilotes.map((p) => [p.id, p]));
 
+  // --- Rang UCI (classement mondial) et rang FFC (classement national français), inventés comme
+  // le reste : les pilotes les plus rapides ont les meilleurs rangs, avec des trous (les autres
+  // pilotes du classement ne sont pas venus). Hasard à part : les temps restent les mêmes.
+  const rg = hasard(`${base.id}|rangs`);
+  const inter = base.niveau === 'International';
+  const national = base.niveau === 'National';
+  for (const k of categories) {
+    const tries = k.pilotes.map((id) => parId[id])
+      .map((p) => ({ p, cle: p._talent * (1 + rg.gauss() * 0.006) }))
+      .sort((a, b) => a.cle - b.cle).map((x) => x.p);
+    // UCI : seulement les Elite et les Junior ; peu de pilotes classés dans les petites courses
+    if (/Elite|Junior/.test(k.nom)) {
+      let n = inter ? rg.entier(1, 2) : national ? rg.entier(12, 35) : rg.entier(90, 220);
+      const pas = inter ? 1.8 : national ? 7 : 18;
+      const part = inter ? 1 : national ? 0.55 : 0.2;
+      for (const p of tries) {
+        if (rg() < part) { p.rangUCI = n; n += 1 + Math.floor(rg() * pas); }
+      }
+    }
+    // FFC : les pilotes français (licenciés à la Fédération française de cyclisme)
+    let f = inter || national ? rg.entier(1, 2) : rg.entier(8, 40);
+    const pasF = inter ? 1.5 : national ? 2.5 : 9;
+    for (const p of tries) {
+      if (p.pays === 'FRA') { p.rangFFC = f; f += 1 + Math.floor(rg() * pasF); }
+    }
+  }
+
   // --- Faire rouler une manche : renvoie les résultats classés
   function rouler(idsPilotes, cle) {
     const rr = hasard(`${base.id}|${cle}`);

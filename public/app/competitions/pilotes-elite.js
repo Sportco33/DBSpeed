@@ -377,3 +377,13 @@ export const PILOTES_ABSENTS_2026 = [
   { nom: 'Mariana Pajón', pays: 'COL', raison: 'Passée au cyclisme sur piste (2 fois championne olympique BMX, 2012 et 2016)', source: 'https://www.winsports.co/mas-deportes/ciclismo/noticias/mariana-pajon-y-su-equipo-brillan-con-oro-suramericano-464743' },
   { nom: 'Alise Willoughby', pays: 'USA', raison: "Pas dans l'équipe des États-Unis aux Mondiaux 2026 ; pas d'annonce de retraite trouvée", source: 'https://usacycling.org/article/usa-cycling-announces-team-for-2026-uci-bmx-racing-world-championships' },
 ];
+
+// Rang au classement mondial UCI et au classement national FFC, par pilote.
+// Clé = prénom-nom en minuscules sans accents (ex. 'mathis-ragot-richard'), valeur = { uci, ffc }.
+// VIDE pour l'instant : on ne met un rang que s'il est lu sur le classement officiel
+// (UCI : https://dataride.uci.ch → BMX Racing → Ranking ; FFC : classement national BMX Race).
+// L'onglet Compétition l'affiche tout seul à côté du nom dès qu'il est rempli.
+export const RANGS = {
+  date: null,
+  pilotes: {},
+};
