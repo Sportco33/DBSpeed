@@ -2,6 +2,12 @@
    Couleurs : uniquement les variables de /couleurs.css et /app/app.css. */
 
 html.tuto-ouvert, html.tuto-ouvert body { overflow: hidden; }
+/* Pendant le tuto, un seul bouton doré : celui du tuto. Les boutons dorés de la page, dans l'ombre derrière,
+   deviennent sobres (ils redeviennent dorés à la fin du tuto). */
+html.tuto-ouvert main .bouton-or {
+  background: var(--carte-2); color: var(--texte-doux); text-shadow: none; box-shadow: none; animation: none;
+}
+html.tuto-ouvert main .bouton-or::after { display: none; }
 
 .tuto {
   position: fixed;

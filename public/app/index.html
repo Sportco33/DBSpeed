@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#14241F">
-  <title>DBSpeed</title>
+  <title>Connexion · DBSpeed</title>
+  <meta name="description" content="Connecte-toi à DBSpeed ou crée ton compte : pilote, organisateur ou spectateur.">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/icones/icone-180.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -28,7 +29,13 @@
 
     <div class="panneau">
     <form id="formulaire" novalidate>
-      <fieldset class="types">
+
+      <div class="modes" role="group" aria-label="Choisir">
+        <button type="button" id="mode-connexion" aria-pressed="true">Se connecter</button>
+        <button type="button" id="mode-inscription" aria-pressed="false">Créer un compte</button>
+      </div>
+
+      <fieldset class="types" id="choix-type" hidden>
         <legend>Tu es…</legend>
         <label class="type touchable">
           <input type="radio" name="type" value="pilote" checked>
@@ -49,11 +56,6 @@
           <span class="type-coche" aria-hidden="true"></span>
         </label>
       </fieldset>
-
-      <div class="modes" role="group" aria-label="Choisir">
-        <button type="button" id="mode-connexion" aria-pressed="true">Se connecter</button>
-        <button type="button" id="mode-inscription" aria-pressed="false">Créer un compte</button>
-      </div>
 
       <p id="note-organisateur" class="note" hidden>
         Un compte organisateur est vérifié par l'équipe DBSpeed avant de pouvoir importer des temps.
@@ -84,10 +86,14 @@
       <button type="submit" class="bouton bouton-principal bouton-or" id="valider">Me connecter</button>
     </form>
 
-    <div class="ou">ou</div>
-
-    <button type="button" class="bouton bouton-secondaire" id="google">Continuer avec Google</button>
+    <!-- Google : affiché seulement quand la connexion Google est activée (connexion.js) -->
+    <div id="bloc-google" hidden>
+      <div class="ou">ou</div>
+      <button type="button" class="bouton bouton-secondaire" id="google">Continuer avec Google</button>
     </div>
+    </div>
+
+    <p class="pied"><a href="/confidentialite.html">Tes données et ta vie privée</a></p>
   </main>
   <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');

@@ -73,6 +73,11 @@ a { color: var(--principal); }
   max-width: 480px;
   margin: 0 auto;
   padding: var(--e4) var(--e2) var(--e4);
+  /* iPhone à encoche (barre d'état transparente) : on descend sous l'heure et la batterie.
+     Sur les autres téléphones env() vaut 0, donc rien ne change. */
+  padding-top: calc(var(--e4) + env(safe-area-inset-top, 0px));
+  padding-left: max(var(--e2), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--e2), env(safe-area-inset-right, 0px));
 }
 
 /* ---------- Apparition douce ---------- */
@@ -287,6 +292,7 @@ select {
   transition: border-color var(--duree) ease;
 }
 input[type='date'] { color-scheme: dark; }
+::placeholder { color: var(--texte-pale); opacity: 1; }
 input:focus-visible {
   border-color: var(--principal);
   outline: none;
@@ -353,6 +359,23 @@ input:focus-visible {
 .message:empty { display: none; }
 .message.erreur { background: var(--erreur-fond); color: var(--erreur); }
 .message.ok { background: var(--carte-2); color: var(--succes); }
+
+/* Pied de la page de connexion (lien vers « Tes données ») */
+.pied {
+  margin: var(--e3) 0 0;
+  text-align: center;
+  font-size: 15px;
+  color: var(--texte-doux);
+  text-shadow: var(--ombre-texte);
+}
+.pied a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 10px;
+  color: var(--texte-doux);
+  text-underline-offset: 3px;
+}
 
 /* ---------- Espace connecté : onglets en bas ---------- */
 
@@ -663,7 +686,7 @@ select {
 .lien-discret {
   grid-column: 1 / -1;
   justify-self: center;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 12px;
   border: 0;
   background: none;

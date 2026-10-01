@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#14241F">
+  <title>Tes données · DBSpeed</title>
+  <meta name="description" content="Ce que DBSpeed garde sur toi, pourquoi, qui le voit, et comment tout effacer.">
+  <link rel="icon" href="/icones/icone-192.png">
+  <link rel="stylesheet" href="/couleurs.css">
+  <script src="/sensations.js" defer></script>
+  <style>
+    @font-face {
+      font-family: 'Big Shoulders Display';
+      src: url('/app/polices/BigShouldersDisplay-Variable.woff2') format('woff2');
+      font-weight: 100 900;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Barlow';
+      src: url('/app/polices/Barlow-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Barlow';
+      src: url('/app/polices/Barlow-SemiBold.woff2') format('woff2');
+      font-weight: 600;
+      font-display: swap;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; overflow-x: hidden; }
+    @supports (overflow: clip) { html, body { overflow-x: clip; } }
+    body {
+      min-height: 100vh; min-height: 100dvh;
+      background-color: var(--fond);
+      color: var(--texte);
+      font-family: 'Barlow', system-ui, sans-serif;
+      font-size: 17px; line-height: 1.55;
+    }
+    main {
+      max-width: 640px; margin: 0 auto;
+      padding: calc(28px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom));
+    }
+    a { color: var(--principal); text-underline-offset: 3px; }
+    p a { display: inline-block; padding: 12px 0; margin: -12px 0; }   /* zone de doigt de 44 px sans bouger le texte */
+    :focus-visible { outline: 3px solid var(--principal); outline-offset: 3px; border-radius: 4px; }
+    .retour {
+      display: inline-flex; align-items: center; min-height: 44px; margin: 0 0 8px -4px; padding: 0 8px 0 4px;
+      color: var(--texte-doux); font-weight: 600; text-decoration: none;
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-family: 'Big Shoulders Display', 'Barlow', system-ui, sans-serif;
+      font-weight: 800; font-size: 44px; line-height: 1;
+      text-transform: uppercase; letter-spacing: .02em;
+    }
+    .date { margin: 0 0 24px; color: var(--texte-doux); font-size: 15px; }
+    .bloc {
+      margin: 0 0 14px; padding: 16px 18px; border-radius: 16px;
+      background: color-mix(in srgb, var(--vert-900) 80%, transparent);
+      border: 1px solid var(--or-700);
+    }
+    h2 {
+      margin: 0 0 8px;
+      font-family: 'Big Shoulders Display', 'Barlow', system-ui, sans-serif;
+      font-weight: 800; font-size: 26px; line-height: 1.05; color: var(--or-300);
+    }
+    p, ul { margin: 0 0 10px; }
+    p:last-child, ul:last-child { margin-bottom: 0; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 4px; }
+    .doux { color: var(--texte-doux); }
+    strong { font-weight: 600; }
+  </style>
+</head>
+<body class="marbre-vert">
+  <main>
+    <a class="retour" href="/">← DBSpeed</a>
+    <h1 class="or-brillant">Tes données</h1>
+    <p class="date">Mis à jour le 01/10/2026</p>
+
+    <section class="bloc">
+      <h2>En bref</h2>
+      <ul>
+        <li>DBSpeed garde seulement ce qu'il faut pour faire marcher l'appli.</li>
+        <li>Pas de pub. On ne vend rien, à personne.</li>
+        <li>Ta position reste sur ton téléphone.</li>
+        <li>Tu peux effacer ton compte quand tu veux.</li>
+      </ul>
+    </section>
+
+    <section class="bloc">
+      <h2>Ce qu'on garde</h2>
+      <ul>
+        <li><strong>Ton compte</strong> : ton email, ton type de compte (pilote, organisateur ou spectateur).</li>
+        <li><strong>Ton profil</strong> : ton prénom et ton nom, ton numéro de plaque, ton club et ta catégorie (si tu les remplis).</li>
+        <li><strong>Tes entraînements</strong> : tes séances, tes tours et tes temps.</li>
+        <li><strong>Tes amis</strong> : les pilotes que tu as ajoutés, et les demandes en attente.</li>
+        <li><strong>Les résultats des courses</strong> : quand un organisateur importe le fichier de temps d'une course, on garde le nom des pilotes, leur plaque, leur couloir et leurs temps.</li>
+      </ul>
+      <p class="doux">Ta position : si tu dis oui, elle sert seulement à trouver les pistes près de toi. Elle reste dans ton téléphone. DBSpeed garde seulement ton choix (oui ou non).</p>
+    </section>
+
+    <section class="bloc">
+      <h2>Pourquoi</h2>
+      <ul>
+        <li>Ton email et ton mot de passe : pour te connecter.</li>
+        <li>Ta plaque et ton nom : pour retrouver tes manches dans les résultats.</li>
+        <li>Tes entraînements et tes amis : pour te montrer tes progrès et te comparer à tes amis.</li>
+      </ul>
+    </section>
+
+    <section class="bloc">
+      <h2>Qui voit quoi</h2>
+      <ul>
+        <li><strong>Les résultats des courses</strong> sont visibles par toutes les personnes connectées à DBSpeed.</li>
+        <li><strong>Tes entraînements</strong> : toi seul, tant que tu ne publies pas. Si tu publies une séance, ton meilleur tour entre dans le classement de la piste (avec ton nom, ta plaque, ton club et ta catégorie), visible par les personnes connectées. Tes amis peuvent comparer leurs tours aux tiens.</li>
+        <li><strong>Ton email</strong> : personne d'autre que toi.</li>
+        <li>Quand quelqu'un te cherche pour t'ajouter en ami, il voit ton nom, ta plaque et ton club.</li>
+      </ul>
+    </section>
+
+    <section class="bloc">
+      <h2>Où c'est rangé</h2>
+      <p>La base de données est chez <strong>Supabase</strong>, sur des serveurs en Europe (Paris). Le site est hébergé par <strong>Netlify</strong>. Les mails (par exemple pour activer ton compte) partent avec <strong>Resend</strong>.</p>
+    </section>
+
+    <section class="bloc">
+      <h2>Moins de 15 ans</h2>
+      <p>Si tu as moins de 15 ans, un de tes parents doit être d'accord avant que tu crées ton compte.</p>
+    </section>
+
+    <section class="bloc">
+      <h2>Effacer ton compte</h2>
+      <p>Dans l'appli, va dans <strong>Mon profil</strong>, puis appuie sur <strong>Supprimer mon compte</strong>. Ton compte, ton profil, tes entraînements et tes amis sont effacés.</p>
+      <p class="doux">Les résultats d'une course importés par un organisateur font partie du classement de cette course. Si tu veux que ton nom en soit retiré, écris-nous.</p>
+    </section>
+
+    <section class="bloc">
+      <h2>Nous écrire</h2>
+      <p>Une question, une erreur, ou tu veux voir ou corriger tes données ? Écris à <a href="mailto:resultats@sportco.cloud">resultats@sportco.cloud</a>.</p>
+    </section>
+  </main>
+</body>
+</html>

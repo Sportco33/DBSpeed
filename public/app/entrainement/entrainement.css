@@ -13,6 +13,7 @@
   font-family: var(--police-titre); font-weight: 800; font-size: 38px; line-height: 1;
   margin: 0 0 6px; text-shadow: var(--ombre-texte);
 }
+.titre-ecran.or-brillant { text-shadow: none; }   /* l'ombre se peindrait par-dessus l'or transparent */
 
 .panneau-verre {
   background: var(--verre); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
@@ -59,16 +60,22 @@
 }
 .cal-choix-mois button[aria-pressed='true'] { border-color: var(--principal); background: var(--carte-2); }
 
-.cal-semaine, .cal-grille { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-.cal-semaine span { text-align: center; font-size: 13px; font-weight: 600; color: var(--texte-doux); padding: 4px 0; }
+.cal-semaine, .cal-grille { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.cal-semaine span { min-width: 0; text-align: center; font-size: 13px; font-weight: 600; color: var(--texte-doux); padding: 4px 0; }
 .cal-grille-cadre { touch-action: pan-y; overflow: hidden; }
+/* 7 colonnes qui tiennent toujours : la case se rétrécit (min-width: 0), elle reste carrée,
+   et les lettres L M M J V S D sont pile au-dessus des chiffres (même grille, même écart). */
 .cal-jour {
-  position: relative; display: grid; place-items: center; aspect-ratio: 1; min-height: 42px;
+  position: relative; display: grid; place-items: center; aspect-ratio: 1; min-width: 0; min-height: 0;
   border-radius: 12px; color: var(--texte-doux); text-decoration: none; font-variant-numeric: tabular-nums;
 }
-.cal-jour.hors { visibility: hidden; }
+@media (max-width: 374px) {
+  .cal { padding-left: 8px; padding-right: 8px; }
+  .cal-semaine, .cal-grille { gap: 2px; }
+  .cal-jour { border-radius: 10px; }
+}
 .cal-num { font-size: 16px; font-weight: 600; line-height: 1; }
-.cal-jour.futur { opacity: 0.45; }
+.cal-jour.futur { color: var(--texte-pale); }   /* plus pâle, mais avec une couleur (pas de transparence) : reste lisible */
 .cal-jour.aujourdhui { box-shadow: inset 0 0 0 2px var(--vert-300); color: var(--texte); }
 .cal-jour.avec {
   background: var(--or-metal); background-size: 250% 100%; color: var(--sur-principal);
@@ -79,9 +86,9 @@
 .cal-jour.avec .cal-num { font-weight: 800; margin-top: -6px; }
 .cal-tours {
   position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
-  font-size: 10px; font-weight: 700; line-height: 1; opacity: 0.8;
+  font-size: 10px; font-weight: 700; line-height: 1;
 }
-.cal-tours { font-size: 9px; white-space: nowrap; }
+.cal-tours { white-space: nowrap; }
 .cal-tours::after { content: ' tours'; }
 .cal-jour.avec.aujourdhui { box-shadow: 0 0 0 2px var(--texte), 0 2px 8px rgba(0, 0, 0, 0.35); }
 .cal-jour.publie::before {
@@ -93,7 +100,7 @@
 .cal-resume strong { color: var(--texte); }
 
 .vide-entrainement { margin-bottom: var(--e2); }
-.note-exemples .lien-simple { min-height: 36px; padding: 0; }
+.note-exemples .lien-simple { min-height: 44px; padding: 0; margin: -4px 0; }
 
 /* ---------- Carte-lien (Classement, Ajouter des amis) ---------- */
 .carte-lien {
@@ -229,7 +236,7 @@ small.gagne, small.perd { display: inline-block; padding: 0 6px; border-radius: 
 .ref-carte small { color: var(--texte-doux); font-size: 14px; }
 .t-compare { margin-bottom: var(--e2); }
 .t-tous .sous-ecart { display: block; margin-top: 2px; }
-.t-tous .sous-ecart small { font-size: 11px; font-weight: 600; }
+.t-tous .sous-ecart small { font-size: 12px; font-weight: 600; }
 .t-tous thead th { white-space: normal; min-width: 64px; line-height: 1.2; vertical-align: bottom; }
 
 .tour-nav { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e1); margin-top: var(--e3); }
@@ -263,7 +270,7 @@ small.gagne, small.perd { display: inline-block; padding: 0 6px; border-radius: 
 .ami .plaque-petite.vide-plaque { background: var(--carte-2); color: var(--texte); }
 .ami-actions { display: flex; gap: 6px; flex: none; }
 .ami-actions button {
-  min-height: 40px; padding: 0 12px; border-radius: 999px; border: 1.5px solid var(--bord);
+  min-height: 44px; padding: 0 12px; border-radius: 999px; border: 1.5px solid var(--bord);
   background: var(--carte); color: var(--texte); font: 600 14px var(--police-texte); cursor: pointer;
 }
 .ami-actions button.oui { background: var(--or-metal); color: var(--sur-principal); border-color: var(--or-700); }

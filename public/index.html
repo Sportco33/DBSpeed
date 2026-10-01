@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>DBSpeed – Le chrono du BMX race</title>
-  <meta name="description" content="DBSpeed : à la fin de ta manche de BMX race, tu as tous tes temps, tes positions à chaque intermédiaire et ton écart avec le premier. Gratuit, sur ton téléphone.">
+  <title>DBSpeed — chronométrage BMX race</title>
+  <meta name="description" content="DBSpeed : les résultats de tes manches de BMX race sur ton téléphone. Tes temps à chaque ligne, ta place à chaque intermédiaire et ton écart avec le premier. Gratuit.">
   <meta name="theme-color" content="#14241F">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="/icones/icone-192.png">
@@ -23,6 +23,9 @@
            font-family: 'Barlow', system-ui, -apple-system, sans-serif; font-size: 17px; line-height: 1.55;
            -webkit-font-smoothing: antialiased; }
     a { color: inherit; }
+    /* Même anneau doré que dans l'appli quand on avance avec le clavier */
+    :focus-visible { outline: 3px solid var(--principal); outline-offset: 3px; }
+    summary:focus-visible { outline-offset: -3px; border-radius: 14px; }
     .conteneur { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
     .titre { font-family: 'Barlow Condensed', sans-serif; font-style: italic; font-weight: 800;
              text-transform: uppercase; letter-spacing: .5px; line-height: .95; margin: 0; }
@@ -46,26 +49,46 @@
     /* En-tête */
     header { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--fond) 88%, transparent);
              backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--carte); }
-    header .conteneur { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    header { padding-top: env(safe-area-inset-top, 0px); }
+    header .conteneur { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 60px; }
+    .entete-liens { display: flex; align-items: center; gap: 6px; }
+    .lien-entete { display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; border-radius: 10px;
+                   font-weight: 600; font-size: 15px; text-decoration: none; color: var(--texte); white-space: nowrap; }
+    .lien-entete:hover { text-decoration: underline; text-underline-offset: 3px; }
     .logo { font-family: 'Barlow Condensed', sans-serif; font-style: italic; font-weight: 800; font-size: 28px;
-            text-decoration: none; letter-spacing: .5px; }
+            text-decoration: none; letter-spacing: .5px; display: inline-flex; align-items: center; min-height: 44px; }
     .logo span { color: var(--principal); }
-    header .btn { padding: 9px 16px; font-size: 15px; }
+    header .btn { min-height: 44px; padding: 0 14px; font-size: 15px; white-space: nowrap; }
 
     /* Accueil */
     .accueil { padding: 44px 0 56px; }
-    .accueil .conteneur { display: grid; gap: 40px; align-items: center; }
+    .accueil .conteneur { display: grid; grid-template-columns: minmax(0, 1fr); gap: 40px; align-items: center; }
+    .accueil .conteneur > * { min-width: 0; }
     .accueil h1 { font-size: clamp(48px, 13vw, 88px); }
     .accueil h1 em { font-style: inherit; color: var(--principal); display: block; }
     .accueil p.intro { font-size: 19px; margin: 20px 0 28px; max-width: 520px; }
     .boutons { display: flex; flex-wrap: wrap; gap: 12px; }
     .boutons .btn { flex: 1 1 200px; }
     .gratuit { margin-top: 14px; font-size: 14px; }
+    .deja-compte { margin: 14px 0 0; font-size: 16px; }
+    /* lien dans une phrase : zone de doigt plus haute, sans bouger le texte */
+    .lien-texte { color: var(--principal); padding: 12px 0; margin: -12px 0; text-underline-offset: 3px; }
+    .deja-compte a { display: inline-flex; align-items: center; min-height: 44px; color: var(--principal); font-weight: 600;
+                     text-underline-offset: 3px; }
 
     /* Téléphone de démo */
     .telephone { width: 100%; max-width: 330px; margin: 0 auto; background: var(--vert-700);
                  border-radius: 38px; padding: 12px; box-shadow: 0 30px 60px -20px #000c, 0 0 0 1.5px var(--vert-500); }
     .ecran { background: var(--fond); border-radius: 28px; padding: 18px 16px 20px; }
+    /* Petit écran : le téléphone de démo rétrécit avec la page */
+    @media (max-width: 359px) {
+      .telephone { border-radius: 30px; padding: 8px; }
+      .ecran { border-radius: 24px; padding: 14px 10px 16px; }
+      .pilote { padding: 10px; gap: 8px; }
+      .place { font-size: 38px; }
+      .temps-final { font-size: 17px; }
+      .lignes li { gap: 6px; font-size: 14px; }
+    }
     .ecran-haut { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
     .ecran-haut b { font-family: 'Barlow Condensed', sans-serif; font-style: italic; font-size: 20px; text-transform: uppercase; }
     .badge { background: var(--accent-fond); color: var(--bordeaux-100); font-size: 12px; font-weight: 600;
@@ -112,20 +135,34 @@
 
     /* Classement de manche */
     .classement { background: var(--fond); border-radius: 18px; overflow: hidden; max-width: 560px; }
+    .classement .defile { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .deux-col > * { min-width: 0; }
     .classement table { width: 100%; border-collapse: collapse; font-size: 16px; }
     .classement th { text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
                      color: var(--texte-doux); padding: 12px 14px; background: var(--vert-500); }
     .classement td { padding: 11px 10px; white-space: nowrap; border-top: 1px solid var(--carte); }
+    @media (max-width: 380px) {
+      .classement table { font-size: 15px; }
+      .classement th { padding: 10px 8px; letter-spacing: .5px; }
+      .classement td { padding: 10px 6px; }
+      .classement td:first-child { width: 32px; padding-left: 10px; }
+    }
+    @media (max-width: 340px) {
+      .classement table { font-size: 14px; }
+      .classement th { padding: 10px 6px; font-size: 12px; letter-spacing: 0; }
+      .classement td { padding: 10px 4px; }
+      .classement td:first-child { font-size: 19px; width: 26px; padding-left: 8px; }
+    }
     .classement td:first-child { font-family: 'Barlow Condensed', sans-serif; font-style: italic; font-weight: 800; font-size: 22px; width: 44px; }
     .classement tr.premier td:first-child { color: var(--principal); }
     .classement td.num { text-align: right; }
-    .classement tr.abandon td { color: var(--vert-300); }
+    .classement tr.abandon td { color: var(--texte-doux); }
     .classement .abd { background: var(--accent-fond); color: var(--bordeaux-100); font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
     .note-exemple { font-size: 14px; margin-top: 12px; }
 
     /* Installer */
     .onglets { display: flex; gap: 6px; background: var(--carte); padding: 6px; border-radius: 14px; max-width: 420px; margin-bottom: 20px; }
-    .onglet { flex: 1; padding: 12px; border: 0; border-radius: 10px; background: transparent; color: var(--texte-doux);
+    .onglet { flex: 1; min-height: 44px; padding: 12px; border: 0; border-radius: 10px; background: transparent; color: var(--texte-doux);
               font: 600 16px 'Barlow', sans-serif; cursor: pointer; }
     .onglet[aria-selected="true"] { background: var(--principal); color: var(--sur-principal); }
     .panneau[hidden], .btn[hidden] { display: none; }
@@ -158,7 +195,15 @@
     .final .btn { min-width: 260px; }
 
     footer { padding: 28px 0 40px; font-size: 14px; }
-    footer .conteneur { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
+    footer { padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
+    footer .conteneur { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; align-items: center; }
+    footer nav { display: flex; flex-wrap: wrap; gap: 0 16px; }
+    footer nav a { display: inline-flex; align-items: center; min-height: 44px; text-underline-offset: 3px; }
+
+    /* Tu organises une course ? */
+    .orga .etape::before { font-size: 40px; }
+    .colonnes { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
+    .colonnes li { padding: 2px 10px; border-radius: 8px; background: var(--vert-500); font-weight: 600; font-size: 15px; }
 
 
     /* ============ Marbre et or ============ */
@@ -211,6 +256,7 @@
     .accueil .conteneur > div:first-child > :nth-child(3) { animation-delay: .2s; }
     .accueil .conteneur > div:first-child > :nth-child(4) { animation-delay: .3s; }
     .accueil .conteneur > div:first-child > :nth-child(5) { animation-delay: .38s; }
+    .accueil .conteneur > div:first-child > :nth-child(6) { animation-delay: .44s; }
     .telephone { animation: telephone-entre .8s .2s cubic-bezier(.2,.8,.2,1) both; }
 
     /* Démo : la manche se joue en direct dans le téléphone */
@@ -247,6 +293,24 @@
       .infos { grid-template-columns: 1fr 1fr; }
       .deux-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
     }
+    /* Petit téléphone : tout tient sur une ligne (logo + Se connecter + Installer).
+       Placé à la fin pour passer avant les règles du dessus. */
+    @media (max-width: 420px) {
+      header .conteneur { padding: 0 12px; gap: 4px; }
+      .logo { font-size: 24px; }
+      .entete-liens { gap: 4px; }
+      .lien-entete { padding: 0 6px; font-size: 15px; }
+      header .btn { padding: 0 12px; font-size: 15px; }
+    }
+    .lien-entete .court { display: none; }
+    @media (max-width: 359px) {
+      header .conteneur { padding: 0 10px; }
+      .logo { font-size: 22px; letter-spacing: 0; }
+      .lien-entete .long { display: none; }
+      .lien-entete .court { display: inline; }
+      .lien-entete { padding: 0 4px; font-size: 14px; }
+      header .btn { padding: 0 10px; font-size: 14px; }
+    }
   </style>
 </head>
 <body class="marbre-vert">
@@ -254,7 +318,10 @@
 <header>
   <div class="conteneur">
     <a class="logo" href="#">DB<span>Speed</span></a>
-    <a class="btn btn-or bouton-or" href="#installer">Installer</a>
+    <div class="entete-liens">
+      <a class="lien-entete" href="/app/" aria-label="Se connecter"><span class="long">Se connecter</span><span class="court" aria-hidden="true">Connexion</span></a>
+      <a class="btn btn-ligne" href="#installer">Installer</a>
+    </div>
   </div>
 </header>
 
@@ -265,12 +332,13 @@
       <div>
         <p class="petit-titre">Chrono BMX race</p>
         <h1 class="titre">Toute ta manche, <em>au millième.</em></h1>
-        <p class="intro doux">La grille tombe, tu roules, tu passes la ligne. Quelques secondes après, DBSpeed te donne <strong style="color:var(--texte)">tes temps, ta place à chaque intermédiaire et ton écart avec le premier</strong>. Directement sur ton téléphone.</p>
+        <p class="intro doux">La grille tombe, tu roules, tu passes la ligne. Dès que l'organisateur a mis les temps de la course dans DBSpeed, tu as sur ton téléphone <strong style="color:var(--texte)">tes temps, ta place à chaque intermédiaire et ton écart avec le premier</strong>.</p>
         <div class="boutons">
           <a class="btn btn-or bouton-or" href="#installer">Installer l'appli</a>
           <a class="btn btn-ligne" href="#comment">Comment ça marche</a>
         </div>
         <p class="gratuit doux">Gratuit · iPhone et Android · Pas besoin de l'App Store</p>
+        <p class="deja-compte doux">Tu as déjà un compte ? <a href="/app/">Ouvrir l'appli et me connecter</a></p>
       </div>
 
       <!-- Démo : ce que voit le pilote -->
@@ -304,19 +372,19 @@
     <div class="conteneur">
       <p class="petit-titre">Comment ça marche</p>
       <h2 class="titre">De la grille à ton écran</h2>
-      <p class="sous-titre doux">Tu n'as rien à faire pendant la course. Tu roules, DBSpeed s'occupe du reste.</p>
+      <p class="sous-titre doux">Tu n'as rien à faire pendant la course. Tu roules, le chronométrage de la piste enregistre tes passages.</p>
       <div class="etapes" data-apparait>
         <div class="etape">
           <h3>Tu roules</h3>
-          <p class="doux">Jusqu'à 8 pilotes par manche. Le chrono part à la chute de la grille.</p>
+          <p class="doux">Jusqu'à 8 pilotes par manche. Le chrono de la piste part à la chute de la grille.</p>
         </div>
         <div class="etape">
-          <h3>Chaque ligne compte</h3>
-          <p class="doux">Ton passage est enregistré à chaque ligne intermédiaire, puis sur la ligne d'arrivée.</p>
+          <h3>L'organisateur envoie les temps</h3>
+          <p class="doux">Tes passages sont pris à chaque ligne intermédiaire et à l'arrivée. L'organisateur met ensuite le fichier des temps dans DBSpeed.</p>
         </div>
         <div class="etape">
           <h3>Tu as tes résultats</h3>
-          <p class="doux">À la fin du tour, tu ouvres l'appli : tout est là, pour toi et pour toute la manche.</p>
+          <p class="doux">Tu ouvres l'appli : tout est là, pour toi et pour toute la manche. Ce n'est pas du direct : les résultats arrivent quand l'organisateur a envoyé ses temps.</p>
         </div>
       </div>
     </div>
@@ -327,7 +395,7 @@
     <div class="conteneur">
       <p class="petit-titre">Ce que tu obtiens</p>
       <h2 class="titre">Tout pour progresser</h2>
-      <p class="sous-titre doux">Plus besoin d'attendre l'affichage ou de deviner où tu as perdu du temps.</p>
+      <p class="sous-titre doux">Plus besoin de deviner où tu as perdu du temps.</p>
       <div class="infos" data-apparait>
         <div class="info">
           <div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M10 2h4"/></svg></div>
@@ -347,11 +415,11 @@
         </div>
         <div class="info">
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h12"/></svg></div>
-          <div><h3>Toutes les compétitions</h3><p class="doux">Cherche n'importe quelle course de BMX dans le monde : infos, horaires, engagés, temps par secteur et tableau des 1/16 jusqu'à la finale.</p></div>
+          <div><h3>Les grandes compétitions</h3><p class="doux">Les vraies courses 2026 (UCI, UEC, Fédération française…) : infos, horaires et podiums publiés. Le détail des manches et les temps à chaque ligne arrivent quand les organisateurs envoient leurs fichiers.</p></div>
         </div>
         <div class="info">
           <div class="ico"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></div>
-          <div><h3>Pensé pour le téléphone</h3><p class="doux">Gros chiffres, lisible en plein soleil, même avec les gants.</p></div>
+          <div><h3>Pensé pour le téléphone</h3><p class="doux">Gros chiffres et gros boutons, faciles à lire au bord de la piste.</p></div>
         </div>
       </div>
     </div>
@@ -363,10 +431,11 @@
       <div>
         <p class="petit-titre">Exemple</p>
         <h2 class="titre">Le classement de la manche</h2>
-        <p class="sous-titre doux">Voilà ce que tout le monde voit à la fin d'une manche. Même une chute est prise en compte : le pilote apparaît avec la mention « Abandon ».</p>
+        <p class="sous-titre doux">Voilà ce que tout le monde voit quand les temps d'une manche sont dans DBSpeed. Même une chute est prise en compte : le pilote apparaît en bas, sans temps d'arrivée.</p>
       </div>
       <div>
         <div class="classement">
+          <div class="defile">
           <table class="chrono">
             <thead><tr><th>Pl.</th><th>Pilote</th><th style="text-align:right">Temps</th><th style="text-align:right">Écart</th></tr></thead>
             <tbody data-apparait>
@@ -377,9 +446,10 @@
               <tr><td>5</td><td>Maël Laurent</td><td class="num">37.102</td><td class="num doux">+0.984</td></tr>
               <tr><td>6</td><td>Théo Richard</td><td class="num">37.431</td><td class="num doux">+1.313</td></tr>
               <tr><td>7</td><td>Jules Moreau</td><td class="num">37.905</td><td class="num doux">+1.787</td></tr>
-              <tr class="abandon"><td>–</td><td>Louis Durand</td><td class="num" colspan="2"><span class="abd">Abandon</span></td></tr>
+              <tr class="abandon"><td>–</td><td>Louis Durand</td><td class="num" colspan="2"><span class="abd">Pas fini</span></td></tr>
             </tbody>
           </table>
+          </div>
         </div>
         <p class="note-exemple doux">Pilotes et temps inventés, pour l'exemple.</p>
       </div>
@@ -432,18 +502,45 @@
     </div>
   </section>
 
+  <!-- ORGANISATEURS -->
+  <section id="organisateurs" class="fond-carte">
+    <div class="conteneur">
+      <p class="petit-titre">Organisateurs</p>
+      <h2 class="titre">Tu organises une course ?</h2>
+      <p class="sous-titre doux">Tu mets les temps de ta course dans DBSpeed, et tous les pilotes ont leurs résultats sur leur téléphone.</p>
+      <div class="orga etapes" data-apparait>
+        <div class="etape">
+          <h3>Crée un compte organisateur</h3>
+          <p class="doux">Dans l'appli, choisis « Créer un compte » puis « Organisateur ». L'équipe DBSpeed vérifie ton compte avant que tu puisses envoyer des temps.</p>
+        </div>
+        <div class="etape">
+          <h3>Prépare ton fichier</h3>
+          <p class="doux">Un fichier Excel (.xlsx) ou CSV, une ligne par pilote et par manche, avec ces colonnes :</p>
+          <ul class="colonnes chrono"><li>Manche</li><li>Plaque</li><li>Pilote</li><li>Couloir</li><li>Départ</li><li>Inter 1</li><li>Inter 2…</li><li>Arrivée</li></ul>
+          <p class="doux" style="margin-top:10px">Temps en secondes depuis la chute de la grille (36.118). Case vide = le pilote n'est pas passé.</p>
+        </div>
+        <div class="etape">
+          <h3>Envoie-le depuis l'appli</h3>
+          <p class="doux">DBSpeed vérifie le fichier ligne par ligne, te montre un aperçu, puis calcule tout seul les places, les écarts et les secteurs.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- QUESTIONS -->
-  <section id="questions" class="fond-carte">
+  <section id="questions">
     <div class="conteneur">
       <p class="petit-titre">Questions</p>
       <h2 class="titre">Tu te demandes…</h2>
       <div data-apparait>
       <details><summary>C'est vraiment gratuit ?</summary><p>Oui. L'appli est gratuite pour les pilotes. Pas d'abonnement, pas de pub.</p></details>
       <details><summary>Pourquoi elle n'est pas sur l'App Store ?</summary><p>DBSpeed est une appli web : elle s'installe directement depuis ce site. Résultat : rien à télécharger de lourd, pas de mise à jour à faire, tu as toujours la dernière version.</p></details>
-      <details><summary>Comment je retrouve mes temps ?</summary><p>Tu crées ton compte une fois avec ton numéro de plaque. Ensuite, à chaque manche, tes temps s'affichent tout seuls dans l'appli.</p></details>
-      <details><summary>Et si je tombe pendant la manche ?</summary><p>Pas de souci : l'appli garde tes temps jusqu'à la dernière ligne que tu as passée, et t'affiche en « Abandon » au classement.</p></details>
+      <details><summary>Comment je retrouve mes temps ?</summary><p>Tu crées ton compte une fois avec ton numéro de plaque. Ensuite, dès qu'un organisateur met les temps d'une course dans DBSpeed, tes manches sont retrouvées grâce à ta plaque.</p></details>
+      <details><summary>C'est en direct ?</summary><p>Non. Les résultats arrivent quand l'organisateur a mis le fichier des temps dans DBSpeed (fichier Excel ou CSV pour l'instant ; plus tard, directement depuis les transpondeurs).</p></details>
+      <details><summary>Et si je tombe pendant la manche ?</summary><p>Pas de souci : l'appli garde tes temps jusqu'à la dernière ligne que tu as passée, et te met en bas du classement, comme pilote qui n'a pas fini.</p></details>
       <details><summary>Ça prend de la place sur mon téléphone ?</summary><p>Presque rien : c'est beaucoup plus léger qu'une appli classique.</p></details>
-      <details><summary>Je peux voir les temps des autres pilotes ?</summary><p>Oui, tu vois le classement de toutes les manches. Le détail complet (temps entre les lignes, positions) est dans ta fiche à toi.</p></details>
+      <details><summary>Je peux voir les temps des autres pilotes ?</summary><p>Oui. Une fois connecté, tu vois le classement de toutes les manches et la fiche de chaque pilote : temps à chaque ligne, temps entre les lignes et places.</p></details>
+      <details><summary>Qui voit mes données ?</summary><p>Les résultats des courses sont visibles par toutes les personnes connectées. Tes entraînements restent à toi, sauf si tu les publies. Tout est expliqué dans <a class="lien-texte" href="/confidentialite.html">Tes données</a>.</p></details>
       </div>
     </div>
   </section>
@@ -454,6 +551,7 @@
       <h2 class="titre">Prêt pour la <span style="color:var(--principal)">grille</span> ?</h2>
       <p class="sous-titre doux" style="margin:0 auto 26px">Installe DBSpeed maintenant, et ta prochaine manche, tu la revis au millième.</p>
       <a class="btn btn-or bouton-or" href="#installer">Installer l'appli</a>
+      <p class="deja-compte doux">Déjà installée ? <a href="/app/">Ouvrir l'appli</a></p>
     </div>
   </section>
   <div class="damier" aria-hidden="true"></div>
@@ -462,6 +560,10 @@
 <footer>
   <div class="conteneur doux">
     <span><strong style="color:var(--texte)">DB<span style="color:var(--principal)">Speed</span></strong> · Le chrono du BMX race</span>
+    <nav aria-label="Liens du bas de page">
+      <a href="/app/">Se connecter</a>
+      <a href="/confidentialite.html">Tes données</a>
+    </nav>
     <span>© 2026 DBSpeed</span>
   </div>
 </footer>

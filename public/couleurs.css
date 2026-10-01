@@ -39,6 +39,7 @@
   --carte-2:       var(--vert-500);   /* bloc dans un bloc, lignes de tableau */
   --texte:         var(--or-50);      /* texte principal */
   --texte-doux:    var(--vert-100);   /* texte secondaire */
+  --texte-pale:    color-mix(in srgb, var(--vert-100) 50%, var(--vert-300)); /* indications (placeholder, jours à venir) : ≥ 5:1 sur --fond, --carte et --verre */
   --principal:     var(--or-500);     /* boutons, titres, 1re place */
   --principal-fort:var(--or-300);     /* bouton au survol */
   --sur-principal: var(--vert-900);   /* texte posé sur l'or */
@@ -59,6 +60,15 @@
       #5E4518 0%,  #9A7228 10%, #E2C06E 22%, #FFF6D8 30%,
       #D4A63A 40%, #9A7228 52%, #D4A63A 62%, #FFF1C4 72%,
       #E2C06E 80%, #9A7228 90%, #5E4518 100%);
+}
+
+/* ================= PAGE ================= */
+
+/* Rien ne dépasse sur le côté (glissements, ombres dorées) : la page ne bouge jamais de gauche à droite.
+   « clip » ne casse pas l'en-tête collant (sticky) ; « hidden » seulement pour les vieux Safari. */
+html { overflow-x: hidden; }
+@supports (overflow: clip) {
+  html, body { overflow-x: clip; }
 }
 
 /* ================= MARBRE ================= */
@@ -92,6 +102,9 @@
           drop-shadow(0 1px 0 rgba(0, 0, 0, .6));
   animation: or-reflet 5s ease-in-out infinite alternate;
 }
+/* Jamais d'ombre de texte sur l'or : elle se peindrait PAR-DESSUS les lettres transparentes et les rendrait illisibles
+   (certains titres ont aussi la classe .titre-ecran, qui ajoute une ombre). */
+.or-brillant { text-shadow: none !important; }
 
 /* Bouton en or, avec un éclat de lumière qui passe dessus */
 .bouton-or {

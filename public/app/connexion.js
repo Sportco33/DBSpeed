@@ -33,6 +33,8 @@ function mettreAJour() {
   document.querySelector('.modes').dataset.mode = mode;   // la pastille glisse sous le bon bouton
   // les champs s'ouvrent et se ferment en douceur (sensations.js)
   const montrer = (el, visible) => (window.montrer ? window.montrer(el, visible) : (el.hidden = !visible));
+  // les 3 types de compte : seulement pour créer un compte (pour se connecter, l'écran reste court)
+  montrer($('choix-type'), inscription);
   montrer($('champ-nom'), inscription);
   montrer($('champ-plaque'), inscription && type === 'pilote');
   montrer($('note-organisateur'), inscription && type === 'organisateur');
@@ -149,11 +151,13 @@ async function demarrer() {
     return;
   }
 
-  // Bouton Google : seulement si Google est activé dans Supabase
-  if (!(await googleActive())) {
+  // Bouton Google : seulement si Google est activé dans Supabase (sinon il reste caché)
+  if (await googleActive()) {
+    const montrer = (el, visible) => (window.montrer ? window.montrer(el, visible) : (el.hidden = !visible));
+    montrer($('bloc-google'), true);
+  } else {
     boutonGoogle.dataset.inactif = 'oui';
     boutonGoogle.disabled = true;
-    boutonGoogle.textContent = 'Connexion Google : bientôt disponible';
   }
 }
 

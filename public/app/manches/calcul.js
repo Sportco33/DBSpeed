@@ -65,8 +65,10 @@ export function calculerManche(pilotes) {
   });
   enrichis.forEach((p, i) => {
     const avant = enrichis[i - 1];
-    // même temps final que le précédent : même place
-    p.place = avant && p.fini && avant.fini && avant.final === p.final ? avant.place : i + 1;
+    // même temps final que le précédent (ou arrêtés à la même ligne avec le même temps) : même place
+    const egal = avant && p.fini === avant.fini && p.derniere === avant.derniere
+      && (p.derniere < 0 || p.temps[p.derniere] === avant.temps[avant.derniere]);
+    p.place = egal ? avant.place : i + 1;
   });
   return enrichis;
 }
@@ -75,17 +77,21 @@ export function calculerManche(pilotes) {
 
 // 36.118 → « 36.118 » ; 62.5 → « 1:02.500 »
 export function texteTemps(t) {
-  if (t == null) return '—';
-  const s = Number(t);
-  if (s < 60) return s.toFixed(3);
-  const min = Math.floor(s / 60);
-  return `${min}:${(s - min * 60).toFixed(3).padStart(6, '0')}`;
+  if (t == null || t === '') return '—';
+  // on arrondit au millième d'abord : 59.9996 s s'écrit « 1:00.000 », pas « 60.000 »
+  const ms = Math.round(Number(t) * 1000);
+  if (!Number.isFinite(ms)) return '—';
+  const signe = ms < 0 ? '-' : '';
+  const abs = Math.abs(ms);
+  if (abs < 60000) return `${signe}${(abs / 1000).toFixed(3)}`;
+  const min = Math.floor(abs / 60000);
+  return `${signe}${min}:${((abs - min * 60000) / 1000).toFixed(3).padStart(6, '0')}`;
 }
 
 // 0.394 → « +0.394 » ; 0 → « — » (c'est le premier)
 export function texteEcart(e) {
-  if (e == null) return '';
-  return e === 0 ? '—' : `+${Number(e).toFixed(3)}`;
+  if (e == null || !Number.isFinite(Number(e))) return '';
+  return Math.round(Number(e) * 1000) === 0 ? '—' : `+${Number(e).toFixed(3)}`;
 }
 
 // 1 → « 1er », 2 → « 2e »

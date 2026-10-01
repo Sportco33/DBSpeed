@@ -200,8 +200,8 @@
   box-shadow: 0 4px 14px color-mix(in srgb, var(--vert-900) 70%, transparent);
 }
 #onglet-lieux .maplibregl-ctrl-group button {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
 }
 #onglet-lieux .maplibregl-ctrl-group button + button { border-top: 1px solid var(--bord-doux); }
 #onglet-lieux .maplibregl-ctrl-group .maplibregl-ctrl-icon { filter: invert(1) sepia(1) saturate(2.4) hue-rotate(5deg) brightness(1.05); }

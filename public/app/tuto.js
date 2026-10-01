@@ -331,10 +331,16 @@ export function lancerTuto({ profil, enregistrer, allerOnglet, demanderPosition,
       const r = cibleActuelle.getBoundingClientRect();
       const marge = 6;
       const p = el.projecteur.style;
-      p.left = `${r.left - marge}px`;
-      p.top = `${r.top - marge}px`;
-      p.width = `${r.width + marge * 2}px`;
-      p.height = `${r.height + marge * 2}px`;
+      // le projecteur reste dans l'écran (la cible peut toucher le bord, ex. l'onglet Mon profil)
+      const bord = 2;
+      const gaucheP = Math.max(bord, r.left - marge);
+      const hautP = Math.max(bord, r.top - marge);
+      const droiteP = Math.min(window.innerWidth - bord, r.right + marge);
+      const basP = Math.min(window.innerHeight - bord, r.bottom + marge);
+      p.left = `${gaucheP}px`;
+      p.top = `${hautP}px`;
+      p.width = `${Math.max(0, droiteP - gaucheP)}px`;
+      p.height = `${Math.max(0, basP - hautP)}px`;
 
       // la bulle : au-dessus si la cible est en bas de l'écran, sinon en dessous
       const largeur = Math.min(360, window.innerWidth - 32);
