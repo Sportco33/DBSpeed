@@ -11,6 +11,11 @@ On garde seulement les équipements en service, avec une position, et (pour le t
 sont vraiment du BMX (le type 604 contient aussi des pistes de VTT).
 Chaque note est calculée avec la grille ci-dessous, uniquement avec ce que dit la fiche officielle :
 une info pas remplie donne 0 point (la note dit donc aussi « fiche bien remplie ou pas »).
+
+VÉRIFICATION (consigne 40) : un lieu n'est affiché que si OpenStreetMap a la même piste à 150 m ou moins.
+Les 849 lieux pas confirmés sont dans public.lieux_a_confirmer ; un déclencheur empêche ce fichier de les remettre.
+Un NOUVEAU lieu Data ES doit être vérifié de la même façon avant d'être ajouté
+(voir supabase/migrations/20261001220000_lieux_france_verifies.sql).
 """
 import csv, json, sys, unicodedata
 
