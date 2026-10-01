@@ -15,6 +15,7 @@
 - [x] Base Supabase : table `profils` (type de compte, nom, plaque), sécurité testée (01/10/2026)
 - [x] Vraie page `/app/` : connexion avec 3 types (pilote, organisateur, spectateur), se connecter, créer un compte, Google (sur `travail`, pas encore en ligne)
 - [x] Espace connecté `/app/accueil.html` : onglets en bas (Accueil, Entraînement, Compétition, Mon profil), modifier ses infos, se déconnecter, en marbre et or (sur `travail`)
+- [x] **Onglet Compétition** complet avec 12 compétitions d'exemple : recherche, accueil compétition, fiche pilote, fiche équipe, temps et classements, détail d'une manche, temps par secteur, arbre 1/16 → finale (sur `travail`) (01/10/2026)
 - [x] Tuto de la première connexion : bienvenue, infos (club, catégorie), visite guidée avec projecteur, « Revoir le tuto » ; base Supabase mise à jour (club, catégorie, tuto_fini) (sur `travail`) (01/10/2026)
 - [x] Animations partout (01/10/2026) : site (arrivée de l'accueil, démo de manche en direct dans le téléphone, titres et classement qui arrivent en défilant, questions qui s'ouvrent en douceur, damier qui défile) ; appli (arrivée de la connexion, pastille qui glisse Se connecter / Créer un compte, champs qui s'ouvrent en douceur, onglets qui glissent du bon côté, reflet sur la plaque) ; tuto (projecteur qui s'allume et balance, points qui arrivent un par un, pilote BMX qui passe la ligne) (sur `travail`)
 
@@ -24,7 +25,8 @@
    - [ ] Supabase → envoi des mails avec Resend (SMTP)
    - [ ] Google Cloud → créer l'accès Google, puis l'activer dans Supabase
 2. [ ] **pushcoco** puis tester en vrai : créer un compte, confirmer le mail, se connecter, Google.
-3. [ ] **Contenu des onglets Entraînement et Compétition** (à préciser avec Nicolas).
+3. [ ] **Contenu de l'onglet Entraînement** (à préciser avec Nicolas).
+3b. [ ] **Compétitions dans Supabase** : tables compétitions, catégories, engagés, équipes, manches, passages + import par les organisateurs ; remplacer les données d'exemple.
 4. [ ] **Importer le fichier Excel** (organisateurs validés) : une page où on choisit le fichier, et l'appli le lit.
 5. [ ] **Calculer les résultats** : temps à chaque ligne, temps entre deux lignes, positions, écart avec le premier, pilote qui ne finit pas.
 6. [ ] **Enregistrer les manches dans Supabase** (avec la sécurité de la base activée).
@@ -39,6 +41,8 @@
 - [ ] **Vérifier chaque écran** : gros boutons, un seul bouton principal, espaces réguliers, bien équilibré.
 
 ## Petits nettoyages (moins urgent)
+- [ ] Compétition : mettre en avant **ses propres compétitions** (pilote connecté) et un bouton « Suivre » une compétition.
+- [ ] Compétition : vérifier avec Nicolas le **format** (qualifs aux points, 4 premiers qui passent) et les **noms des catégories**.
 - [ ] Vérifier avec Nicolas la **liste des catégories** BMX proposées (Pré-licencié, Poussin, Pupille, Benjamin, Minime, Cadet, Junior, Senior, Elite, Master, Cruiser).
 - [ ] Mettre les mails de Supabase (confirmation, mot de passe) en français.
 - [ ] Ajouter « Mot de passe oublié ».

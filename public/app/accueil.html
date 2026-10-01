@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="/couleurs.css">
   <link rel="stylesheet" href="/app/app.css">
   <link rel="stylesheet" href="/app/tuto.css">
+  <link rel="stylesheet" href="/app/competitions/competitions.css">
   <script src="/sensations.js" defer></script>
   <script src="/config.js"></script>
   <script type="module" src="/app/accueil.js"></script>
@@ -95,13 +96,9 @@
         </div>
       </section>
 
-      <section id="onglet-competition" aria-labelledby="titre-competition" hidden>
-        <h1 id="titre-competition" class="salut or-brillant">Compétition</h1>
-        <p class="sous-titre">Les manches des courses et leurs classements.</p>
-        <div class="vide">
-          <strong>Pas encore de compétition.</strong>
-          Les manches et les classements arriveront ici.
-        </div>
+      <section id="onglet-competition" aria-label="Compétition" hidden>
+        <!-- Rempli par /app/competitions/vue.js : recherche, compétition, pilote, équipe, résultats, tableau -->
+        <div id="competition-vue"></div>
       </section>
 
       <section id="onglet-profil" aria-labelledby="titre-profil" hidden>

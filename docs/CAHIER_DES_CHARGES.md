@@ -53,7 +53,17 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 **Après connexion** (`/app/accueil.html`), des **onglets en bas de l'écran** :
 - **Accueil** : bonjour + dernières manches.
 - **Entraînement** : les temps des tours d'entraînement (contenu à préciser).
-- **Compétition** : les manches des courses et leurs classements (contenu à préciser).
+- **Compétition** (fait le 01/10/2026, avec des données d'exemple) :
+  - **Recherche** des compétitions du monde entier (nom, ville, pays, type, catégorie) + filtres En direct / À venir / Terminées.
+  - **Page d'accueil d'une compétition** : statut, lieu, dates, type de course, format, piste (longueur, 3 inters + arrivée, secteurs), organisateur, chiffres (pilotes, équipes, catégories, manches), **horaires** jour par jour, **podiums**, **engagés** (pilotes ou équipes, filtre par catégorie, recherche).
+  - **Fiche pilote** (pour la compétition) : place finale, tour atteint, points et rang aux qualifs, meilleur temps, **meilleur temps de chaque secteur et son rang dans la catégorie**, point fort, et **chaque manche** (place, temps, écart, couloir, et à chaque ligne : temps, temps du secteur, place, écart).
+  - **Fiche équipe** : meilleure place, podiums, finalistes, qualifiés, et chaque pilote avec sa place et ses temps dans chaque manche.
+  - **Temps et classements** : par catégorie → classement final, classement des qualifs (places Q1/Q2/Q3, points, qualifiés), et **toutes les manches** de chaque tour en 3 vues : arrivée, **secteurs**, passages.
+  - **Détail d'une manche** : arrivée, temps par secteur (meilleur en or), passages (place à chaque ligne).
+  - **Tableau final** : arbre des 1/16 → 1/8 → 1/4 → 1/2 → finale, avec les traits qui relient les manches ; on choisit à partir de quel tour l'afficher.
+  - Format de course utilisé : 3 manches de qualifs par groupes de 8 max (1re place = 1 point…), les 4 premiers de chaque groupe vont au tableau final, puis les 4 premiers de chaque manche passent au tour suivant. 8 pilotes ou moins : classement aux points.
+  - **Secteurs** : S1 départ → Inter 1, S2 Inter 1 → Inter 2, S3 Inter 2 → Inter 3, S4 Inter 3 → arrivée.
+  - Code : `public/app/competitions/` (`donnees-exemple.js` = les données, `vue.js` = les écrans). Pour passer aux vraies données, il suffit de réécrire `listerCompetitions()` et `chargerCompetition(id)` pour lire Supabase.
 - **Mon profil** : « ma page » (plaque dorée, nom, type de compte, club et catégorie, email), modifier ses infos (nom, plaque, catégorie, club), revoir le tuto, se déconnecter.
 
 **Ce que chaque compte peut voir / faire** (à compléter)

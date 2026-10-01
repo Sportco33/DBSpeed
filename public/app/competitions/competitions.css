@@ -1,0 +1,325 @@
+/* DBSpeed — onglet Compétition
+   Couleurs : uniquement les noms de /couleurs.css et de /app/app.css. */
+
+#competition-vue { --rayon: var(--arrondi); }
+
+/* ---------- Retour ---------- */
+.retour {
+  display: inline-flex; align-items: center; gap: 4px;
+  min-height: 44px; margin: calc(-1 * var(--e1)) 0 var(--e1) -6px; padding: 0 10px 0 2px;
+  color: var(--texte-doux); text-decoration: none; font-weight: 600; font-size: 16px;
+  max-width: 100%; text-shadow: var(--ombre-texte);
+}
+.retour span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.retour svg, .lien-fleche svg, .ligne > svg, .podium-ligne > svg, .lien-equipe svg {
+  width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ---------- Recherche ---------- */
+.recherche {
+  display: flex; align-items: center; gap: var(--e1);
+  min-height: 54px; padding: 0 6px 0 14px; margin-bottom: 12px;
+  background: var(--carte); border: 2px solid var(--bord); border-radius: var(--rayon);
+  transition: border-color var(--duree) ease;
+}
+.recherche:focus-within { border-color: var(--principal); }
+.recherche > svg { width: 22px; height: 22px; flex: none; fill: none; stroke: var(--texte-doux); stroke-width: 2.2; stroke-linecap: round; }
+.recherche input {
+  flex: 1; min-width: 0; min-height: 50px; padding: 0; border: 0; background: transparent;
+  color: var(--texte); font: 400 17px var(--police-texte); outline: none;
+}
+.recherche input::placeholder { color: var(--vert-300); }
+.recherche input::-webkit-search-cancel-button { display: none; }
+.recherche .effacer {
+  display: grid; place-items: center; width: 40px; height: 40px; flex: none;
+  border: 0; border-radius: 50%; background: var(--carte-2); color: var(--texte); cursor: pointer;
+}
+.recherche .effacer svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+.recherche.petite { min-height: 48px; margin: 12px 0; }
+.recherche.petite input { min-height: 44px; font-size: 16px; }
+
+/* ---------- Puces (filtres) et segments ---------- */
+.puces { display: flex; gap: var(--e1); flex-wrap: wrap; margin-bottom: 12px; }
+.puces-defile {
+  flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+  margin-left: calc(-1 * var(--e2)); margin-right: calc(-1 * var(--e2)); padding: 2px var(--e2);
+  scroll-snap-type: x proximity;
+}
+.puces-defile::-webkit-scrollbar { display: none; }
+.puce {
+  flex: none; min-height: 40px; padding: 0 16px; scroll-snap-align: start;
+  border: 1.5px solid var(--bord); border-radius: 999px;
+  background: var(--verre); color: var(--texte); font: 600 15px var(--police-texte); cursor: pointer; white-space: nowrap;
+}
+.puce[aria-pressed='true'] { background: var(--principal); border-color: var(--principal); color: var(--sur-principal); }
+
+.segments {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px; margin-bottom: var(--e2);
+  background: var(--verre); border: 1px solid var(--bord-doux); border-radius: var(--rayon);
+}
+.segments button {
+  min-height: 44px; border: 0; border-radius: 10px; background: transparent;
+  color: var(--texte-doux); font: 600 15px var(--police-texte); cursor: pointer;
+}
+.segments button[aria-pressed='true'] { background: var(--carte-2); color: var(--texte); box-shadow: inset 0 -3px 0 var(--principal); }
+.segments.petit button { min-height: 38px; font-size: 14px; }
+
+.compte { margin: 0 0 var(--e1); color: var(--texte-doux); font-size: 14px; text-shadow: var(--ombre-texte); }
+.compte:empty { display: none; }
+.astuce { margin: 0 0 12px; color: var(--texte-doux); font-size: 14px; text-shadow: var(--ombre-texte); }
+.astuce strong { color: var(--texte); }
+.petit-label { margin: 0 0 6px; font-size: 14px; color: var(--texte-doux); }
+.doux { color: var(--texte-doux); }
+.petit { font-size: 14px; }
+
+/* ---------- Badges de statut ---------- */
+.badge-statut {
+  display: inline-flex; align-items: center; gap: 6px; flex: none;
+  padding: 4px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap;
+}
+.statut-direct { background: var(--accent-fond); color: var(--bordeaux-50); }
+.statut-direct::before {
+  content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--bordeaux-100);
+  animation: battement 1.4s ease-in-out infinite;
+}
+.statut-avenir { background: var(--carte-2); color: var(--vert-50); }
+.statut-terminee { border: 1.5px solid var(--or-700); color: var(--or-300); }
+@keyframes battement { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }
+
+/* ---------- Liste des compétitions ---------- */
+.liste-compets { display: grid; gap: 10px; margin-bottom: var(--e3); }
+.carte-compet {
+  display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center;
+  padding: 12px 14px; color: var(--texte); text-decoration: none;
+  background: var(--verre); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  border: 1px solid var(--bord-doux); border-radius: var(--rayon);
+}
+.carte-compet .badge-statut { grid-column: 2; justify-self: start; }
+.c-date {
+  grid-row: 1 / span 2; display: grid; place-items: center; width: 56px; padding: 8px 0;
+  border-radius: 12px; background: var(--carte-2); line-height: 1;
+}
+.c-jour { font-family: var(--police-titre); font-weight: 800; font-size: 28px; }
+.c-mois { font-size: 13px; color: var(--texte-doux); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+.c-corps { display: grid; gap: 1px; min-width: 0; }
+.c-nom-liste { font-size: 17px; line-height: 1.25; }
+.c-lieu, .c-meta { font-size: 14px; color: var(--texte-doux); }
+
+/* ---------- Accueil d'une compétition ---------- */
+.c-hero { display: grid; gap: 10px; padding: var(--e3) var(--e2); border-radius: var(--rayon); margin-bottom: var(--e2); }
+.c-hero-haut { display: flex; flex-wrap: wrap; gap: var(--e1); align-items: center; }
+.c-titre { font-family: var(--police-titre); font-weight: 800; font-size: 38px; line-height: .98; margin: 0; }
+.c-hero-ligne { display: flex; gap: 8px; align-items: flex-start; margin: 0; font-size: 16px; }
+.c-hero-ligne svg, .infos-liste svg {
+  width: 20px; height: 20px; flex: none; margin-top: 1px; fill: none; stroke: var(--principal); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+.c-description { margin: 0 0 var(--e2); color: var(--texte-doux); text-shadow: var(--ombre-texte); }
+.c-boutons { display: grid; gap: var(--e1); margin-bottom: var(--e2); }
+.c-boutons .bouton svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+.chiffres { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: var(--e4); }
+.chiffres > div {
+  display: grid; align-content: center; justify-items: center; gap: 2px; min-height: 72px; padding: 8px 4px;
+  background: var(--verre); border: 1px solid var(--bord-doux); border-radius: 12px; text-align: center;
+}
+.chiffres strong { font-family: var(--police-titre); font-weight: 800; font-size: 24px; line-height: 1; font-variant-numeric: tabular-nums; }
+.chiffres span { font-size: 12px; color: var(--texte-doux); line-height: 1.15; }
+.chiffres > .or { border-color: var(--or-700); }
+.chiffres > .or strong { color: var(--or-300); }
+
+.infos-liste { display: grid; gap: 1px; margin: 0; border-radius: var(--rayon); overflow: hidden; border: 1px solid var(--bord-doux); }
+.infos-liste > div {
+  display: grid; grid-template-columns: 20px 1fr; gap: 2px 12px; padding: 12px 14px; background: var(--verre);
+}
+.infos-liste dt { font-size: 13px; color: var(--texte-doux); text-transform: uppercase; letter-spacing: .6px; }
+.infos-liste dd { grid-column: 2; margin: 0; }
+.infos-liste dd small { color: var(--texte-doux); font-size: 14px; }
+.infos-liste svg { grid-row: 1 / span 2; }
+
+.jour { margin: var(--e2) 0 var(--e1); font-size: 15px; text-transform: capitalize; color: var(--or-300); text-shadow: var(--ombre-texte); }
+.jour:first-of-type { margin-top: 0; }
+.programme { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--or-700); margin-left: 6px; }
+.programme li { position: relative; display: grid; grid-template-columns: 58px 1fr; gap: 10px; padding: 8px 0 8px 16px; }
+.programme li::before {
+  content: ''; position: absolute; left: -7px; top: 14px; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--fond); border: 2px solid var(--principal);
+}
+.programme .heure { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--principal); }
+.programme strong { display: block; }
+.programme small { display: block; color: var(--texte-doux); font-size: 14px; }
+
+.podiums { display: grid; gap: 12px; }
+.podium { padding: 12px; background: var(--verre); border: 1px solid var(--or-700); border-radius: var(--rayon); }
+.podium h3 { margin: 0 0 6px; font-size: 15px; color: var(--or-300); text-transform: uppercase; letter-spacing: .6px; }
+.podium ol { list-style: none; margin: 0; padding: 0; }
+.podium-ligne { display: flex; align-items: center; gap: 12px; min-height: 52px; color: var(--texte); text-decoration: none; }
+.podium-nom { flex: 1; min-width: 0; display: grid; }
+.podium-nom small { color: var(--texte-doux); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.podium-ligne > svg { color: var(--texte-doux); }
+
+.medaille {
+  display: inline-grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: 50%;
+  font-family: var(--police-titre); font-weight: 900; font-size: 19px; color: var(--sur-principal);
+}
+.medaille.m1 { background: var(--or-metal); box-shadow: 0 0 10px color-mix(in srgb, var(--or-500) 50%, transparent); }
+.medaille.m2 { background: linear-gradient(135deg, var(--vert-50), var(--vert-100) 50%, var(--vert-300)); }
+.medaille.m3 { background: linear-gradient(135deg, var(--or-300), var(--or-700) 55%, var(--or-900)); color: var(--or-50); }
+.t .medaille { width: 26px; height: 26px; font-size: 16px; }
+
+/* ---------- Listes de pilotes / équipes ---------- */
+.lignes { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 6px; }
+.ligne {
+  display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 10px 8px 12px;
+  color: var(--texte); text-decoration: none;
+  background: var(--verre); border: 1px solid var(--bord-doux); border-radius: 12px;
+}
+.ligne > svg { color: var(--texte-doux); }
+.ligne-texte { flex: 1; min-width: 0; display: grid; }
+.ligne-texte strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ligne-texte small { color: var(--texte-doux); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ligne-place {
+  flex: none; padding: 3px 10px; border-radius: 999px; background: var(--carte-2);
+  font-weight: 600; font-size: 14px; font-variant-numeric: tabular-nums;
+}
+.ligne-place.top { background: var(--or-metal); color: var(--sur-principal); }
+.logo-equipe {
+  display: grid; place-items: center; width: 46px; height: 36px; flex: none; border-radius: 10px;
+  background: var(--accent-fond); border: 1.5px solid var(--accent);
+  font-family: var(--police-titre); font-weight: 900; font-size: 20px;
+}
+.ligne .plaque-petite { min-width: 50px; }
+
+/* ---------- Fiche pilote / équipe ---------- */
+.fiche-hero { justify-items: center; text-align: center; margin-bottom: var(--e2); }
+.fiche-hero .plaque { min-width: 110px; height: 92px; font-size: 70px; }
+.fiche-hero .plaque.initiales { font-size: 52px; }
+.lien-equipe { display: inline-flex; align-items: center; gap: 2px; min-height: 36px; color: var(--texte); text-decoration: none; }
+
+.secteurs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e1); margin-bottom: 12px; }
+.secteur {
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; align-items: center; padding: 12px;
+  background: var(--verre); border: 1px solid var(--bord-doux); border-radius: 12px;
+}
+.secteur.fort { border-color: var(--principal); box-shadow: 0 0 0 1px var(--principal) inset; }
+.s-nom { font-family: var(--police-titre); font-weight: 800; font-size: 22px; line-height: 1; color: var(--or-300); }
+.s-detail { grid-column: 1 / -1; font-size: 13px; color: var(--texte-doux); }
+.s-temps { font-size: 20px; font-variant-numeric: tabular-nums; }
+
+.liste-manches, .membres { display: grid; gap: 12px; }
+.liste-manches > *, .membres > *, .bloc > * { min-width: 0; }
+#competition-vue { min-width: 0; }
+.carte-manche, .carte-membre {
+  padding: 12px; background: var(--verre); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  border: 1px solid var(--bord-doux); border-radius: var(--rayon);
+}
+.carte-membre { padding: 6px; }
+.carte-membre .ligne { border: 0; background: transparent; }
+.carte-membre .tableau-defile { margin: 0 6px 6px; }
+.carte-manche.a-venir { border-style: dashed; }
+.carte-manche + .carte-manche { margin-top: 0; }
+.mp-tete { display: flex; justify-content: space-between; align-items: baseline; gap: var(--e1); margin-bottom: 10px; }
+.mp-tete strong { font-size: 17px; }
+.mp-tete span { font-size: 14px; color: var(--texte-doux); white-space: nowrap; }
+.mp-resume { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+.place-grosse {
+  font-family: var(--police-titre); font-weight: 900; font-size: 46px; line-height: .9; min-width: 64px;
+}
+.place-grosse.p1 {
+  background: var(--or-metal); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+}
+.mp-temps { flex: 1; display: grid; }
+.mp-temps strong { font-size: 24px; font-variant-numeric: tabular-nums; }
+.mp-temps small { color: var(--texte-doux); font-size: 14px; }
+.mp-pts { flex: none; padding: 4px 10px; border-radius: 999px; background: var(--carte-2); font-weight: 600; font-size: 14px; }
+.mp-pts.ok { background: var(--accent-fond); color: var(--bordeaux-50); }
+
+.lien-fleche {
+  display: flex; align-items: center; justify-content: flex-end; gap: 2px; min-height: 44px; margin-top: 4px;
+  color: var(--principal); font-weight: 600; text-decoration: none; font-size: 15px;
+}
+
+/* ---------- Tableaux de temps ---------- */
+.tableau-defile { overflow-x: auto; margin: 0 -2px; -webkit-overflow-scrolling: touch; }
+.t { width: 100%; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }
+.t th {
+  text-align: left; padding: 8px 6px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
+  color: var(--texte-doux); border-bottom: 1px solid var(--bord-doux); white-space: nowrap;
+}
+.t tbody th { text-transform: none; font-size: 15px; color: var(--texte); letter-spacing: 0; border-bottom: 0; }
+.t td, .t tbody th { padding: 9px 6px; border-top: 1px solid color-mix(in srgb, var(--bord-doux) 60%, transparent); white-space: nowrap; }
+.t tbody tr:first-child td, .t tbody tr:first-child th { border-top: 0; }
+.t tr.touchable { cursor: pointer; }
+.t tr.touchable:active { background: color-mix(in srgb, var(--carte-2) 70%, transparent); }
+.t .cel-num { text-align: right; }
+.t .cel-droite { text-align: right; }
+.t .cel-droite small { display: block; color: var(--texte-doux); font-size: 12px; }
+.t .cel-place { width: 34px; font-family: var(--police-titre); font-weight: 800; font-size: 19px; }
+.t .cel-pilote { white-space: normal; }
+.cp { display: flex; align-items: center; gap: 8px; }
+.cp .plaque-petite { min-width: 38px; height: 28px; font-size: 19px; padding: 2px 6px 0; border-radius: 8px 8px 4px 4px; }
+.cp > span:last-child { display: grid; min-width: 0; line-height: 1.2; }
+.cp small { color: var(--texte-doux); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }
+.t .meilleur { color: var(--or-300); font-weight: 700; }
+.t tr.passe { background: color-mix(in srgb, var(--carte-2) 45%, transparent); }
+.t tr.passe .cel-place { color: var(--principal); }
+.t.compacte td, .t.compacte tbody th { padding: 7px 6px; font-size: 14px; }
+.pos {
+  display: inline-block; min-width: 38px; padding: 1px 8px; border-radius: 999px; background: var(--carte-2);
+  text-align: center; font-size: 13px; font-weight: 600;
+}
+.pos.p1 { background: var(--or-metal); color: var(--sur-principal); }
+.pos-mini { display: block; font-size: 11px; color: var(--texte-doux); }
+.pos-mini.p1 { color: var(--or-300); font-weight: 700; }
+.chute { color: var(--bordeaux-100); font-weight: 600; }
+.q {
+  display: inline-block; padding: 0 7px; border-radius: 6px; background: var(--accent-fond); color: var(--bordeaux-50);
+  font-weight: 700; font-size: 13px;
+}
+.t-qualifs td.cel-num { min-width: 30px; }
+
+.mini-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.mini-liste a { display: flex; align-items: center; gap: 10px; min-height: 40px; color: var(--texte); text-decoration: none; }
+.mini-liste .plaque-petite { min-width: 40px; height: 28px; font-size: 19px; }
+
+/* ---------- Arbre du tableau final ---------- */
+.arbre-defile {
+  overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity;
+  margin: 0 calc(-1 * var(--e2)); padding: 4px var(--e2) var(--e2);
+}
+.arbre { position: relative; display: flex; gap: 34px; width: max-content; }
+.arbre-col { display: flex; flex-direction: column; width: 214px; scroll-snap-align: start; }
+.arbre-col h3 {
+  margin: 0 0 10px; padding: 6px 0; text-align: center; border-radius: 10px;
+  background: var(--carte-2); font-size: 15px; letter-spacing: .5px;
+}
+.arbre-manches { flex: 1; display: flex; flex-direction: column; justify-content: space-around; gap: 12px; }
+.arbre-manche {
+  position: relative; z-index: 1; display: block; padding: 8px 10px; color: var(--texte); text-decoration: none;
+  background: var(--carte); border: 1px solid var(--bord-doux); border-radius: 12px;
+}
+.arbre-manche.finale { border: 2px solid var(--or-500); box-shadow: 0 0 22px color-mix(in srgb, var(--or-500) 30%, transparent); }
+.arbre-manche.pas-couru { border-style: dashed; }
+.arbre-manche header { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; }
+.arbre-manche header span { color: var(--texte-doux); }
+.arbre-manche ol { list-style: none; margin: 0; padding: 0; }
+.arbre-manche li {
+  display: grid; grid-template-columns: 16px 1fr auto; gap: 6px; align-items: center;
+  min-height: 22px; font-size: 13px; color: var(--texte-doux); font-variant-numeric: tabular-nums;
+}
+.arbre-manche li .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arbre-manche li.q, .arbre-manche li.med { color: var(--texte); font-weight: 600; }
+.arbre-manche li.q .pl { color: var(--principal); }
+.arbre-manche li.med .pl { color: var(--sur-principal); border-radius: 50%; text-align: center; font-size: 11px; line-height: 16px; height: 16px; }
+.arbre-manche li.m1 .pl { background: var(--or-metal); }
+.arbre-manche li.m2 .pl { background: var(--vert-100); }
+.arbre-manche li.m3 .pl { background: var(--or-700); color: var(--or-50); }
+.arbre-manche li.attente { grid-template-columns: 1fr; font-style: italic; }
+.arbre-liens { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 0; overflow: visible; }
+.arbre-liens path { fill: none; stroke: var(--or-700); stroke-width: 2; }
+
+@media (prefers-reduced-motion: reduce) {
+  .statut-direct::before { animation: none; }
+}
+
+/* Dans les longues listes, les petites plaques ne brillent pas (des centaines d'animations ralentiraient le téléphone) */
+#competition-vue .plaque-petite::after { display: none; }

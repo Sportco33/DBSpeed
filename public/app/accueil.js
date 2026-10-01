@@ -3,6 +3,7 @@ import {
   supabase, configOk, TYPES, CATEGORIES, messageErreur, erreurDansAdresse, typeRetenu,
 } from '/app/supabase.js';
 import { lancerTuto } from '/app/tuto.js';
+import { afficherCompetition } from '/app/competitions/vue.js';
 
 const CONNEXION = '/app/';
 const ONGLETS = ['accueil', 'entrainement', 'competition', 'profil'];
@@ -40,8 +41,16 @@ async function chargerProfil() {
 
 // ---------- Onglets ----------
 
+// L'adresse après « # » : le nom de l'onglet, puis éventuellement une page à l'intérieur
+// (ex. #competition/gp-sarrians-2026/pilote/p12)
+function chemin() {
+  let brut = window.location.hash.replace(/^#/, '');
+  try { brut = decodeURIComponent(brut); } catch { /* adresse bizarre : on garde telle quelle */ }
+  return brut.split('/').filter(Boolean);
+}
+
 function ongletActuel() {
-  const nom = window.location.hash.replace('#', '');
+  const nom = chemin()[0];
   return ONGLETS.includes(nom) ? nom : 'accueil';
 }
 
@@ -49,12 +58,13 @@ let ongletPrecedent = null;
 
 function montrerOnglet() {
   const actuel = ongletActuel();
+  const parties = chemin();
   // la nouvelle page arrive du côté de l'onglet touché (à droite → elle vient de la droite)
   const sens = ongletPrecedent && ONGLETS.indexOf(actuel) < ONGLETS.indexOf(ongletPrecedent) ? 'glisse-droite' : 'glisse-gauche';
   const change = ongletPrecedent !== actuel;
   ongletPrecedent = actuel;
   // Nettoie l'adresse si elle contient autre chose qu'un nom d'onglet (ex. retour de Google)
-  if (window.location.hash !== `#${actuel}`) {
+  if (parties[0] !== actuel) {
     history.replaceState(null, '', `${window.location.pathname}#${actuel}`);
   }
   for (const nom of ONGLETS) {
@@ -72,7 +82,12 @@ function montrerOnglet() {
     if (lien.dataset.onglet === actuel) lien.setAttribute('aria-current', 'page');
     else lien.removeAttribute('aria-current');
   }
-  window.scrollTo(0, 0);
+  if (actuel === 'competition') {
+    // l'onglet Compétition a ses propres pages (et gère lui-même le défilement)
+    afficherCompetition($('competition-vue'), parties[0] === 'competition' ? parties.slice(1) : []);
+  } else {
+    window.scrollTo(0, 0);
+  }
 }
 
 window.addEventListener('hashchange', montrerOnglet);

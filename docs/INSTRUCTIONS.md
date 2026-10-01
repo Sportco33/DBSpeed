@@ -41,3 +41,9 @@
 24. Une fois connecté, on arrive sur la **page d'accueil**, avec des **onglets en bas de l'écran** : **Accueil**, **Entraînement**, **Compétition**, **Mon profil**. L'onglet profil sert à **modifier ses informations** et **voir sa page**.
 25. À la **première connexion**, un **tuto fluide, intuitif, clair et simple**, qui montre avec un **projecteur** ce qu'il faut comprendre. La personne doit aussi **entrer les informations la concernant**.
 26. L'**application**, le **site** et le **tuto** doivent être **animés**, **vivants** et **de qualité**, tout en restant **lisibles et compréhensibles**.
+27. **Onglet Compétition** :
+    - une **barre de recherche** pour trouver les **compétitions de BMX dans le monde** ;
+    - en cliquant sur une compétition : sa **page d'accueil** avec toutes les infos (**lieu, horaires, nombre de pilotes, type de course**) et la **liste des pilotes et des équipes engagés** ;
+    - en cliquant sur un **pilote** ou une **équipe** : toutes ses infos **pour cette compétition** (place, temps dans chaque manche) ;
+    - sur la page d'accueil de la compétition, un **bouton pour voir les temps et le classement de toutes les manches** et un **arbre** pour voir les **1/16, 1/8, 1/4, 1/2, finale** ;
+    - ça doit être **complet** : tous les temps de tous les pilotes, leurs places, et les **temps par secteur**.
