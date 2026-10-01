@@ -4,6 +4,7 @@
 //   /jour/AAAA-MM-JJ     → la journée : piste, tracé, nombre de tours, liste des tours, publier
 //   /tour/ID             → un tour : tous les intermédiaires, comparés au record, à mon meilleur et à mes amis
 //   /classement[/PISTE]  → classement d'une piste (meilleur tour publié de chaque pilote)
+//   /sessions, /session/…, /rejoindre/CODE → sessions de groupe (fichier session.js, chargé seulement quand on en a besoin)
 // Un compte organisateur ou spectateur arrive directement sur le classement.
 import { messageErreur } from '/app/supabase.js';
 import { esc, lienRetour, vide, puces, surChoix, animer, secteurs, brancherLiens, demander } from '/app/outils.js';
@@ -25,6 +26,7 @@ let dernierEcran = null;
 let retourDemande = false;
 let jeton = 0;
 let ctx = null; // { supabase, profil }
+let sessionModule = null; // sessions de groupe (chargé à la demande)
 
 // ---------------------------------------------------------------------------
 // Petits outils
@@ -270,7 +272,18 @@ export async function afficherEntrainement(zone, chemin, contexte) {
   const estPilote = ctx.profil?.type_compte === 'pilote';
 
   const [type, cible] = chemin;
-  if (!estPilote) {
+  // en quittant l'écran d'une session : on arrête de demander les nouveaux tours
+  if (sessionModule) sessionModule.arreterSession();
+  if (type === 'sessions' || type === 'session' || type === 'rejoindre') {
+    try {
+      sessionModule ||= await import('/app/entrainement/session.js');
+    } catch (err) {
+      if (monJeton === jeton) erreurEcran(zone, err);
+      return;
+    }
+    if (monJeton !== jeton) return;
+    await sessionModule.afficherSessions(zone, chemin, ctx, () => monJeton === jeton);
+  } else if (!estPilote) {
     await ecranClassement(zone, type === 'classement' ? cible : null, false, monJeton);
   } else if (type === 'jour' && valide(cible)) {
     await ecranJour(zone, cible, monJeton);
@@ -358,6 +371,13 @@ async function ecranCalendrier(zone, monJeton) {
       </div>
       <p id="message-exemples" class="message" role="status"></p>
       <button type="button" class="bouton bouton-or bouton-principal" data-exemples>Essayer avec des exemples</button>`}
+
+    <a class="carte-ensemble" href="#entrainement/sessions">
+      <span class="ensemble-icone" aria-hidden="true">${ICONES.amis}</span>
+      <span class="carte-lien-texte"><strong>S'entraîner ensemble</strong><small>Une session avec tes amis : vos chronos en direct, secteur par secteur</small></span>
+      <span class="ensemble-badge" data-invitations hidden></span>
+      ${ICONES.fleche}
+    </a>
 
     <a class="carte-lien" href="#entrainement/classement">
       <span class="carte-lien-icone">${ICONES.coupe}</span>
@@ -513,6 +533,7 @@ async function ecranCalendrier(zone, monJeton) {
   });
 
   dessinerMois();
+  compterInvitations(zone);
 }
 
 // ===========================================================================
@@ -983,3 +1004,21 @@ async function ecranClassement(zone, pisteId, avecRetour, monJeton) {
   });
   await remplir(choisie, false);
 }
+
+// Invitations à des sessions de groupe : petite pastille sur la carte « S'entraîner ensemble »
+async function compterInvitations(zone) {
+  const { data, error } = await ctx.supabase.rpc('mes_sessions');
+  const pastille = zone.querySelector('[data-invitations]');
+  if (error || !pastille) return;
+  const n = data.filter((x) => x.invite).length;
+  const enCours = data.filter((x) => !x.invite && !x.terminee).length;
+  if (n) { pastille.textContent = n; pastille.hidden = false; pastille.setAttribute('aria-label', `${n} invitation${n > 1 ? 's' : ''}`); }
+  else if (enCours) { pastille.textContent = `${enCours} en cours`; pastille.classList.add('doux'); pastille.hidden = false; }
+}
+
+// Outils partagés avec les sessions de groupe (session.js)
+export const outilsEntrainement = {
+  calme, nombre, temps, ecartTexte, prenom, dateLongue, dateCourte, nomsLignes, arretApres,
+  isoAujourdHui, svgTrace, preparerTrace, ICONES,
+  pistes: () => pistes(),
+};

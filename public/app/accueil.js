@@ -31,6 +31,17 @@ import {
 } from '/app/position.js';
 
 const CONNEXION = '/app/';
+const INVITATION = 'dbspeed_invitation';   // code d'une session de groupe reçu par lien, avant de se connecter
+
+// Ouvre l'invitation gardée pendant la connexion (une seule fois)
+function ouvrirInvitationGardee() {
+  let code = null;
+  try { code = localStorage.getItem(INVITATION); localStorage.removeItem(INVITATION); } catch { /* rien */ }
+  if (!code || !/^[0-9A-F]{10}$/.test(code) || profil?.type_compte !== 'pilote') return false;
+  if (window.location.hash === `#entrainement/rejoindre/${code}`) return false;   // déjà dessus
+  window.location.hash = `entrainement/rejoindre/${code}`;
+  return true;
+}
 const ONGLETS = ['accueil', 'entrainement', 'competition', 'lieux', 'profil'];
 
 const $ = (id) => document.getElementById(id);
@@ -205,6 +216,8 @@ async function enregistrer(changements) {
   if (error) return messageErreur(error);
   Object.assign(profil, changements);
   remplir();
+  // fin du tuto : s'il y avait une invitation à une session de groupe, on l'ouvre maintenant
+  if (changements.tuto_fini === true) setTimeout(ouvrirInvitationGardee, 450);
   return null;
 }
 
@@ -420,7 +433,8 @@ function ouvrirAppli() {
   retenirChoix(profil.localisation ?? null);
   if (profil.localisation === true) suivrePosition();
   majPosition();
-  montrerOnglet();
+  // invitation reçue avant de se connecter (le tuto passe d'abord à la première connexion)
+  if (!profil.tuto_fini || !ouvrirInvitationGardee()) montrerOnglet();
   // Première connexion : le tuto (bienvenue, infos, position, visite guidée)
   if (!profil.tuto_fini) {
     setTimeout(() => lancerTuto({ profil, enregistrer, allerOnglet, demanderPosition }), 350);
@@ -441,6 +455,11 @@ async function demarrer() {
 
   const { data } = await supabase.auth.getSession();
   if (!data.session) {
+    // lien d'invitation à une session de groupe : on le garde pour après la connexion
+    const invitation = window.location.hash.match(/^#entrainement\/rejoindre\/([0-9A-Fa-f]{10})$/);
+    if (invitation) {
+      try { localStorage.setItem(INVITATION, invitation[1].toUpperCase()); } catch { /* rien */ }
+    }
     const suite = erreur ? window.location.hash : '';
     window.location.replace(`${CONNEXION}${suite}`);
     return;

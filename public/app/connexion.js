@@ -13,6 +13,11 @@ const boutonGoogle = $('google');
 
 let mode = 'connexion'; // ou 'inscription'
 
+// Invitation à une session de groupe reçue par lien (gardée par accueil.js) : on le dit
+try {
+  if (localStorage.getItem('dbspeed_invitation')) $('note-invitation').hidden = false;
+} catch { /* rien */ }
+
 function afficher(texte, genre = 'erreur') {
   message.textContent = texte;
   message.className = `message ${genre}`;

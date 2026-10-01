@@ -6,7 +6,7 @@
 //   en arrière-plan.
 // - On ne touche JAMAIS à /api/* ni aux autres sites (Supabase, cartes, CDN…).
 // Pour forcer tout le monde à repartir de zéro : changer le numéro ci-dessous.
-const CACHE = 'dbspeed-v5';
+const CACHE = 'dbspeed-v6';
 
 // Le strict minimum gardé dès l'installation.
 const COQUILLE = [
@@ -21,7 +21,8 @@ const COQUILLE = [
   '/app/accueil.js', '/app/supabase.js', '/app/outils.js', '/app/tuto.js', '/app/tuto.css',
   '/app/position.js', '/app/lieux-osm.js',
   '/app/manches/vue.js', '/app/manches/calcul.js', '/app/manches/excel.js', '/app/manches/manches.css',
-  '/app/competitions/competitions.css', '/app/entrainement/entrainement.css', '/app/lieux.css',
+  '/app/competitions/competitions.css', '/app/entrainement/entrainement.css', '/app/entrainement/session.css',
+  '/app/lieux.css',
 ];
 
 // Une réponse « propre » à garder : bonne (200), et venant de notre site.

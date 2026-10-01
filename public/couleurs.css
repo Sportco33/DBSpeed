@@ -40,6 +40,28 @@
   --texte:         var(--or-50);      /* texte principal */
   --texte-doux:    var(--vert-100);   /* texte secondaire */
   --texte-pale:    color-mix(in srgb, var(--vert-100) 50%, var(--vert-300)); /* indications (placeholder, jours à venir) : ≥ 5:1 sur --fond, --carte et --verre */
+
+  /* Couleurs « comme en F1 » (sessions de groupe à l'entraînement) :
+     violet = meilleur du groupe, vert = le pilote s'améliore, rouge = moins bien que son meilleur */
+  --f1-violet:     #B15CFF;
+  --f1-vert:       #2FD46E;
+  --f1-rouge:      #FF5A5F;
+  --sur-f1:        #14241F;   /* texte posé sur le vert */
+
+  /* Couleur de chaque pilote dans une session de groupe (12 au maximum) :
+     assez différentes les unes des autres, et jamais violet / vert / rouge (réservés aux temps) */
+  --p0:  #E2C06E;  /* or */
+  --p1:  #5BC0EB;  /* bleu ciel */
+  --p2:  #F59E4C;  /* orange */
+  --p3:  #F4F1E8;  /* blanc ivoire */
+  --p4:  #F28DB2;  /* rose */
+  --p5:  #3DD6C3;  /* turquoise */
+  --p6:  #C9A27A;  /* sable */
+  --p7:  #8FA8FF;  /* bleu pervenche */
+  --p8:  #FFD95A;  /* jaune */
+  --p9:  #9DB4C0;  /* gris acier */
+  --p10: #E07A5F;  /* terre cuite */
+  --p11: #FFC4B0;  /* pêche */
   --principal:     var(--or-500);     /* boutons, titres, 1re place */
   --principal-fort:var(--or-300);     /* bouton au survol */
   --sur-principal: var(--vert-900);   /* texte posé sur l'or */
