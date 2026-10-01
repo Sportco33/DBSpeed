@@ -15,7 +15,6 @@
   <link rel="stylesheet" href="/app/tuto.css">
   <link rel="stylesheet" href="/app/competitions/competitions.css">
   <link rel="stylesheet" href="/app/entrainement/entrainement.css">
-  <link rel="stylesheet" href="/app/leaflet/leaflet.css">
   <link rel="stylesheet" href="/app/lieux.css">
   <script src="/sensations.js" defer></script>
   <script src="/config.js"></script>
@@ -126,6 +125,9 @@
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>
             </button>
             <button type="button" id="lieux-zone" class="carte-zone" hidden>Chercher dans cette zone</button>
+            <button type="button" id="lieux-satellite" class="carte-mode" aria-pressed="false" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></svg><span>Satellite</span>
+            </button>
           </div>
 
           <p id="lieux-etat" class="lieux-etat" role="status" aria-live="polite"></p>

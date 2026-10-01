@@ -57,3 +57,8 @@
     - une **barre de recherche** et une **carte** pour voir les **pistes de BMX** et les **pump tracks** autour de l'utilisateur ;
     - on peut **chercher une piste** ;
     - en cliquant sur une piste : sa **page d'accueil** avec toutes les infos : **lieu**, **horaires d'ouverture**, **public ou privé**, **comment est le tracé**, **photos**, **nom du club qui s'entraîne ici**, **compétitions qui auront lieu ici**.
+30. **Carte de l'onglet Lieux** :
+    - **créer une API pour la carte** ;
+    - une carte **détaillée** ;
+    - **dès que la carte bouge, les icônes bougent avec elle** ;
+    - des icônes **belles** et **bien adaptées à la carte**.

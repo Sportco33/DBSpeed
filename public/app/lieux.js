@@ -6,17 +6,15 @@
 // - la recherche d'une ville et l'adresse d'une piste : Nominatim (OpenStreetMap) ;
 // - ce que DBSpeed ajoute (horaires, public/privé, tracé, photos, club, compétitions) :
 //   tables Supabase `lieux` et `competitions`.
-// La carte elle-même (Leaflet) est rangée dans /app/leaflet/ et chargée seulement à l'ouverture de l'onglet.
+// La carte elle-même (MapLibre, fond détaillé, satellite, icônes) est dans /app/carte.js.
 import { supabase, configOk } from '/app/supabase.js';
+import { creerGrandeCarte, creerCarteTrace, satelliteDispo } from '/app/carte.js';
+import * as osm from '/app/lieux-osm.js';
 
-const OVERPASS = [
-  'https://overpass-api.de/api/interpreter',
-  'https://overpass.kumi.systems/api/interpreter',
-];
-const NOMINATIM = 'https://nominatim.openstreetmap.org';
-const FOND_CARTE = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-const CREDITS = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
-  + ' &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
+const { sansAccents, distance, idValide } = osm;
+// L'API de la carte DBSpeed (netlify/functions/carte.mts) : elle lit OpenStreetMap et garde
+// les réponses en cache. Si elle ne répond pas, l'appli lit OpenStreetMap elle-même.
+const API = '/api/carte';
 const FRANCE = { lat: 46.6, lon: 2.4, zoom: 5 };
 const RAYON = 35000;          // on cherche à 35 km autour du point choisi
 const MAX_LISTE = 40;         // nombre de pistes dans la liste sous la carte
@@ -26,9 +24,7 @@ const calme = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (id) => document.getElementById(id);
 
 const etat = {
-  L: null,                 // Leaflet
-  carte: null,
-  couche: null,            // les repères des pistes
+  carte: null,             // la grande carte (voir carte.js)
   moi: null,               // le point « ma position »
   miniCarte: null,         // la petite carte de la fiche
   groupes: new Map(),      // toutes les pistes déjà vues (id → piste)
@@ -38,7 +34,6 @@ const etat = {
   centre: null,            // centre de la dernière recherche { lat, lon, nom }
   filtre: 'tout',
   texte: '',
-  bougeAuto: false,        // la carte bouge toute seule (pas le doigt de l'utilisateur)
   chargement: 0,
   ficheOuverte: null,
   scrollListe: 0,
@@ -58,19 +53,6 @@ function lienSur(url) {
     const u = new URL(String(url).trim().startsWith('www.') ? `https://${String(url).trim()}` : String(url).trim());
     return u.protocol === 'https:' || u.protocol === 'http:' ? u.href : null;
   } catch { return null; }
-}
-
-function sansAccents(texte) {
-  return String(texte || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
-}
-
-function distance(a, b) {
-  const R = 6371000;
-  const rad = Math.PI / 180;
-  const dLat = (b.lat - a.lat) * rad;
-  const dLon = (b.lon - a.lon) * rad;
-  const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLon / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(x));
 }
 
 function texteDistance(m) {
@@ -103,152 +85,49 @@ const ICONE_BMX = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18c2.
 const ICONE_PUMP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 14c2 0 2-4 4-4s2 4 4 4 2-4 4-4 2 4 4 4 2-4 4-4"/><path d="M2 19h20"/></svg>';
 const icone = (genre) => (genre === 'pump' ? ICONE_PUMP : ICONE_BMX);
 
-// ---------- Lire OpenStreetMap ----------
+// ---------- Les pistes : l'API DBSpeed d'abord, OpenStreetMap en direct en secours ----------
 
-// Piste de BMX ou pump track ? (null = on ne garde pas : skatepark, chemin…)
-function genreDe(tags) {
-  const sport = sansAccents(tags.sport);
-  const nom = sansAccents(tags.name);
-  if (tags.cycling === 'pump_track' || /pump[ -]?track/.test(nom)) return 'pump';
-  if (!/(^|;)\s*bmx\s*(;|$)/.test(sport)) return null;
-  if (tags.highway || tags.leisure === 'skatepark' || /skate/.test(sport) || /skate/.test(nom)) return null;
-  if (/dirt/.test(sansAccents(tags.bmx)) || /dirt/.test(nom)) return null;
-  return 'bmx';
+async function demanderApi(action, params) {
+  const rep = await fetch(`${API}/${action}?${new URLSearchParams(params)}`, { headers: { Accept: 'application/json' } });
+  if (!rep.ok || !(rep.headers.get('content-type') || '').includes('json')) throw new Error(`API ${rep.status}`);
+  return rep.json();
 }
 
-function centreElement(el) {
-  if (el.type === 'node') return { lat: el.lat, lon: el.lon };
-  if (el.center) return { lat: el.center.lat, lon: el.center.lon };
-  if (el.bounds) {
-    return { lat: (el.bounds.minlat + el.bounds.maxlat) / 2, lon: (el.bounds.minlon + el.bounds.maxlon) / 2 };
-  }
-  if (el.geometry?.length) {
-    const s = el.geometry.reduce((a, p) => ({ lat: a.lat + p.lat, lon: a.lon + p.lon }), { lat: 0, lon: 0 });
-    return { lat: s.lat / el.geometry.length, lon: s.lon / el.geometry.length };
-  }
-  return null;
-}
-
-function longueurLigne(points) {
-  let total = 0;
-  for (let i = 1; i < points.length; i += 1) {
-    total += distance({ lat: points[i - 1][0], lon: points[i - 1][1] }, { lat: points[i][0], lon: points[i][1] });
-  }
-  return total;
-}
-
-// Le dessin du tracé : seulement les lignes de piste (pas le contour du terrain)
-function lignesDuTrace(el) {
-  const lignes = [];
-  const garder = (tags) => tags?.leisure === 'track' || tags?.cycling === 'pump_track';
-  if (el.type === 'way' && garder(el.tags) && el.geometry?.length > 1) {
-    lignes.push(el.geometry.map((p) => [p.lat, p.lon]));
-  }
-  if (el.type === 'relation' && garder(el.tags)) {
-    for (const m of el.members || []) {
-      if (m.type === 'way' && m.geometry?.length > 1) lignes.push(m.geometry.map((p) => [p.lat, p.lon]));
-    }
-  }
-  return lignes;
-}
-
-// Plus la note est haute, plus l'élément représente bien la piste (il donne son nom et son id)
-function note(el) {
-  const t = el.tags || {};
-  let n = 0;
-  if (t.name) n += 10;
-  if (el.type === 'node' || ['pitch', 'sports_centre', 'park'].includes(t.leisure)) n += 4;
-  if (t.opening_hours || t.website || t.operator) n += 2;
-  return n;
-}
-
-const ORDRE_TYPE = { node: 0, way: 1, relation: 2 };
-
-// Une même piste est souvent dessinée en plusieurs morceaux (le terrain + la piste + le départ) :
-// on les regroupe en une seule piste.
-function regrouper(elements) {
-  const candidats = [];
-  for (const el of elements) {
-    const tags = el.tags || {};
-    const genre = genreDe(tags);
-    const centre = centreElement(el);
-    if (!genre || !centre) continue;
-    candidats.push({ el, genre, centre, note: note(el) });
-  }
-  candidats.sort((a, b) => b.note - a.note
-    || ORDRE_TYPE[a.el.type] - ORDRE_TYPE[b.el.type] || a.el.id - b.el.id);
-
-  const groupes = [];
-  for (const c of candidats) {
-    const proche = groupes.find((g) => g.genre === c.genre && distance(g.centreDepart, c.centre) < 150);
-    if (proche) {
-      proche.membres.push(c);
-    } else {
-      groupes.push({ genre: c.genre, centreDepart: c.centre, membres: [c] });
-    }
-  }
-
-  // Un terrain « BMX » sans nom ni piste dessinée, collé à une pump track : c'est la pump track
-  const pumps = groupes.filter((g) => g.genre === 'pump');
-  const finaux = groupes.filter((g) => {
-    if (g.genre !== 'bmx' || !pumps.length) return true;
-    const sansNom = !g.membres.some((m) => m.el.tags?.name);
-    const sansPiste = !g.membres.some((m) => lignesDuTrace(m.el).length);
-    const voisine = pumps.find((p) => distance(p.centreDepart, g.centreDepart) < 100);
-    if (sansNom && sansPiste && voisine) { voisine.membres.push(...g.membres); return false; }
-    return true;
-  });
-
-  return finaux.map((g) => {
-    const chef = g.membres[0].el;
-    const tags = {};
-    for (const m of g.membres) {
-      for (const [cle, val] of Object.entries(m.el.tags || {})) if (!(cle in tags)) tags[cle] = val;
-    }
-    const traces = g.membres.flatMap((m) => lignesDuTrace(m.el));
-    const longueur = traces.reduce((s, l) => s + longueurLigne(l), 0);
-    const centreChef = g.membres[0].centre;
-    return {
-      id: `${chef.type}-${chef.id}`,
-      ids: g.membres.map((m) => `${m.el.type}-${m.el.id}`),
-      genre: g.genre,
-      lat: centreChef.lat,
-      lon: centreChef.lon,
-      tags,
-      traces,
-      longueur: longueur > 20 ? longueur : null,
-      source: 'osm',
-    };
-  });
-}
-
-async function demanderOverpass(requete) {
-  let derniereErreur = null;
-  for (const adresse of OVERPASS) {
-    try {
-      const rep = await fetch(adresse, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `data=${encodeURIComponent(requete)}`,
-      });
-      if (!rep.ok) throw new Error(`Overpass ${rep.status}`);
-      const json = await rep.json();
-      return json.elements || [];
-    } catch (err) {
-      derniereErreur = err;
-    }
-  }
-  throw derniereErreur || new Error('Overpass');
-}
-
-function requeteAutour(lat, lon, rayon) {
-  const zone = `(around:${Math.round(rayon)},${lat.toFixed(5)},${lon.toFixed(5)})`;
-  return `[out:json][timeout:25];(nwr["sport"~"bmx"]${zone};nwr["cycling"="pump_track"]${zone};);out body geom;`;
-}
+// On arrondit le point (≈ 1 km) : deux personnes proches reçoivent la même réponse, déjà en cache
+const arrondir = (x) => Math.round(x * 100) / 100;
 
 async function pistesAutour(lat, lon, rayon) {
-  const elements = await demanderOverpass(requeteAutour(lat, lon, rayon));
-  return regrouper(elements);
+  const point = { lat: arrondir(lat), lon: arrondir(lon) };
+  try {
+    return (await demanderApi('lieux', { ...point, rayon })).lieux;
+  } catch {
+    return osm.pistesAutour(point.lat, point.lon, rayon);
+  }
+}
+
+async function pisteParId(id) {
+  try {
+    return (await demanderApi('lieu', { id })).lieu;
+  } catch {
+    return osm.pisteParId(id);
+  }
+}
+
+async function chercherEndroit(texte) {
+  try {
+    return (await demanderApi('recherche', { q: texte })).resultat;
+  } catch {
+    return osm.chercherEndroit(texte);
+  }
+}
+
+async function adresseDuPoint(lat, lon) {
+  const point = { lat: lat.toFixed(5), lon: lon.toFixed(5) };
+  try {
+    return await demanderApi('adresse', point);
+  } catch {
+    return osm.adresseDuPoint(Number(point.lat), Number(point.lon));
+  }
 }
 
 // ---------- Ce que DBSpeed ajoute (Supabase) ----------
@@ -390,74 +269,34 @@ function dateCourte(iso) {
 
 // ---------- La carte ----------
 
-let promesseLeaflet = null;
-function chargerLeaflet() {
-  if (window.L) return Promise.resolve(window.L);
-  if (promesseLeaflet) return promesseLeaflet;
-  promesseLeaflet = new Promise((ok, pasOk) => {
-    // la feuille de style de Leaflet est déjà dans accueil.html (avant lieux.css, pour garder nos couleurs)
-    const script = document.createElement('script');
-    script.src = '/app/leaflet/leaflet.js';
-    script.onload = () => ok(window.L);
-    script.onerror = () => { promesseLeaflet = null; pasOk(new Error('Leaflet')); };
-    document.head.append(script);
-  });
-  return promesseLeaflet;
-}
-
-function iconeRepere(genre) {
-  return etat.L.divIcon({
-    className: 'repere-boite',
-    html: `<span class="repere repere-${genre}">${icone(genre)}</span>`,
-    iconSize: [36, 44],
-    iconAnchor: [18, 42],
-    popupAnchor: [0, -38],
-  });
-}
-
 async function preparerCarte() {
-  if (etat.carte) return;
-  const L = await chargerLeaflet();
-  etat.L = L;
+  if (etat.carte) return etat.carte.pret;
   const depart = centreRetenu() || FRANCE;
-  etat.carte = L.map('lieux-carte', {
-    zoomControl: !L.Browser.mobile,   // sur téléphone on zoome avec deux doigts
-    attributionControl: true,
-    tap: true,
-    scrollWheelZoom: true,
-  }).setView([depart.lat, depart.lon], depart.zoom || 11);
-  etat.carte.attributionControl.setPrefix(false);
-  L.tileLayer(FOND_CARTE, {
-    attribution: CREDITS, subdomains: 'abcd', maxZoom: 19, detectRetina: false,
-  }).addTo(etat.carte);
-  etat.couche = L.layerGroup().addTo(etat.carte);
-
-  // Si l'utilisateur déplace la carte loin de la dernière recherche : on propose de chercher là
-  etat.carte.on('moveend', () => {
-    if (etat.bougeAuto) { etat.bougeAuto = false; return; }
-    const c = etat.carte.getCenter();
-    const loin = !etat.centre || distance(etat.centre, { lat: c.lat, lon: c.lng }) > RAYON * 0.4;
-    window.montrer($('lieux-zone'), loin && etat.carte.getZoom() >= 8);
+  etat.carte = await creerGrandeCarte($('lieux-carte'), {
+    centre: depart,
+    zoom: depart.zoom || 11,
+    quand: {
+      toucherPiste: (id) => { window.vibrer?.('leger'); ouvrirRepere(id, { bouger: false }); },
+      // Si l'utilisateur déplace la carte loin de la dernière recherche : on propose de chercher là
+      bouge: (auto) => {
+        if (auto) return;
+        const loin = !etat.centre || distance(etat.centre, etat.carte.centre()) > RAYON * 0.4;
+        window.montrer($('lieux-zone'), loin && etat.carte.zoom() >= 8);
+      },
+    },
   });
-}
-
-function bougerCarte(fonction) {
-  etat.bougeAuto = true;
-  fonction();
-  // si la carte ne bouge pas vraiment, « moveend » n'arrive pas : on remet à zéro
-  setTimeout(() => { etat.bougeAuto = false; }, 1200);
+  $('lieux-satellite').hidden = !satelliteDispo;
+  return etat.carte.pret;
 }
 
 function dessinerRepereMoi() {
   if (!etat.carte || !etat.position) return;
-  const L = etat.L;
-  if (etat.moi) etat.moi.setLatLng([etat.position.lat, etat.position.lon]);
-  else {
-    etat.moi = L.marker([etat.position.lat, etat.position.lon], {
-      icon: L.divIcon({ className: 'moi-boite', html: '<span class="moi"></span>', iconSize: [22, 22], iconAnchor: [11, 11] }),
-      keyboard: false, interactive: false, zIndexOffset: -100,
-    }).addTo(etat.carte);
-  }
+  const point = [etat.position.lon, etat.position.lat];
+  if (etat.moi) { etat.moi.setLngLat(point); return; }
+  const el = document.createElement('span');
+  el.className = 'moi';
+  el.setAttribute('aria-label', 'Ma position');
+  etat.moi = new etat.carte.ml.Marker({ element: el, anchor: 'center' }).setLngLat(point).addTo(etat.carte.carte);
 }
 
 // ---------- Position de l'utilisateur ----------
@@ -518,7 +357,8 @@ async function chercherIci(lat, lon, nomLieu, idAOuvrir = null) {
   const numero = ++etat.chargement;
   etat.centre = { lat, lon, nom: nomLieu };
   window.montrer($('lieux-zone'), false);
-  bougerCarte(() => etat.carte.setView([lat, lon], 11, { animate: !calme }));
+  etat.carte.fermerBulle();
+  etat.carte.allerA(lon, lat, 11);
   dire(nomLieu ? `On cherche les pistes autour de ${nomLieu}…` : 'On cherche les pistes autour de toi…', 'attente');
   $('lieux-liste').classList.add('en-charge');
 
@@ -555,11 +395,8 @@ async function chercherIci(lat, lon, nomLieu, idAOuvrir = null) {
     ouvrirRepere(trouvee.id);
   } else {
     // on cadre la carte sur le point de départ et les pistes les plus proches
-    const proches = pistesVisibles().slice(0, 6).map(({ piste }) => [piste.lat, piste.lon]);
-    if (proches.length) {
-      const zone = etat.L.latLngBounds([[lat, lon], ...proches]);
-      bougerCarte(() => etat.carte.fitBounds(zone, { paddingTopLeft: [60, 50], paddingBottomRight: [70, 70], maxZoom: 13, animate: !calme }));
-    }
+    const proches = pistesVisibles().slice(0, 6).map(({ piste }) => [piste.lon, piste.lat]);
+    if (proches.length) etat.carte.cadrer([[lon, lat], ...proches], 13);
   }
 }
 
@@ -575,22 +412,11 @@ function pistesVisibles() {
     .sort((a, b) => (a.metres ?? 0) - (b.metres ?? 0));
 }
 
-const marqueurs = new Map();
-
 function afficherResultats() {
   const visibles = pistesVisibles();
-  const L = etat.L;
 
-  // Les repères sur la carte
-  etat.couche.clearLayers();
-  marqueurs.clear();
-  for (const { piste, metres } of visibles) {
-    const m = L.marker([piste.lat, piste.lon], { icon: iconeRepere(piste.genre), title: nomDe(piste), riseOnHover: true });
-    m.bindPopup(() => contenuBulle(piste, metres), { closeButton: false, className: 'bulle-piste', maxWidth: 260 });
-    m.on('click', () => window.vibrer?.('leger'));
-    m.addTo(etat.couche);
-    marqueurs.set(piste.id, m);
-  }
+  // Les épingles sur la carte (dessinées dans la carte : elles bougent avec elle)
+  etat.carte.mettrePistes(visibles.map(({ piste }) => ({ id: piste.id, genre: piste.genre, lat: piste.lat, lon: piste.lon, nom: nomDe(piste) })));
 
   // La liste sous la carte
   const liste = $('lieux-liste');
@@ -637,12 +463,13 @@ function contenuBulle(piste, metres) {
   return div;
 }
 
-function ouvrirRepere(id) {
-  const m = marqueurs.get(id);
+function ouvrirRepere(id, { bouger = true } = {}) {
   const piste = etat.groupes.get(id);
-  if (!m || !piste) return;
-  bougerCarte(() => etat.carte.setView([piste.lat, piste.lon], Math.max(etat.carte.getZoom(), 14), { animate: !calme }));
-  setTimeout(() => m.openPopup(), calme ? 0 : 300);
+  if (!piste) return;
+  const depart = pointDeDepart();
+  etat.carte.choisir(id);
+  if (bouger) etat.carte.allerA(piste.lon, piste.lat, Math.max(etat.carte.zoom(), 14));
+  etat.carte.ouvrirBulle(piste.lon, piste.lat, contenuBulle(piste, depart ? distance(depart, piste) : null));
 }
 
 // ---------- Barre de recherche ----------
@@ -651,10 +478,7 @@ async function chercherAilleurs(texte) {
   dire(`On cherche « ${texte} »…`, 'attente');
   let resultat = null;
   try {
-    const url = `${NOMINATIM}/search?format=jsonv2&limit=1&accept-language=fr&q=${encodeURIComponent(texte)}`;
-    const rep = await fetch(url, { headers: { Accept: 'application/json' } });
-    if (!rep.ok) throw new Error('Nominatim');
-    resultat = (await rep.json())[0] || null;
+    resultat = await chercherEndroit(texte);
   } catch {
     dire('La recherche ne répond pas pour l’instant. Vérifie ta connexion et réessaie.', 'erreur');
     return;
@@ -663,13 +487,11 @@ async function chercherAilleurs(texte) {
     dire(`Rien trouvé pour « ${texte} ». Essaie avec le nom d’une ville.`, 'erreur');
     return;
   }
-  const nomCourt = String(resultat.name || resultat.display_name || texte).split(',')[0];
-  const idOsm = resultat.osm_type && resultat.osm_id ? `${resultat.osm_type}-${resultat.osm_id}` : null;
   // on enlève le texte : il a servi à trouver l'endroit, plus à filtrer la liste
   etat.texte = '';
   $('lieux-champ').value = '';
   window.montrer($('lieux-effacer'), false);
-  await chercherIci(Number(resultat.lat), Number(resultat.lon), nomCourt, idOsm);
+  await chercherIci(resultat.lat, resultat.lon, resultat.nom, resultat.id);
 }
 
 function preparerRecherche() {
@@ -697,8 +519,7 @@ function preparerRecherche() {
     if (visibles.length === 1) {
       ouvrirRepere(visibles[0].piste.id);
     } else if (visibles.length > 1) {
-      const zone = etat.L.latLngBounds(visibles.map(({ piste }) => [piste.lat, piste.lon]));
-      bougerCarte(() => etat.carte.fitBounds(zone, { padding: [40, 40], maxZoom: 14, animate: !calme }));
+      etat.carte.cadrer(visibles.map(({ piste }) => [piste.lon, piste.lat]), 14);
     } else {
       await chercherAilleurs(texte);
     }
@@ -726,16 +547,20 @@ function preparerRecherche() {
   });
 
   $('lieux-zone').addEventListener('click', () => {
-    const c = etat.carte.getCenter();
-    chercherIci(c.lat, c.lng, 'cette zone');
+    const c = etat.carte.centre();
+    chercherIci(c.lat, c.lon, 'cette zone');
+  });
+
+  // Plan ↔ satellite (seulement avec la clé MapTiler)
+  $('lieux-satellite').addEventListener('click', () => {
+    const satellite = etat.carte.mode !== 'satellite';
+    etat.carte.changerMode(satellite ? 'satellite' : 'plan');
+    $('lieux-satellite').setAttribute('aria-pressed', String(satellite));
+    $('lieux-satellite').querySelector('span').textContent = satellite ? 'Plan' : 'Satellite';
   });
 }
 
 // ---------- La fiche d'une piste ----------
-
-function idValide(id) {
-  return /^(node|way|relation|dbs)-[0-9a-z-]{1,40}$/.test(id);
-}
 
 async function trouverPiste(id) {
   const connue = etat.groupes.get(id) || [...etat.groupes.values()].find((p) => p.ids.includes(id));
@@ -749,29 +574,18 @@ async function trouverPiste(id) {
     etat.groupes.set(piste.id, piste);
     return piste;
   }
-  // Lien ouvert directement (page rechargée…) : on retrouve la piste et ses voisins
-  const [type, num] = id.split('-');
-  const elements = await demanderOverpass(`[out:json][timeout:20];${type}(${Number(num)});out center;`);
-  const el = elements[0];
-  const centre = el && centreElement(el);
-  if (!centre) return null;
-  const pistes = await pistesAutour(centre.lat, centre.lon, 600);
-  for (const p of pistes) etat.groupes.set(p.id, p);
-  return pistes.find((p) => p.ids.includes(id)) || null;
+  // Lien ouvert directement (page rechargée…) : on demande cette piste
+  const piste = await pisteParId(id);
+  if (piste) etat.groupes.set(piste.id, piste);
+  return piste;
 }
 
 async function communeDe(piste) {
   if (piste.adresseTrouvee !== undefined) return piste.adresseTrouvee;
   try {
-    const url = `${NOMINATIM}/reverse?format=jsonv2&zoom=17&accept-language=fr&lat=${piste.lat}&lon=${piste.lon}`;
-    const rep = await fetch(url, { headers: { Accept: 'application/json' } });
-    if (!rep.ok) throw new Error('Nominatim');
-    const json = await rep.json();
-    const a = json.address || {};
-    const ville = a.city || a.town || a.village || a.municipality || '';
-    const rue = [a.house_number, a.road].filter(Boolean).join(' ');
-    piste.commune = ville;
-    piste.adresseTrouvee = [rue, [a.postcode, ville].filter(Boolean).join(' ')].filter(Boolean).join(', ') || null;
+    const { ville, adresse } = await adresseDuPoint(piste.lat, piste.lon);
+    piste.commune = ville || '';
+    piste.adresseTrouvee = adresse || null;
   } catch {
     piste.adresseTrouvee = null;
   }
@@ -928,26 +742,18 @@ function htmlCompetitions(liste) {
   }).join('')}</ul>`;
 }
 
-function dessinerMiniCarte(piste) {
+async function dessinerMiniCarte(piste) {
   if (etat.miniCarte) { etat.miniCarte.remove(); etat.miniCarte = null; }
   const zone = $('fiche-carte');
-  if (!zone || !etat.L) return;
-  const L = etat.L;
-  const carte = L.map(zone, {
-    zoomControl: false, attributionControl: true, scrollWheelZoom: false,
-    dragging: !L.Browser.mobile, tap: false, boxZoom: false, keyboard: false,
-  });
-  carte.attributionControl.setPrefix(false);
-  L.tileLayer(FOND_CARTE, { attribution: CREDITS, subdomains: 'abcd', maxZoom: 20 }).addTo(carte);
-  const lignes = piste.traces.map((l) => L.polyline(l, { color: '#D4A63A', weight: 5, opacity: 0.95, lineCap: 'round' }));
-  L.marker([piste.lat, piste.lon], { icon: iconeRepere(piste.genre), interactive: false, keyboard: false }).addTo(carte);
-  if (lignes.length) {
-    const groupe = L.featureGroup(lignes).addTo(carte);
-    carte.fitBounds(groupe.getBounds(), { padding: [24, 24], maxZoom: 19 });
-  } else {
-    carte.setView([piste.lat, piste.lon], 17);
+  if (!zone) return;
+  try {
+    const carte = await creerCarteTrace(zone, piste);
+    // la fiche a peut-être changé pendant le chargement
+    if (!document.body.contains(zone)) { carte.remove(); return; }
+    etat.miniCarte = carte;
+  } catch {
+    zone.innerHTML = '<p class="pas-encore carte-absente">La carte ne se charge pas pour l’instant.</p>';
   }
-  etat.miniCarte = carte;
 }
 
 function preparerPhotos() {
@@ -985,7 +791,6 @@ async function ouvrirFiche(id) {
       fiche.innerHTML = '<p class="chargement"><span class="roue" aria-hidden="true"></span>On ouvre la piste…</p>';
     }
     try {
-      await chargerLeaflet().then((L) => { etat.L = L; });
       piste = await trouverPiste(id);
     } catch {
       if (etat.ficheOuverte !== id) return;
@@ -1092,7 +897,7 @@ export async function afficherLieux(sous = '') {
     return;
   }
   // la carte était cachée : elle doit reprendre sa taille
-  setTimeout(() => etat.carte.invalidateSize(), calme ? 0 : 360);
+  setTimeout(() => etat.carte.taille(), calme ? 0 : 360);
   premiereFois = false;
   if (!dejaLocalise) {
     dejaLocalise = true;
