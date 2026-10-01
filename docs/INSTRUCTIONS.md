@@ -78,3 +78,9 @@
 43. **Logo officiel** (01/10/2026) : la médaille d'or aux couleurs du site (or, vert, bordeaux, « CHRONOMÉTRAGE · BMX RACE »). Faire aussi **3 autres styles** : **noir avec néon bleu** (comme Tron), **marbre blanc avec les traits en or**, et **en feu**. **Les logos doivent être animés.** On doit pouvoir **changer le logo de l'appli** (et son icône) en choisissant parmi ces styles. → `public/logos/`, choix dans Mon profil (« Logo de l'appli »).
 44. **Logo animé à l'ouverture de l'appli** (01/10/2026) : une icône animée sur l'écran d'accueil du téléphone n'est pas possible (iPhone et Android n'affichent que des images fixes), donc à la place : **écran d'ouverture animé** avec la médaille du style choisi, à chaque ouverture de l'appli.
 45. Faire un **classement sur plusieurs niveaux** : **hommes / femmes**, **chaque catégorie**, un **classement monde** des meilleurs pilotes, un classement **par pays**, **par région** et **par département**. En fonction de ce qui existe déjà, mais on peut avoir **notre propre classement** (01/10/2026). → Écran « Classements » dans l'onglet Compétition, barème DBSpeed inspiré de l'UCI.
+46. **Sessions de groupe à l'entraînement** (01/10/2026) :
+    - pouvoir **inviter des amis de l'appli** ou **envoyer un lien** pour créer une **session** où on a **les chronos de toutes les personnes du groupe** ;
+    - que ce soit **amusant et ludique**, avec des **transitions et des animations fluides et jolies**, **comme dans un jeu** ;
+    - ils s'entraînent ensemble et peuvent **comparer leurs temps** et voir **qui est devant sur chaque secteur** ;
+    - voir l'**historique** ;
+    - **comme en F1** : **violet** = meilleur secteur, **vert** = on améliore son chrono, **rouge** = moins bon.

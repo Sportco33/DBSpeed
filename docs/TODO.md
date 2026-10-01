@@ -45,6 +45,7 @@
    - [ ] Google Cloud → créer l'accès Google, puis l'activer dans Supabase
 2. [ ] ~~pushcoco~~ fait le 01/10/2026 (commit `07d9d7e`, mise en ligne Netlify prête) → **tester en vrai** : créer un compte, confirmer le mail, se connecter, Google.
 3. [x] **Onglet Entraînement** : calendrier, journée (piste + tracé + tours), tour (intermédiaires, comparaison record / meilleurs inter / mon meilleur / amis), publier, classement, Mes amis dans le profil ; base Supabase testée (sur `travail`) (01/10/2026)
+3b. [x] **Sessions de groupe** : créer, inviter des amis ou envoyer un lien, rejoindre, Direct / Secteurs / Historique en couleurs F1, tour idéal, podium et badges, session d'exemple, simuler ses tours ; base testée (sur `travail`) (01/10/2026)
 3a. [ ] **Importer des séances d'entraînement** (fichier Excel puis transpondeurs) dans `entrainements` + `tours`, et **créer les pistes** (nom, lieu, tracé, lignes).
 3b. [ ] **Compétitions dans Supabase** : la table `competitions` existe déjà (créée pour l'onglet Lieux : lieu, nom, dates, niveau, lien) → la **compléter** plutôt que d'en créer une autre ; ajouter les tables catégories, engagés, équipes, manches, passages + import par les organisateurs ; remplacer les données d'exemple.
 3b2. [ ] **Clé MapTiler** (Nicolas crée le compte, Claude met la clé dans Netlify `MAPTILER_KEY`) → plan détaillé MapTiler + satellite. Sans clé, la carte marche quand même (OpenFreeMap, sans satellite).
@@ -70,6 +71,8 @@
 - [ ] **Vérifier chaque écran** : gros boutons, un seul bouton principal, espaces réguliers, bien équilibré.
 
 ## Petits nettoyages (moins urgent)
+- [ ] Sessions de groupe : prévenir les invités (notification ou mail Resend gratuit) — à décider avec Nicolas.
+- [ ] Sessions de groupe : passer du « redemander toutes les 5 s » au temps réel Supabase (gratuit) si le groupe est grand.
 - [ ] Lieux : le fond de carte (CARTO) et la recherche (Nominatim, Overpass) sont gratuits pour un petit usage ; si l'appli grossit ou devient payante, prendre un fournisseur de carte avec une offre adaptée.
 - [ ] Lieux : permettre d'**ajouter une piste qui n'est pas sur la carte** (id `dbs-…`, déjà prévu dans la table `lieux`).
 - [ ] Compétition : mettre en avant **ses propres compétitions** (pilote connecté) et un bouton « Suivre » une compétition.
