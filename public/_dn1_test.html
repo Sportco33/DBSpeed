@@ -1,9 +1,0 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
-<link rel="stylesheet" href="/couleurs.css"><link rel="stylesheet" href="/app/app.css"><link rel="stylesheet" href="/app/competitions/competitions.css"></head>
-<body class="marbre-vert"><main id="onglet-competition" style="padding:16px"><div id="zone"></div></main>
-<script type="module">
-import { afficherCompetition } from '/app/competitions/vue.js';
-const z = document.getElementById('zone');
-const chemin = (location.hash.slice(1) || 'dn1').split('/');
-await afficherCompetition(z, chemin); window.fini = true;
-</script></body></html>
