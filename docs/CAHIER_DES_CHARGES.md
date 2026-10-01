@@ -114,6 +114,17 @@ Les pilotes passent sur ces lignes pendant leur manche. À la fin du tour, chaqu
 - Organisateur : importer les temps (une fois validé).
 - Spectateur : suivre les manches et les classements.
 
+### Classements DBSpeed, onglet Compétition (consigne 44)
+
+- Carte **« Classements »** en haut de la liste des compétitions → `#competition/classements` (code : `public/app/competitions/classements.js`, chargé seulement quand on l'ouvre).
+- Choix : **Vrais résultats 2026** ou **Exemple (démo)** ; **Hommes / Femmes** ; **catégorie** (Elite, U23, Junior… celles qui ont des résultats) ; **niveau** : **Monde**, **Pays** (choisir le pays), **Région**, **Département** (France).
+- **Notre propre classement**, calculé avec ce qui existe déjà (inspiré du classement UCI) : points de la place (1er 100, 2e 80, 3e 65, 4e 55, 5e 45, 6e 40, 7e 35, 8e 30, 9e-16e 20, 17e-32e 10, plus loin 5) **× importance de la compétition** (Championnat du monde ×6 ; Coupe du monde ×3 par manche ; Championnat d'Europe ×3 ; autres continentaux ×2,5 ; Coupe d'Europe ×1,5 ; championnats nationaux ×1,5 ; Coupe de France et Trophée de France ×1 ; Coupe de Slovaquie ×0,6 ; exemple : International ×3, National ×1,5, Régional ×0,5). Total de la saison, par catégorie. À égalité de points : même rang (puis meilleure place, puis victoires pour l'ordre). Le « classement final » d'une série ne compte pas (ses manches comptent déjà). Barème expliqué dans « Comment on calcule ? ».
+- **Région et département** = ceux du **club** du pilote (comme les comités FFC), seulement pour les pilotes **français** dont on connaît le club (`pilotes-elite.js`, puis équipes de DN1). Compétitions d'exemple : département inventé mais fixe pour un même club.
+- **Fiche d'un pilote** (`#competition/classements/pilote/<id>`) : club, département, région ; pour chaque catégorie : son rang **monde / pays / région / département** (« sur N »), et chaque course qui lui a rapporté des points (place × coefficient = points, lien vers la compétition).
+- La fiche d'un vrai pilote dans une compétition montre son **rang mondial DBSpeed** (lien vers sa fiche de classement).
+- Vrais résultats : **pas de classement Junior** (ce sont des mineurs : pas de fiche à leur nom) ; il est visible dans l'exemple.
+- Limite honnête : les vrais résultats publiés sont souvent seulement les podiums → le classement deviendra complet quand les organisateurs importeront leurs résultats.
+
 ### Championnat de France des clubs (DN1), onglet Compétition
 
 - En haut de la liste des compétitions, une carte **« Championnat de France des clubs »** ouvre la **DN1** de la saison : les 10 équipes, le champion, le classement publié (places et points), les vainqueurs DN2 et Équipe Avenir, les sources.

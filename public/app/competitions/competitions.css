@@ -11,7 +11,7 @@
   max-width: 100%; text-shadow: var(--ombre-texte);
 }
 .retour span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.retour svg, .lien-fleche svg, .ligne > svg, .podium-ligne > svg, .lien-equipe svg {
+.retour svg, .lien-fleche svg, .ligne > svg, .podium-ligne > svg, .lien-equipe svg, .carte-dn1 > svg {
   width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
 }
 
@@ -388,3 +388,22 @@
 .adv-nom strong, .adv-nom small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .adv-nom small { color: var(--texte-doux); font-size: 12px; }
 .adv-temps { font-variant-numeric: tabular-nums; font-size: 14px; text-align: right; }
+
+/* ---------- Classements DBSpeed ---------- */
+.logo-classement { background: var(--or-metal); border-color: var(--or-700); color: var(--sur-principal); }
+.cl-titre { margin: 4px 0 2px; font-size: 22px; }
+.cl-lignes .ligne { gap: 10px; }
+.cl-points { flex: none; display: grid; justify-items: end; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.cl-points strong { font-size: 17px; color: var(--or-300); }
+.cl-points small { font-size: 12px; color: var(--texte-doux); }
+.chiffres.chiffres-3 { grid-template-columns: repeat(3, 1fr); }
+.cl-rangs { margin-bottom: 12px; }
+.cl-rangs small { display: block; font-size: 11px; }
+.cl-calcul {
+  margin: var(--e2) 0; padding: 12px 14px; border-radius: var(--rayon);
+  background: var(--verre); border: 1px solid var(--bord-doux); font-size: 15px;
+}
+.cl-calcul summary { min-height: 44px; display: flex; align-items: center; font-weight: 700; cursor: pointer; color: var(--principal); }
+.cl-calcul p { margin: 8px 0; color: var(--texte-doux); }
+.cl-calcul strong { color: var(--texte); }
+.cl-calcul ul { margin: 0 0 8px; padding-left: 20px; color: var(--texte-doux); display: grid; gap: 4px; }

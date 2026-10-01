@@ -9,6 +9,8 @@
 //   /ID/tableau           → arbre du tableau final (1/16, 1/8, 1/4, 1/2, finale)
 //   /dn1                  → championnat de France des clubs DN1 2026 (les 10 équipes)
 //   /dn1/CLUB             → une équipe de DN1 : ses pilotes femmes et hommes
+//   /classements          → classements DBSpeed (monde, pays, région, département) — classements.js
+//   /classements/pilote/ID → un pilote dans les classements
 import { listerCompetitions as listerExemples, chargerCompetition as chargerExemple, PAYS } from '/app/competitions/donnees-exemple.js';
 import { COMPETITIONS_REELLES, PAYS_EN_PLUS } from '/app/competitions/donnees-reelles.js';
 import { DN1_2026 } from '/app/competitions/dn1-2026.js';
@@ -185,16 +187,22 @@ export async function afficherCompetition(zone, chemin) {
 
   const [id, type, cible] = chemin;
   let c = null;
-  if (id && id !== 'dn1') {
+  if (id && id !== 'dn1' && id !== 'classements') {
     c = await chargerCompetition(id);
     if (monJeton !== jeton) return; // l'utilisateur est déjà allé ailleurs
   }
 
   if (!id) await ecranListe(zone);
+  else if (id === 'classements') {
+    const { ecranClassements } = await import('/app/competitions/classements.js');
+    if (monJeton !== jeton) return;
+    await ecranClassements(zone, chemin.slice(1));
+    if (monJeton !== jeton) return;
+  }
   else if (id === 'dn1' && type) ecranClubDN1(zone, type);
   else if (id === 'dn1') ecranDN1(zone);
   else if (!c) zone.innerHTML = vide('Compétition introuvable', 'Elle a peut-être été supprimée.') + lienRetour('#competition', 'Compétitions');
-  else if (c.reelle && type === 'pilote') ecranPiloteReel(zone, c, cible);
+  else if (c.reelle && type === 'pilote') await ecranPiloteReel(zone, c, cible);
   else if (c.reelle) ecranCompetitionReelle(zone, c);
   else if (!type) ecranCompetition(zone, c);
   else if (type === 'pilote') ecranPilote(zone, c, cible);
@@ -282,6 +290,11 @@ async function ecranListe(zone) {
     <a class="carte-dn1 marbre-bordeaux cadre-or" href="#competition/dn1">
       <span class="logo-equipe">DN1</span>
       <span class="ligne-texte"><strong>Championnat de France des clubs</strong><small>Les 10 équipes de DN1 2026 et leurs pilotes</small></span>
+      ${ICONES.fleche}
+    </a>
+    <a class="carte-dn1 marbre-vert cadre-or" href="#competition/classements">
+      <span class="logo-equipe logo-classement">1</span>
+      <span class="ligne-texte"><strong>Classements</strong><small>Les meilleurs pilotes : monde, pays, région, département</small></span>
       ${ICONES.fleche}
     </a>
     <div id="c-liste" class="liste-compets"></div>
@@ -995,9 +1008,11 @@ function ecranCompetitionReelle(zone, c) {
     </section>`;
 }
 
-function ecranPiloteReel(zone, c, id) {
+async function ecranPiloteReel(zone, c, id) {
   const p = c.pilotes[id];
   if (!p) { zone.innerHTML = lienRetour(`#competition/${c.id}`, c.nom) + vide('Pilote introuvable', ''); return; }
+  const { rangsMondeReels } = await import('/app/competitions/classements.js');
+  const rangsDBS = rangsMondeReels(id);
   const meilleure = Math.min(...p.resultats.map((r) => r.place));
   zone.innerHTML = `
     ${lienRetour(`#competition/${c.id}`, c.nom)}
@@ -1007,6 +1022,11 @@ function ecranPiloteReel(zone, c, id) {
       <p class="c-hero-ligne">${drapeau(p.pays)} <span>${esc(nomPays(p.pays))}</span></p>
     </div>
     ${p.rangUCI || p.rangFFC ? blocRangs(c, p) : `<p class="note">Son <strong>rang UCI</strong> et son <strong>rang FFC</strong> ne sont pas encore dans DBSpeed : on ne les met que quand on a pu les lire sur le classement officiel.</p>`}
+    ${rangsDBS.length ? `<a class="carte-dn1 marbre-vert cadre-or" href="#competition/classements/pilote/${esc(rangsDBS[0].id)}">
+      <span class="logo-equipe logo-classement">${rangsDBS[0].rang}</span>
+      <span class="ligne-texte"><strong>Classement DBSpeed</strong><small>${rangsDBS.map((r) => `${place(r.rang)} mondial ${esc(r.cat)}`).join(' · ')}</small></span>
+      ${ICONES.fleche}
+    </a>` : ''}
     <section class="bloc">
       <h2>Ses résultats ici</h2>
       <ul class="lignes">${p.resultats.map((r) => `<li><div class="ligne">
