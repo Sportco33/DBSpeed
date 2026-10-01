@@ -241,7 +241,7 @@ export function zoneValide(z) {
 export async function pistesDansZone(zone, options) {
   if (!zoneValide(zone)) throw new Error('Zone trop grande');
   const z = `(${zone.map((x) => x.toFixed(4)).join(',')})`;
-  const requete = `[out:json][timeout:60];(nwr["sport"~"bmx"]${z};nwr["cycling"="pump_track"]${z};);out body geom;`;
+  const requete = `[out:json][timeout:${secondesOverpass(options)}];(nwr["sport"~"bmx"]${z};nwr["cycling"="pump_track"]${z};);out body geom;`;
   return regrouper(await demanderOverpass(requete, options));
 }
 

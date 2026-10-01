@@ -714,3 +714,10 @@ select {
 .position-texte { display: grid; gap: 2px; }
 .position-texte small { color: var(--texte-doux); font-size: 14px; }
 @media (prefers-reduced-motion: reduce) { .entete-lieu { animation: none; } }
+
+/* Mon profil : « Mes données et mon compte » (fermé par défaut, en bas) */
+.zone-compte { margin-top: var(--e3); padding: 0 14px; border: 1px solid var(--bord-doux); border-radius: var(--arrondi); background: var(--verre); }
+.zone-compte summary { min-height: 48px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
+.zone-compte .petit { font-size: 15px; color: var(--texte-doux); }
+.zone-compte a { color: var(--principal); }
+.zone-compte .bouton { margin-bottom: var(--e2); }

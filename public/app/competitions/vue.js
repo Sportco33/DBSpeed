@@ -93,14 +93,16 @@ const initiales = (nom) => nom.split(/\s+/).filter((m) => /^[A-Za-zÀ-ÿ]/.test(
 const MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 const MOIS_LONG = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+// « 1er octobre », « 2 octobre » (le français écrit 1er pour le premier jour du mois)
+const jourFr = (j) => (j === 1 ? '1er' : String(j));
 const decouper = (iso) => { const [a, m, j] = iso.split('-').map(Number); return { a, m: m - 1, j }; };
-const dateCourte = (iso) => { const d = decouper(iso); return `${d.j} ${MOIS[d.m]}`; };
-const dateJour = (iso) => { const d = decouper(iso); const js = new Date(d.a, d.m, d.j); return `${JOURS[js.getDay()]} ${d.j} ${MOIS_LONG[d.m]}`; };
+const dateCourte = (iso) => { const d = decouper(iso); return `${jourFr(d.j)} ${MOIS[d.m]}`; };
+const dateJour = (iso) => { const d = decouper(iso); const js = new Date(d.a, d.m, d.j); return `${JOURS[js.getDay()]} ${jourFr(d.j)} ${MOIS_LONG[d.m]}`; };
 function periode(c) {
   const d = decouper(c.debut); const f = decouper(c.fin);
-  if (c.debut === c.fin) return `Le ${d.j} ${MOIS_LONG[d.m]} ${d.a}`;
-  if (d.m === f.m) return `Du ${d.j} au ${f.j} ${MOIS_LONG[f.m]} ${f.a}`;
-  return `Du ${d.j} ${MOIS_LONG[d.m]} au ${f.j} ${MOIS_LONG[f.m]} ${f.a}`;
+  if (c.debut === c.fin) return `Le ${jourFr(d.j)} ${MOIS_LONG[d.m]} ${d.a}`;
+  if (d.m === f.m) return `Du ${jourFr(d.j)} au ${jourFr(f.j)} ${MOIS_LONG[f.m]} ${f.a}`;
+  return `Du ${jourFr(d.j)} ${MOIS_LONG[d.m]} au ${jourFr(f.j)} ${MOIS_LONG[f.m]} ${f.a}`;
 }
 const STATUTS = {
   'en-cours': { texte: 'En direct', classe: 'statut-direct' },

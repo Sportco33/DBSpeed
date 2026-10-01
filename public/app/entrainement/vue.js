@@ -46,13 +46,15 @@ const iso = (a, m, j) => `${a}-${deux(m + 1)}-${deux(j)}`;
 const isoAujourdHui = () => { const d = new Date(); return iso(d.getFullYear(), d.getMonth(), d.getDate()); };
 const decouper = (texte) => { const [a, m, j] = texte.split('-').map(Number); return { a, m: m - 1, j }; };
 const valide = (texte) => /^\d{4}-\d{2}-\d{2}$/.test(texte || '');
+// « 1er octobre » (le français écrit 1er pour le premier jour du mois)
+const jourFr = (j) => (j === 1 ? '1er' : String(j));
 function dateLongue(texte) {
   const d = decouper(texte);
-  return `${majuscule(JOURS[new Date(d.a, d.m, d.j).getDay()])} ${d.j} ${MOIS_LONG[d.m]}${d.a !== aujourdHui.getFullYear() ? ` ${d.a}` : ''}`;
+  return `${majuscule(JOURS[new Date(d.a, d.m, d.j).getDay()])} ${jourFr(d.j)} ${MOIS_LONG[d.m]}${d.a !== aujourdHui.getFullYear() ? ` ${d.a}` : ''}`;
 }
 function dateCourte(texte) {
   const d = decouper(texte);
-  return `${d.j} ${MOIS_COURT[d.m]}${d.a !== aujourdHui.getFullYear() ? ` ${d.a}` : ''}`;
+  return `${jourFr(d.j)} ${MOIS_COURT[d.m]}${d.a !== aujourdHui.getFullYear() ? ` ${d.a}` : ''}`;
 }
 
 // noms des lignes après le départ (Inter 1, Inter 2…, Arrivée)
@@ -402,7 +404,7 @@ async function ecranCalendrier(zone, monJeton) {
         joursAvec += 1;
         classes.push('avec');
         if (ce.some((x) => x.publie)) classes.push('publie');
-        const etiquette = `${j} ${MOIS_LONG[mois]} : ${ce.length > 1 ? `${ce.length} séances, ` : ''}${tours} tour${tours > 1 ? 's' : ''}`;
+        const etiquette = `${jourFr(j)} ${MOIS_LONG[mois]} : ${ce.length > 1 ? `${ce.length} séances, ` : ''}${tours} tour${tours > 1 ? 's' : ''}`;
         html += `<a class="${classes.join(' ')}" href="#entrainement/jour/${cle}" role="gridcell" aria-label="${etiquette}" style="--k:${joursAvec}">
           <span class="cal-num">${j}</span><span class="cal-tours">${tours}</span></a>`;
       } else {

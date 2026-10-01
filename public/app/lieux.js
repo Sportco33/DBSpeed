@@ -125,7 +125,8 @@ async function pisteParId(id) {
 
 async function chercherEndroit(texte) {
   try {
-    return (await demanderApi('recherche', { q: texte })).resultat;
+    // écrite comme l'API l'attend (minuscules, espaces simples) : pas de détour par une redirection
+    return (await demanderApi('recherche', { q: texte.trim().replace(/\s+/g, ' ').toLowerCase() })).resultat;
   } catch {
     return osm.chercherEndroit(texte);
   }
@@ -287,7 +288,8 @@ function photosDe(piste, complement) {
 }
 
 function dateCourte(iso) {
-  return new Date(`${iso}T12:00:00`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+  // « 1er oct. 2026 » (le français écrit 1er pour le premier jour du mois)
+  return new Date(`${iso}T12:00:00`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).replace(/^1 /, '1er ');
 }
 
 // ---------- La carte ----------

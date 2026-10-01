@@ -134,8 +134,12 @@ export default async (req: Request) => {
     }
 
     if (action === "recherche") {
-      const q = (p.get("q") ?? "").trim().replace(/\s+/g, " ");
-      if (q.length < 2 || q.length > 80) return erreur("La recherche doit faire entre 2 et 80 caractères.");
+      const brut = p.get("q") ?? "";
+      // une seule façon d'écrire la même recherche (minuscules, espaces simples) : la réponse en cache sert à tous
+      const q = brut.trim().replace(/\s+/g, " ").toLowerCase();
+      if (q.length < 2 || q.length > 60) return erreur("La recherche doit faire entre 2 et 60 caractères.");
+      if (!/^[\p{L}\p{N} '’.,-]+$/u.test(q)) return erreur("La recherche ne peut contenir que des lettres, des chiffres et des espaces.");
+      if (!memesParams(p, { q })) return versAdresseRonde(url, { q });
       const resultat = await osm.chercherEndroit(q, options);
       return reponse({ resultat }, { cacheSecondes: resultat ? 7 * 24 * HEURE : MINUTE });
     }
@@ -164,4 +168,11 @@ export default async (req: Request) => {
 
 export const config: Config = {
   path: ["/api/carte/lieux", "/api/carte/lieu", "/api/carte/recherche", "/api/carte/adresse"],
+  // Frein contre ceux qui appellent l'API en boucle (gratuit chez Netlify) : 60 appels par minute
+  // et par adresse IP, au-delà Netlify répond « trop de demandes » sans lancer la fonction.
+  rateLimit: {
+    windowLimit: 60,
+    windowSize: 60,
+    aggregateBy: ["ip", "domain"],
+  },
 };

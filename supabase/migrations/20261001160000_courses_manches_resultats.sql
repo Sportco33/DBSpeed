@@ -152,5 +152,5 @@ $$;
 revoke execute on function public.importer_course(text, date, text, text[], text, jsonb) from public, anon;
 grant execute on function public.importer_course(text, date, text, text[], text, jsonb) to authenticated;
 
--- 6. Petit nettoyage signalé par Supabase : index sur la clé « demandeur » des amis
-create index if not exists amis_demandeur on public.amis (demandeur);
+-- (L'index amis_demandeur a été déplacé dans 20261001210000_securite_et_compte.sql :
+--  la table amis n'existe qu'après 20261001200000.)

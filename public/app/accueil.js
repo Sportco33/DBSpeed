@@ -314,6 +314,27 @@ $('accueil-position-non').addEventListener('click', async () => {
   window.montrer?.($('accueil-position'), false);
 });
 
+// Supprimer son compte (avec une question « tu es sûr ? » d'abord)
+$('supprimer-compte').addEventListener('click', async (e) => {
+  const bouton = e.currentTarget;
+  const { demander } = await import('/app/outils.js');
+  const ok = await demander(bouton, {
+    texte: 'Ton compte, ton profil, tes séances et tes amis seront effacés pour de bon. On ne peut pas revenir en arrière.',
+    oui: 'Oui, tout effacer',
+    classeOui: 'bouton-danger',
+  });
+  if (!ok) return;
+  bouton.disabled = true;
+  const { error } = await supabase.rpc('supprimer_mon_compte');
+  if (error) {
+    bouton.disabled = false;
+    return afficher($('message-compte'), messageErreur(error));
+  }
+  window.vibrer?.('fort');
+  await supabase.auth.signOut().catch(() => {});
+  window.location.replace(CONNEXION);
+});
+
 $('deconnexion').addEventListener('click', async () => {
   await supabase.auth.signOut();
   window.location.replace(CONNEXION);

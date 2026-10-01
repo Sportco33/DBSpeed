@@ -5,7 +5,7 @@
   # Pas de mise en ligne (donc pas de crédits dépensés) si seuls les docs,
   # le README, CLAUDE.md, les exemples ou les outils ont changé.
   # (git diff --quiet répond « 0 » = rien d'autre n'a changé = on saute la mise en ligne)
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)docs' ':(exclude)README.md' ':(exclude)CLAUDE.md' ':(exclude)exemples' ':(exclude)outils'"
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)docs' ':(exclude)README.md' ':(exclude)CLAUDE.md' ':(exclude)exemples' ':(exclude)outils' ':(exclude)supabase'"
 
 [build.environment]
   # config.js contient seulement la clé publique Supabase, faite pour le navigateur

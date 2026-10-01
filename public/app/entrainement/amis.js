@@ -97,13 +97,13 @@ export function afficherAmis(zone, { supabase }) {
     if (moi !== numero) return;
     if (error) { trouves.innerHTML = ''; dire(messageErreur(error)); return; }
     if (!data.length) {
-      trouves.innerHTML = `<li class="vide"><strong>Aucun pilote trouvé.</strong>Vérifie le numéro de plaque, ou écris au moins 2 lettres du nom.</li>`;
+      trouves.innerHTML = `<li class="vide"><strong>Aucun pilote trouvé.</strong>Écris son numéro de plaque exact, ou au moins 3 lettres de son nom.</li>`;
       return;
     }
     const etats = { ami: 'Déjà ami', envoye: 'Demande envoyée' };
     trouves.innerHTML = data.map((p, k) => `<li class="ami" style="--k:${k}">
       ${plaque(p)}
-      <span class="ami-texte"><strong>${esc(p.nom || 'Pilote')}</strong><small>${esc(p.club || 'Pilote')}</small></span>
+      <span class="ami-texte"><strong>${esc(p.nom || 'Pilote')}</strong><small>${esc(p.club || (p.plaque ? `Plaque ${p.plaque}` : 'Pilote'))}</small></span>
       ${etats[p.lien] ? `<span class="ami-etat">${etats[p.lien]}</span>`
         : `<span class="ami-actions"><button type="button" class="oui" data-demander="${p.id}">${p.lien === 'recu' ? 'Accepter' : 'Ajouter'}</button></span>`}
     </li>`).join('');
