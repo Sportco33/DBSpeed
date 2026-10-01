@@ -149,14 +149,21 @@ function zoneAutour(lat, lon, rayon) {
   return [lat - dLat, lon - dLon, lat + dLat, lon + dLon];
 }
 
+// Les lieux de la base (DBSpeed + recensement officiel), par paquets de 1000 (limite de Supabase)
 async function complementsDansZone([sud, ouest, nord, est]) {
   if (!configOk) return [];
-  const { data, error } = await supabase.from('lieux').select('*')
-    .gte('latitude', sud).lte('latitude', nord)
-    .gte('longitude', ouest).lte('longitude', est)
-    .limit(1000);
-  if (error) throw error;
-  return data || [];
+  const tous = [];
+  for (let debut = 0; debut < 6000; debut += 1000) {
+    const { data, error } = await supabase.from('lieux').select('*')
+      .gte('latitude', sud).lte('latitude', nord)
+      .gte('longitude', ouest).lte('longitude', est)
+      .order('id')
+      .range(debut, debut + 999);
+    if (error) throw error;
+    tous.push(...(data || []));
+    if (!data || data.length < 1000) break;
+  }
+  return tous;
 }
 
 async function complementDe(piste) {
@@ -187,6 +194,8 @@ function pisteDepuisComplement(ligne) {
   return {
     id: ligne.id, ids: [ligne.id], genre: ligne.genre || 'bmx',
     lat: ligne.latitude, lon: ligne.longitude, tags: {}, traces: [], longueur: null, source: 'dbspeed',
+    // la ville, prise dans l'adresse (« …, 33700 Mérignac »)
+    commune: (String(ligne.adresse || '').match(/\b\d{4,5}\s+([^,]+)$/) || [])[1] || '',
   };
 }
 
@@ -394,7 +403,10 @@ async function chercherIci(lat, lon, nomLieu, idAOuvrir = null, zone = null) {
 
   let pistes;
   try {
-    pistes = zone ? await pistesDansZone(zone) : await pistesAutour(lat, lon, RAYON);
+    // un très grand pays (ex. la France) : trop lourd pour OpenStreetMap en direct,
+    // on montre seulement les lieux de la base (recensement officiel + lieux DBSpeed)
+    if (zone && !osm.zoneValide(arrondirZone(zone))) pistes = [];
+    else pistes = zone ? await pistesDansZone(zone) : await pistesAutour(lat, lon, RAYON);
   } catch {
     if (numero !== etat.chargement) return;
     $('lieux-liste').classList.remove('en-charge');
@@ -411,9 +423,9 @@ async function chercherIci(lat, lon, nomLieu, idAOuvrir = null, zone = null) {
   const connus = new Set(pistes.flatMap((p) => p.ids));
   for (const c of complements) {
     if (connus.has(c.id) || !Number.isFinite(c.latitude) || !Number.isFinite(c.longitude)) continue;
-    // une piste ajoutée par DBSpeed qui est déjà sur la carte (à moins de 150 m) : on la fusionne
+    // une piste de la base qui est déjà sur la carte OpenStreetMap (à moins de 250 m) : on la fusionne
     const point = { lat: c.latitude, lon: c.longitude };
-    const meme = pistes.find((p) => p.genre === (c.genre || 'bmx') && distance(p, point) < 150);
+    const meme = pistes.find((p) => p.genre === (c.genre || 'bmx') && distance(p, point) < 250);
     if (meme) meme.ids.push(c.id);
     else pistes.push(pisteDepuisComplement(c));
   }
@@ -526,8 +538,10 @@ async function chercherAilleurs(texte) {
   etat.texte = '';
   $('lieux-champ').value = '';
   window.montrer($('lieux-effacer'), false);
-  const z = resultat.zone;
-  const grande = z && (z[2] - z[0] > GRANDE_ZONE || z[3] - z[1] > GRANDE_ZONE) && osm.zoneValide(arrondirZone(z));
+  let z = resultat.zone;
+  // un pays avec des territoires très loin (ex. la France et l'outre-mer) : on garde le pays autour de son centre
+  if (z && (z[2] - z[0] > 20 || z[3] - z[1] > 20)) z = [resultat.lat - 6, resultat.lon - 9, resultat.lat + 6, resultat.lon + 9];
+  const grande = z && (z[2] - z[0] > GRANDE_ZONE || z[3] - z[1] > GRANDE_ZONE);
   await chercherIci(resultat.lat, resultat.lon, resultat.nom, resultat.id, grande ? z : null);
 }
 
@@ -587,10 +601,6 @@ function preparerRecherche() {
     const c = etat.carte.centre();
     const b = etat.carte.bornes();
     const large = b[2] - b[0] > GRANDE_ZONE || b[3] - b[1] > GRANDE_ZONE;
-    if (large && !osm.zoneValide(arrondirZone(b))) {
-      dire('La carte montre une zone trop grande : rapproche-toi un peu (un pays au maximum).', 'erreur');
-      return;
-    }
     chercherIci(c.lat, c.lon, 'cette zone', null, large ? b : null);
   });
 
